@@ -1,0 +1,303 @@
+import axios from 'axios';
+import {
+    POST_SUBMIT_REQUEST,
+    POST_SUBMIT_SUCCESS,
+    POST_SUBMIT_FAIL,
+    POST_LIST_REQUEST,
+    POST_LIST_SUCCESS,
+    POST_LIST_FAIL,
+    POST_DETAILS_REQUEST,
+    POST_DETAILS_SUCCESS,
+    POST_DETAILS_FAIL,
+    MENU_BAR_REQUEST,
+    MENU_BAR_SUCCESS,
+    MENU_BAR_FAIL,
+    POST_LIST_PROFILE_REQUEST,
+    POST_LIST_PROFILE_SUCCESS,
+    POST_LIST_PROFILE_FAIL,
+    POST_BOOKMARK_REQUEST,
+    POST_BOOKMARK_SUCCESS,
+    POST_BOOKMARK_FAIL,
+    POST_HEART_REQUEST,
+    POST_HEART_SUCCESS,
+    POST_HEART_FAIL,
+    POST_DELETE_REQUEST,
+    POST_DELETE_SUCCESS,
+    POST_DELETE_FAIL,
+} from '../constants/PostConstants';
+
+export const submitPost = (content, audio) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_SUBMIT_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('audio', audio);
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+                'Content-Type': 'multipart/form-data',
+            },
+        };
+        const { data } = await axios.post(
+            `https://talkie.transtechvietnam.com/post-status`,
+            formData,
+            config,
+        );
+        setTimeout(() => {
+            dispatch({
+                type: POST_SUBMIT_SUCCESS,
+                payload: data.results,
+            });
+        }, 1000);
+    } catch (error) {
+        const message =
+            error.response && error.response.data.message
+                ? error.response.data.message
+                : error.message;
+        if (message === 'Not authorized, token failed') {
+            // dispatch(logout());
+        }
+        dispatch({
+            type: POST_SUBMIT_FAIL,
+            payload: message,
+        });
+    }
+};
+
+export const listPost =
+    (redirect, limit, offset) => async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: POST_LIST_REQUEST,
+            });
+            const {
+                userLogin: { userInfo },
+            } = getState();
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo.token,
+                },
+            };
+            const { data } = await axios.post(
+                `https://talkie.transtechvietnam.com/${redirect}`,
+                { limit, offset },
+                config,
+            );
+            dispatch({
+                type: POST_LIST_SUCCESS,
+                payload: data.data,
+            });
+        } catch (error) {
+            dispatch({
+                type: POST_LIST_FAIL,
+                payload:
+                    error.response && error.response.data.message
+                        ? error.response.data.message
+                        : error.message,
+            });
+        }
+    };
+
+export const detailsPost =
+    (post_id, user_reply) => async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: POST_DETAILS_REQUEST,
+            });
+            const {
+                userLogin: { userInfo },
+            } = getState();
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo.token,
+                },
+            };
+            const { data } = await axios.post(
+                `https://talkie.transtechvietnam.com/detail-post-reply`,
+                { post_id, user_reply },
+                config,
+            );
+            dispatch({
+                type: POST_DETAILS_SUCCESS,
+                payload: data.data[0],
+            });
+        } catch (error) {
+            dispatch({
+                type: POST_DETAILS_FAIL,
+                payload:
+                    error.response && error.response.data.message
+                        ? error.response.data.message
+                        : error.message,
+            });
+        }
+    };
+
+export const barMenu = () => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: MENU_BAR_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.get(
+            'https://talkie.transtechvietnam.com/menu-bar',
+            config,
+        );
+        dispatch({
+            type: MENU_BAR_SUCCESS,
+            payload: data.data,
+        });
+    } catch (error) {
+        dispatch({
+            type: MENU_BAR_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const listPostProfile =
+    (status, limit, offset) => async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: POST_LIST_PROFILE_REQUEST,
+            });
+            const {
+                userLogin: { userInfo },
+            } = getState();
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo.token,
+                },
+            };
+            const { data } = await axios.post(
+                `https://talkie.transtechvietnam.com/get-profile-${status}`,
+                { limit, offset },
+                config,
+            );
+            dispatch({
+                type: POST_LIST_PROFILE_SUCCESS,
+                payload: data.data,
+            });
+        } catch (error) {
+            dispatch({
+                type: POST_LIST_PROFILE_FAIL,
+                payload:
+                    error.response && error.response.data.message
+                        ? error.response.data.message
+                        : error.message,
+            });
+        }
+    };
+
+export const bookMark = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_BOOKMARK_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/bookmark',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: POST_BOOKMARK_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_BOOKMARK_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const heart = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_HEART_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/heart',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: POST_HEART_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_HEART_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const deletePost = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_DELETE_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/remove-post',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: POST_DELETE_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_DELETE_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
