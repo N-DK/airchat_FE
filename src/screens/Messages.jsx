@@ -6,9 +6,11 @@ import { useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Messages() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     useEffect(() => {
         dispatch({ type: POST_LIST_RESET });
@@ -45,7 +47,10 @@ export default function Messages() {
             </div>
 
             <div className="px-5 absolute left-0 top-[200px]">
-                <div className="flex items-center gap-3">
+                <div
+                    onClick={() => navigate('/messages/t/1')}
+                    className="flex items-center gap-3"
+                >
                     <img
                         src={icon}
                         className="w-11 h-11 object-cover rounded-full"

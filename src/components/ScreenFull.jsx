@@ -6,6 +6,9 @@ import SoundWave from './SoundWave';
 import { usePingStates } from '../hooks/usePingStates';
 import React from 'react';
 import { useAutoScroll } from '../hooks/useAutoScroll';
+import { Avatar } from 'antd';
+
+const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 export default function ScreenFull({ postsList }) {
     const contentsChattingRef = useRef(null);
@@ -46,8 +49,8 @@ export default function ScreenFull({ postsList }) {
                     >
                         <div className="grid grid-cols-2 items-center relative z-10">
                             <div className="col-span-1">
-                                <img
-                                    src={item.avatar ?? DEFAULT_PROFILE}
+                                <Avatar
+                                    src={`${BASE_URL}${item.avatar}`}
                                     className="w-[120px] h-[120px] md:w-[220px] md:h-[220px] object-cover rounded-full"
                                     alt=""
                                 />

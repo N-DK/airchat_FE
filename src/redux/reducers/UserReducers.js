@@ -59,6 +59,30 @@ import {
     USER_UPLOAD_AVATAR_REQUEST,
     USER_UPLOAD_AVATAR_SUCCESS,
     USER_UPLOAD_AVATAR_FAIL,
+    USER_GET_FOLLOWER_REQUEST,
+    USER_GET_FOLLOWER_SUCCESS,
+    USER_GET_FOLLOWER_FAIL,
+    USER_GET_FOLLOWING_REQUEST,
+    USER_GET_FOLLOWING_SUCCESS,
+    USER_GET_FOLLOWING_FAIL,
+    USER_GET_FOLLOWER_STRANGER_REQUEST,
+    USER_GET_FOLLOWER_STRANGER_SUCCESS,
+    USER_GET_FOLLOWER_STRANGER_FAIL,
+    USER_GET_FOLLOWING_STRANGER_REQUEST,
+    USER_GET_FOLLOWING_STRANGER_SUCCESS,
+    USER_GET_FOLLOWING_STRANGER_FAIL,
+    USER_SHARE_POST_REQUEST,
+    USER_SHARE_POST_SUCCESS,
+    USER_SHARE_POST_FAIL,
+    USER_ADD_VIEW_POST_REQUEST,
+    USER_ADD_VIEW_POST_SUCCESS,
+    USER_ADD_VIEW_POST_FAIL,
+    USER_REPORT_ACC_REQUEST,
+    USER_REPORT_ACC_SUCCESS,
+    USER_REPORT_ACC_FAIL,
+    USER_SEARCH_REQUEST,
+    USER_SEARCH_SUCCESS,
+    USER_SEARCH_FAIL,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -225,7 +249,11 @@ export const userFollowReducer = (state = {}, action) => {
         case USER_FOLLOW_REQUEST:
             return { loading: true };
         case USER_FOLLOW_SUCCESS:
-            return { loading: false, isSuccess: true };
+            return {
+                loading: false,
+                isSuccess: true,
+                stranger_id: action.payload,
+            };
         case USER_FOLLOW_FAIL:
             return { loading: false, error: action.payload };
         default:
@@ -318,6 +346,110 @@ export const userUploadAvatarReducer = (state = {}, action) => {
         case USER_UPLOAD_AVATAR_SUCCESS:
             return { loading: false, isSuccess: true };
         case USER_UPLOAD_AVATAR_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userGetFollowerReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_GET_FOLLOWER_REQUEST:
+            return { loading: true };
+        case USER_GET_FOLLOWER_SUCCESS:
+            return { loading: false, follower: action.payload };
+        case USER_GET_FOLLOWER_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userGetFollowingReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_GET_FOLLOWING_REQUEST:
+            return { loading: true };
+        case USER_GET_FOLLOWING_SUCCESS:
+            return { loading: false, following: action.payload };
+        case USER_GET_FOLLOWING_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userGetFollowerStrangerReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_GET_FOLLOWER_STRANGER_REQUEST:
+            return { loading: true };
+        case USER_GET_FOLLOWER_STRANGER_SUCCESS:
+            return { loading: false, follower: action.payload };
+        case USER_GET_FOLLOWER_STRANGER_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userGetFollowingStrangerReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_GET_FOLLOWING_STRANGER_REQUEST:
+            return { loading: true };
+        case USER_GET_FOLLOWING_STRANGER_SUCCESS:
+            return { loading: false, following: action.payload };
+        case USER_GET_FOLLOWING_STRANGER_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userSharePostReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_SHARE_POST_REQUEST:
+            return { loading: true };
+        case USER_SHARE_POST_SUCCESS:
+            return { loading: false, isSuccess: true };
+        case USER_SHARE_POST_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userAddViewPostReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_ADD_VIEW_POST_REQUEST:
+            return { loading: true };
+        case USER_ADD_VIEW_POST_SUCCESS:
+            return { loading: false, isSuccess: true };
+        case USER_ADD_VIEW_POST_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userReportAccReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_REPORT_ACC_REQUEST:
+            return { loading: true };
+        case USER_REPORT_ACC_SUCCESS:
+            return { loading: false, report_acc: action.payload };
+        case USER_REPORT_ACC_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userSearchReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_SEARCH_REQUEST:
+            return { loading: true };
+        case USER_SEARCH_SUCCESS:
+            return { loading: false, search: action.payload };
+        case USER_SEARCH_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

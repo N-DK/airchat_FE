@@ -20,6 +20,14 @@ import {
     userBlockReducer,
     userMuteReducer,
     userUploadAvatarReducer,
+    userGetFollowerStrangerReducer,
+    userGetFollowingStrangerReducer,
+    userGetFollowerReducer,
+    userGetFollowingReducer,
+    userSharePostReducer,
+    userAddViewPostReducer,
+    userReportAccReducer,
+    userSearchReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -34,6 +42,8 @@ import {
 import {
     channelListReducer,
     channelPostsReducer,
+    channelAddReducer,
+    channelPinReducer,
 } from './reducers/ChannelReducers';
 
 const reducer = combineReducers({
@@ -49,6 +59,8 @@ const reducer = combineReducers({
     postListProfile: postListProfileReducer,
     channelList: channelListReducer,
     channelPosts: channelPostsReducer,
+    channelAdd: channelAddReducer,
+    channelPin: channelPinReducer,
     postDetails: postDetailsReducer,
     userTheme: userThemeReducer,
     userProfile: userProfileReducer,
@@ -65,6 +77,14 @@ const reducer = combineReducers({
     userBlock: userBlockReducer,
     userMute: userMuteReducer,
     userUploadAvatar: userUploadAvatarReducer,
+    userGetFollowerStranger: userGetFollowerStrangerReducer,
+    userGetFollowingStranger: userGetFollowingStrangerReducer,
+    userGetFollower: userGetFollowerReducer,
+    userGetFollowing: userGetFollowingReducer,
+    userSharePost: userSharePostReducer,
+    userAddViewPost: userAddViewPostReducer,
+    userReportAcc: userReportAccReducer,
+    userSearch: userSearchReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

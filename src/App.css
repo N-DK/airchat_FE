@@ -1,0 +1,110 @@
+/* App.css */
+
+/* Thay đổi vị trí của thông báo */
+.ant-message {
+    top: auto !important;
+    bottom: 50px; /* Hiển thị cách đáy 50px */
+}
+
+/* Animation xuất hiện từ dưới lên */
+.ant-message-move-up {
+    animation: move-up-in 0.3s ease-out forwards !important;
+}
+
+/* Animation biến mất từ trên xuống */
+.ant-message-move-up-leave {
+    animation: move-up-out 0.3s ease-out forwards !important;
+}
+
+.ant-message-move-up-leave-active {
+    animation: move-up-out 0.3s ease-out forwards !important;
+}
+
+/* Keyframes cho animation xuất hiện từ dưới lên */
+@keyframes move-up-in {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.ant-message {
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    flex-direction: column;
+}
+
+.ant-message-notice-wrapper {
+    width: 95% !important;
+}
+
+.ant-message-notice-content {
+    width: 100%;
+}
+
+/* Keyframes cho animation biến mất từ trên xuống */
+@keyframes move-up-out {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
+.centered-tabs .ant-tabs-nav {
+    position: sticky;
+    top: 0;
+    z-index: 99999999;
+    margin-bottom: 0;
+    transform: translateY(-1px);
+    /* background-color: white; */
+    /* background-color: ; */
+}
+
+.dark .centered-tabs .ant-tabs-nav {
+    background-color: #334155 !important; /* Thay đổi theo màu của dark theme */
+}
+
+.dark .centered-tabs .ant-tabs-tab {
+    color: white;
+}
+
+.dark .centered-tabs .ant-tabs-nav::before {
+    border: none !important;
+}
+
+.centered-tabs .ant-tabs-nav-wrap {
+    display: flex !important;
+    justify-content: space-evenly; /* Căn giữa các tab */
+    width: 100% !important;
+}
+
+.centered-tabs .ant-tabs-tab {
+    flex: 1; /* Đảm bảo mỗi tab có cùng kích thước */
+    justify-content: center;
+}
+
+.centered-tabs .ant-tabs-nav-list {
+    flex: 1;
+}
+
+.swipeable-tabs {
+    animation: swipe-tabs 0.3s ease-in-out forwards;
+}
+
+@keyframes swipe-tabs {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

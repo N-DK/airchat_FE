@@ -13,6 +13,7 @@ export const AppProvider = ({ children }) => {
     const [recordOption, setRecordOption] = useState('audio');
     const [showInviteFriend, setShowInviteFriend] = useState(false);
     const [showDrawerFollow, setShowDrawerFollow] = useState(false);
+    const [showDrawerBlockAccount, setShowDrawerBlockAccount] = useState(false);
 
     const toggleIsAddChannel = () => setIsAddChannel((prev) => !prev);
     const toggleIsRecord = () => setIsRecord((prev) => !prev);
@@ -24,6 +25,8 @@ export const AppProvider = ({ children }) => {
     const toggleRecordOption = (type) => () => setRecordOption(type);
     const toggleShowInviteFriend = () => setShowInviteFriend((prev) => !prev);
     const toggleShowDrawerFollow = () => setShowDrawerFollow((prev) => !prev);
+    const toggleShowDrawerBlockAccount = () =>
+        setShowDrawerBlockAccount((prev) => !prev);
     return (
         <AppContext.Provider
             value={{
@@ -45,6 +48,8 @@ export const AppProvider = ({ children }) => {
                 toggleShowInviteFriend,
                 showDrawerFollow,
                 toggleShowDrawerFollow,
+                showDrawerBlockAccount,
+                toggleShowDrawerBlockAccount,
             }}
         >
             {children}

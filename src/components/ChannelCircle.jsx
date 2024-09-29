@@ -1,0 +1,23 @@
+import { Avatar } from 'antd';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function ChannelCircle({ data }) {
+    const navigate = useNavigate();
+
+    return (
+        <div onClick={() => navigate(`/channel/${data?.id}`)} className="mr-3">
+            <div className="flex flex-col justify-center items-center">
+                <figure className="mb-1">
+                    <Avatar
+                        size={44}
+                        src={`https://talkie.transtechvietnam.com/${data?.photo}`}
+                        alt={data?.name}
+                    />
+                </figure>
+                <p className="dark:text-white">{data?.name}</p>
+                <p className="text-sm text-gray-500">21 members</p>
+            </div>
+        </div>
+    );
+}

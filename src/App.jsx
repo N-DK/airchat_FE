@@ -20,6 +20,7 @@ import EnterCodePhoneNumber from './screens/EnterCodePhoneNumber';
 import EnterCodeEmail from './screens/EnterCodeEmail';
 import Login from './screens/Login';
 import React from 'react';
+import ChatRoom from './screens/ChatRoom';
 
 function App() {
     const userTheme = useSelector((state) => state.userTheme);
@@ -76,6 +77,10 @@ function App() {
                     <Route
                         path="/messages"
                         element={<PrivateRouter comp={Messages} />}
+                    />
+                    <Route
+                        path="/messages/t/:id"
+                        element={<PrivateRouter comp={ChatRoom} />}
                     />
                     <Route
                         path="/profile"

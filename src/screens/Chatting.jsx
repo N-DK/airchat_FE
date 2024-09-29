@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+    useCallback,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar } from 'antd';
@@ -25,16 +31,18 @@ export default function Chatting() {
     const contentsChattingRef = useRef(null);
     const postRefs = useRef([]);
     const [isSwiping, setIsSwiping] = useState(false);
-    // const [postsList, setPostsList] = useState([]);
     const [hasMore, setHasMore] = useState(true);
     const [page, setPage] = useState(1);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { search } = useLocation();
-    let redirect = search.split('=')[1] || 'for-you';
+    const redirect = search.split('=')[1] || 'for-you';
 
     const { userInfo } = useSelector((state) => state.userProfile);
+    const { isSuccess: isSuccessFollow } = useSelector(
+        (state) => state.userFollow,
+    );
     const {
         posts: postListData,
         pages,
@@ -65,35 +73,38 @@ export default function Chatting() {
         postListData,
     );
 
-    const modalHandle = () => {
+    const modalHandle = useCallback(() => {
         if (isAddChannel) toggleIsAddChannel();
         if (isRecord) toggleIsRecord();
-    };
+    }, [isAddChannel, isRecord, toggleIsAddChannel, toggleIsRecord]);
+
+    const handleScroll = useCallback(() => {
+        const contents = contentsChattingRef.current;
+        if (!contents || !hasMore) return;
+
+        const { scrollTop, clientHeight, scrollHeight } = contents;
+        setIsSwiping(scrollTop > contents.lastScrollTop);
+        contents.lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+
+        if (scrollTop + clientHeight >= scrollHeight - 1) {
+            setPage((prevPage) => prevPage + 1);
+        }
+    }, [hasMore]);
 
     useEffect(() => {
         const contents = contentsChattingRef.current;
         if (loading || !contents) return;
 
-        let lastScrollTop = 0;
-        const handleScroll = () => {
-            const { scrollTop, clientHeight, scrollHeight } = contents;
-            setIsSwiping(scrollTop > lastScrollTop);
-            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-
-            if (!hasMore) return;
-
-            const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-            if (isAtBottom) setPage((prevPage) => prevPage + 1);
-        };
-
         contents.addEventListener('scroll', handleScroll);
         return () => contents.removeEventListener('scroll', handleScroll);
-    }, [hasMore, loading]);
+    }, [loading, handleScroll]);
 
     useEffect(() => {
         if (pages && page !== 1) {
-            dispatch(listPost(redirect, page));
-            if (page === pages || page - 1 === pages) {
+            dispatch(
+                listPost(redirect, INITIAL_LIMIT, (page - 1) * INITIAL_LIMIT),
+            );
+            if (page >= pages) {
                 setHasMore(false);
             }
         }
@@ -105,54 +116,37 @@ export default function Chatting() {
 
         setPage(1);
         setHasMore(true);
-        // setPostsList([]);
 
         if (redirect === 'see-all') {
             navigate('/seeall');
+        } else if (redirect.includes('group-channel')) {
+            const channel_id = redirect.split('/')[1];
+            dispatch(
+                listPost(
+                    redirect.split('/')[0],
+                    INITIAL_LIMIT,
+                    INITIAL_OFFSET,
+                    channel_id,
+                    1,
+                ),
+            );
         } else {
             dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
         }
     }, [redirect, navigate, dispatch]);
 
-    // useEffect(() => {
-    //     if (postListData?.length > 0) {
-    //         console.log('postListData', postListData);
-    //         setPostsList((prevPostsList) => {
-    //             // Lọc ra các bài đăng đã thay đổi hoặc mới
-    //             const updatedPosts = postListData.filter((newPost) => {
-    //                 const existingPost = prevPostsList.find(
-    //                     (post) => post.id === newPost.id,
-    //                 );
-    //                 // Nếu không tìm thấy bài cũ hoặc nội dung bài đăng thay đổi
-    //                 return (
-    //                     !existingPost ||
-    //                     JSON.stringify(existingPost) !== JSON.stringify(newPost)
-    //                 );
-    //             });
-
-    //             // Nếu bài đăng tồn tại, cập nhật bài đó, nếu không thì thêm bài mới
-    //             const mergedPosts = prevPostsList.map(
-    //                 (post) =>
-    //                     updatedPosts.find(
-    //                         (updatedPost) => updatedPost.id === post.id,
-    //                     ) || post,
-    //             );
-
-    //             // Thêm các bài mới vào danh sách nếu chúng không có trong danh sách cũ
-    //             const newPosts = updatedPosts.filter(
-    //                 (newPost) =>
-    //                     !prevPostsList.some((post) => post.id === newPost.id),
-    //             );
-
-    //             return [...mergedPosts, ...newPosts];
-    //         });
-    //     }
-    // }, [postListData]);
-
     useEffect(() => {
         dispatch(profile());
         dispatch(barMenu());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (isSuccessFollow) {
+            dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
+        }
+    }, [isSuccessFollow, dispatch, redirect]);
+
+    if (!postListData) return null;
 
     return (
         <div className="relative flex flex-col justify-between h-screen overflow-hidden">
@@ -186,16 +180,14 @@ export default function Chatting() {
                 </div>
 
                 <div className="relative bg-gray-200">
-                    {postListData?.length > 0 && (
-                        <ListPostItems
-                            postsList={postListData}
-                            postRefs={postRefs}
-                        />
+                    {postListData.length > 0 && (
+                        <ListPostItems postsList={postListData} />
                     )}
-
-                    <div className="absolute bottom-[-450px] md:bottom-[-520px] left-0 w-full">
-                        <LoaderSkeletonPosts />
-                    </div>
+                    {loading && (
+                        <div className="absolute bottom-[-450px] md:bottom-[-520px] left-0 w-full">
+                            <LoaderSkeletonPosts />
+                        </div>
+                    )}
                 </div>
             </div>
 

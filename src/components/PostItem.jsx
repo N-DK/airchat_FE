@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import moment from 'moment';
 import { Avatar } from 'antd';
 import { RiAddLine } from 'react-icons/ri';
@@ -10,21 +10,86 @@ import { usePingStates } from '../hooks/usePingStates';
 import { useDispatch, useSelector } from 'react-redux';
 import { heart } from '../redux/actions/PostActions';
 import MessageItem from './MessageItem';
+import useClosestToTop from '../hooks/useClosestToTop';
+import {
+    addViewPost,
+    follow,
+    profile,
+    sharePost,
+} from '../redux/actions/UserActions';
 import LoadingSpinner from './LoadingSpinner';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
-function PostItem({ item, postRefs }) {
+// postRefs, contentsChattingRef
+function PostItem({ item }) {
     const navigate = useNavigate();
     const { pingStates } = usePingStates();
     const dispatch = useDispatch();
     const [likeCount, setLikeCount] = useState(item?.number_heart ?? 0);
     const [isHeart, setIsHeart] = useState(!!item?.heart);
 
+    const [shareCount, setShareCount] = useState(item?.number_share ?? 0);
+    const [isShare, setIsShare] = useState(false);
+
+    const divRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
+    const { userInfo } = useSelector((state) => state.userProfile);
+
+    // const userFollow = useSelector((state) => state.userFollow);
+
+    useEffect(() => {
+        if (!userInfo) dispatch(profile());
+    }, [dispatch]);
+
+    useEffect(() => {
+        setLikeCount(item?.number_heart ?? 0);
+        setIsHeart(!!item?.heart);
+        setShareCount(item?.number_share ?? 0);
+        setIsShare(false);
+    }, [item]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            },
+            {
+                threshold: 0.85,
+                rootMargin: '-200px 0px -510px 0px',
+            },
+        );
+
+        if (divRef?.current) {
+            observer.observe(divRef?.current);
+        }
+
+        return () => {
+            if (divRef?.current) {
+                observer.unobserve(divRef?.current);
+            }
+        };
+    }, []);
+
     const handleLike = () => {
         dispatch(heart(item.id));
         setLikeCount((prev) => prev + (isHeart ? -1 : 1));
         setIsHeart(!isHeart);
+    };
+
+    const handleSharePost = () => {
+        dispatch(sharePost(item.id));
+        setShareCount((prev) => prev + (isShare ? -1 : 1));
+        setIsShare(!isShare);
+    };
+
+    const handleOnClickPost = () => {
+        dispatch(addViewPost(item.id));
+        navigate(postDetailsUrl);
+    };
+
+    const handleFollow = () => {
+        dispatch(follow(item.user_id));
     };
 
     const postDetailsUrl = useMemo(() => {
@@ -44,8 +109,22 @@ function PostItem({ item, postRefs }) {
                         alt="icon"
                     />
                 </Link>
-                <div className="absolute bottom-0 right-[-3px] z-20 bg-blue-500 border border-white rounded-full">
-                    <RiAddLine size="1.1rem" className="p-[2px] text-white" />
+                <div
+                    onClick={handleFollow}
+                    className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
+                        (item.dafollow === null || item.dafollow <= 0) &&
+                        userInfo?.id !== item?.user_id
+                            ? 'border border-white'
+                            : ''
+                    }`}
+                >
+                    {(item.dafollow === null || item.dafollow <= 0) &&
+                        userInfo?.id !== item?.user_id && (
+                            <RiAddLine
+                                size="1.1rem"
+                                className="p-[2px] text-white"
+                            />
+                        )}
                 </div>
                 <div
                     className={`absolute top-0 left-0 bg-red-300 h-10 md:h-12 w-10 md:w-12 rounded-full ${
@@ -55,8 +134,15 @@ function PostItem({ item, postRefs }) {
             </div>
 
             <div className="w-full">
-                <div className="relative bg-white dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3">
-                    <div onClick={() => navigate(postDetailsUrl)}>
+                <div
+                    ref={divRef}
+                    className={` relative transition-all duration-300  rounded-2xl w-full px-4 pb-5 pt-3 ${
+                        isVisible
+                            ? 'shadow-2xl'
+                            : 'bg-white dark:bg-dark2Primary'
+                    } ${userInfo?.id === item?.user_id ? 'bg-blue-500' : ''}`}
+                >
+                    <div onClick={handleOnClickPost}>
                         <div className="flex items-center gap-[5px]">
                             <h5 className="line-clamp-1 md:text-xl text-black dark:text-white">
                                 {item.name}
@@ -89,12 +175,17 @@ function PostItem({ item, postRefs }) {
                             count={likeCount}
                         />
                         <ActionButton
-                            icon={<PiArrowsClockwiseBold />}
-                            count={item.number_view}
+                            onClick={handleSharePost}
+                            icon={
+                                <PiArrowsClockwiseBold
+                                    color={`${isShare ? 'green' : ''}`}
+                                />
+                            }
+                            count={shareCount}
                         />
                         <ActionButton
                             icon={<FaChartLine />}
-                            count={item.number_share}
+                            count={item.number_view}
                         />
                         <HiMiniArrowUpTray />
                     </div>
@@ -108,9 +199,11 @@ function PostItem({ item, postRefs }) {
                             />
                         ))}
                     </Avatar.Group>
-                    <span className="ml-2">
-                        {item?.reply?.length ?? 0} people talking
-                    </span>
+                    {item?.reply?.length > 0 && (
+                        <span className="ml-2">
+                            {item?.reply?.length} people talking
+                        </span>
+                    )}
                 </div>
                 <div className="flex-1 mb-2">
                     {item?.reply?.map((reply, index) => (

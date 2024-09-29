@@ -54,6 +54,30 @@ import {
     USER_UPLOAD_AVATAR_REQUEST,
     USER_UPLOAD_AVATAR_SUCCESS,
     USER_UPLOAD_AVATAR_FAIL,
+    USER_GET_FOLLOWER_REQUEST,
+    USER_GET_FOLLOWER_SUCCESS,
+    USER_GET_FOLLOWER_FAIL,
+    USER_GET_FOLLOWER_STRANGER_REQUEST,
+    USER_GET_FOLLOWER_STRANGER_SUCCESS,
+    USER_GET_FOLLOWER_STRANGER_FAIL,
+    USER_GET_FOLLOWING_REQUEST,
+    USER_GET_FOLLOWING_SUCCESS,
+    USER_GET_FOLLOWING_FAIL,
+    USER_GET_FOLLOWING_STRANGER_REQUEST,
+    USER_GET_FOLLOWING_STRANGER_SUCCESS,
+    USER_GET_FOLLOWING_STRANGER_FAIL,
+    USER_SHARE_POST_REQUEST,
+    USER_SHARE_POST_SUCCESS,
+    USER_SHARE_POST_FAIL,
+    USER_ADD_VIEW_POST_REQUEST,
+    USER_ADD_VIEW_POST_SUCCESS,
+    USER_ADD_VIEW_POST_FAIL,
+    USER_REPORT_ACC_REQUEST,
+    USER_REPORT_ACC_SUCCESS,
+    USER_REPORT_ACC_FAIL,
+    USER_SEARCH_REQUEST,
+    USER_SEARCH_SUCCESS,
+    USER_SEARCH_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -254,7 +278,7 @@ export const checkUserCode = (email, otp) => async (dispatch) => {
         //   type: USER_LOGIN_SUCCESS,
         //   payload: data.token,
         // });
-        // localStorage.setItem("userInfo", JSON.stringify(data.token));
+        localStorage.setItem('userInfo', JSON.stringify(data));
     } catch (error) {
         dispatch({
             type: USER_CODE_FAIL,
@@ -427,7 +451,7 @@ export const follow = (stranger_id) => async (dispatch, getState) => {
         );
         dispatch({
             type: USER_FOLLOW_SUCCESS,
-            payload: data,
+            payload: stranger_id,
         });
     } catch (error) {
         dispatch({
@@ -666,6 +690,273 @@ export const uploadAvatar = (avatar) => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: USER_UPLOAD_AVATAR_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getFollower = () => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_GET_FOLLOWER_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.get(
+            'https://talkie.transtechvietnam.com/get-follower',
+            config,
+        );
+        dispatch({
+            type: USER_GET_FOLLOWER_SUCCESS,
+            payload: data.data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_GET_FOLLOWER_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getFollowerStranger =
+    (stranger_id) => async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: USER_GET_FOLLOWER_STRANGER_REQUEST,
+            });
+            const {
+                userLogin: { userInfo },
+            } = getState();
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo.token,
+                },
+            };
+
+            const { data } = await axios.post(
+                'https://talkie.transtechvietnam.com/get-follower-stranger',
+                { stranger_id },
+                config,
+            );
+            dispatch({
+                type: USER_GET_FOLLOWER_STRANGER_SUCCESS,
+                payload: data.data,
+            });
+        } catch (error) {
+            dispatch({
+                type: USER_GET_FOLLOWER_STRANGER_FAIL,
+                payload:
+                    error.response && error.response.data.message
+                        ? error.response.data.message
+                        : error.message,
+            });
+        }
+    };
+
+export const getFollowing = () => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_GET_FOLLOWING_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.get(
+            'https://talkie.transtechvietnam.com/get-following',
+            config,
+        );
+        dispatch({
+            type: USER_GET_FOLLOWING_SUCCESS,
+            payload: data.data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_GET_FOLLOWING_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getFollowingStranger =
+    (stranger_id) => async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: USER_GET_FOLLOWING_STRANGER_REQUEST,
+            });
+            const {
+                userLogin: { userInfo },
+            } = getState();
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo.token,
+                },
+            };
+
+            const { data } = await axios.post(
+                'https://talkie.transtechvietnam.com/get-following-stranger',
+                { stranger_id },
+                config,
+            );
+            dispatch({
+                type: USER_GET_FOLLOWING_STRANGER_SUCCESS,
+                payload: data.data,
+            });
+        } catch (error) {
+            dispatch({
+                type: USER_GET_FOLLOWING_STRANGER_FAIL,
+                payload:
+                    error.response && error.response.data.message
+                        ? error.response.data.message
+                        : error.message,
+            });
+        }
+    };
+
+export const sharePost = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_SHARE_POST_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/share',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: USER_SHARE_POST_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_SHARE_POST_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const addViewPost = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_ADD_VIEW_POST_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/add-view',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: USER_ADD_VIEW_POST_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_ADD_VIEW_POST_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const reportAcc = (stranger_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_REPORT_ACC_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/report-acc',
+            { stranger_id },
+            config,
+        );
+        dispatch({
+            type: USER_REPORT_ACC_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_REPORT_ACC_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+// post localhost:9999/search
+export const search = (key) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_SEARCH_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/search',
+            { key },
+            config,
+        );
+        dispatch({
+            type: USER_SEARCH_SUCCESS,
+            payload: data.data[0],
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_SEARCH_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

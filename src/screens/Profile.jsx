@@ -66,6 +66,7 @@ export default function Profile() {
     const [listPostUserProfile, setListPostUserProfile] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [idDelete, setIdDelete] = useState(null);
+    const [typeDrawer, setTypeDrawer] = useState(null);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -74,6 +75,7 @@ export default function Profile() {
     const {
         isEditProfile,
         isRecord,
+        showDrawerFollow,
         toggleIsRecord,
         toggleIsEditProfile,
         toggleShowInviteFriend,
@@ -97,6 +99,7 @@ export default function Profile() {
     const userBlock = useSelector((state) => state.userBlock);
     const userMute = useSelector((state) => state.userMute);
     const userDeletePost = useSelector((state) => state.userDeletePost);
+    const userBookMark = useSelector((state) => state.userBookMark);
 
     const { success: isSuccessDeletePost } = userDeletePost;
     const { userInfo: userInfoProfile, loading: loadingProfile } = userProfile;
@@ -112,10 +115,12 @@ export default function Profile() {
     const { mute: mutes } = userListMute;
     const { isSuccess: isSuccessBlock } = userBlock;
     const { isSuccess: isSuccessMute } = userMute;
+    const { success: isSuccessBookmark } = userBookMark;
 
     const modalHandle = () => {
         if (isEditProfile) toggleIsEditProfile();
         if (isRecord) toggleIsRecord();
+        if (showDrawerFollow) toggleShowDrawerFollow();
     };
 
     const isFollowing = useCallback(() => {
@@ -181,8 +186,12 @@ export default function Profile() {
     }, [isSuccess, dispatch]);
 
     useEffect(() => {
-        if (isSuccessFollow) dispatch(listFollow());
-    }, [isSuccessFollow, dispatch]);
+        if (isSuccessFollow) {
+            dispatch(listFollow());
+            if (stranger_id) dispatch(getProfileStranger(stranger_id));
+            else dispatch(profile());
+        }
+    }, [isSuccessFollow, dispatch, stranger_id]);
 
     useEffect(() => {
         if (!loadingSubmit && successSubmit) {
@@ -221,25 +230,11 @@ export default function Profile() {
         fetchPosts();
     }, [showActions, stranger_id, dispatch]);
 
-    // useEffect(() => {
-    //     if (stranger_id) {
-    //         dispatch(getProfileStranger(stranger_id));
-    //     } else {
-    //         setUserInfo(userInfoProfile);
-    //     }
-    // }, [stranger_id]); //, dispatch, userInfoProfile
-
-    // useEffect(() => {
-    //     if (userInfoProfile && !stranger_id) {
-    //         setUserInfo(userInfoProfile);
-    //     }
-    // }, [userInfoProfile, stranger_id]);
-
-    // useEffect(() => {
-    //     if (stranger_id && userInfoStranger) {
-    //         setUserInfo(userInfoStranger);
-    //     }
-    // }, [stranger_id, userInfoStranger]);
+    useEffect(() => {
+        if (isSuccessBookmark && showActions === 'bookmarks') {
+            dispatch(listPostProfile('bookmarks', 100, 0));
+        }
+    }, [isSuccessBookmark, dispatch, showActions]);
 
     const renderActionButtons = () => (
         <div className="flex gap-3 text-black dark:text-white">
@@ -287,12 +282,13 @@ export default function Profile() {
 
         if (listPostUserProfile?.length > 0) {
             return stranger_id ? (
-                <ListPostItems postsList={listPostStranger} postRefs={null} />
+                <ListPostItems postsList={listPostStranger} />
             ) : (
                 <ListPostProfile
                     list={listPostUserProfile}
                     setIsOpen={setIsOpen}
                     setIdDelete={setIdDelete}
+                    userInfo={userInfo}
                 />
             );
         }
@@ -320,7 +316,7 @@ export default function Profile() {
                     <HiOutlineDotsHorizontal className="text-xl md:text-[30px]" />
                 </Menu.Button>
 
-                <Menu.Items className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none">
+                <Menu.Items className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary">
                     <div className="py-1">
                         <Menu.Item>
                             {({ active }) => (
@@ -334,8 +330,8 @@ export default function Profile() {
                                         )
                                     }
                                     className={`${
-                                        active ? 'bg-gray-100' : ''
-                                    } flex justify-between w-full px-4 py-2 text-sm text-red-500`}
+                                        active ? '' : ''
+                                    }  flex justify-between w-full px-4 py-2 text-sm dark:text-white`}
                                 >
                                     {isBlock() ? 'Unblock' : 'Block'}
                                 </button>
@@ -351,8 +347,8 @@ export default function Profile() {
                                         )
                                     }
                                     className={`${
-                                        active ? 'bg-gray-100' : ''
-                                    } flex justify-between w-full px-4 py-2 text-sm text-gray-700`}
+                                        active ? '' : ''
+                                    }  flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-white`}
                                 >
                                     {isMute() ? 'Unmute' : 'Mute'}
                                 </button>
@@ -415,7 +411,10 @@ export default function Profile() {
 
                             <div className="flex gap-4 items-center mt-3 md:mt-5">
                                 <div
-                                    onClick={() => toggleShowDrawerFollow()}
+                                    onClick={() => {
+                                        setTypeDrawer('following');
+                                        toggleShowDrawerFollow();
+                                    }}
                                     className="flex gap-2 items-center"
                                 >
                                     <h6 className="md:text-xl dark:text-white">
@@ -425,7 +424,13 @@ export default function Profile() {
                                         Following
                                     </span>
                                 </div>
-                                <div className="flex gap-2 items-center">
+                                <div
+                                    onClick={() => {
+                                        setTypeDrawer('follower');
+                                        toggleShowDrawerFollow();
+                                    }}
+                                    className="flex gap-2 items-center"
+                                >
                                     <h6 className="md:text-xl dark:text-white">
                                         {userInfo?.number_follow}
                                     </h6>
@@ -492,7 +497,14 @@ export default function Profile() {
                 <EditProfile />
                 <RecordModal />
                 <InviteFriend />
-                <DrawerFollower />
+                <DrawerFollower
+                    userInfo={userInfo}
+                    isStranger={!!stranger_id}
+                    typeDrawer={typeDrawer}
+                    userInfoListFollowing={userInfoListFollowing}
+                    handleFollow={handleAction}
+                />
+
                 <div
                     onClick={modalHandle}
                     className={`z-40 absolute h-screen w-screen bg-black bg-opacity-10 transition-all duration-500 ${
@@ -511,7 +523,7 @@ export default function Profile() {
             />
         </>
     ) : (
-        <div className="flex justify-center items-center h-screen">
+        <div className="flex justify-center items-center h-screen dark:bg-darkPrimary">
             <LoadingSpinner />
         </div>
     );

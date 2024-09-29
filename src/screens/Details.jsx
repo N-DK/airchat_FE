@@ -21,6 +21,7 @@ import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import MessageItem from '../components/MessageItem';
 import icon1 from '../assets/Untitled-2.png';
+import { sharePost } from '../redux/actions/UserActions';
 
 export default function Details() {
     const { id } = useParams();
@@ -34,6 +35,8 @@ export default function Details() {
     const [indexCommentPresent, setIndexCommentPresent] = useState(0);
     const [isHeart, setIsHeart] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
+    const [isShare, setIsShare] = useState(false);
+    const [shareCount, setShareCount] = useState(0);
 
     const contentsChattingRef = useRef(null);
     const postRefs = useRef([]);
@@ -51,27 +54,21 @@ export default function Details() {
             setDetailsPostReply(post.reply || []);
             setLikeCount(post?.number_heart ?? 0);
             setIsHeart(!!post?.heart);
+            setShareCount(post?.number_share ?? 0);
+            setIsShare(!!post?.share);
         }
     }, [post]);
-
-    // useEffect(() => {
-    //     const contents = contentsChattingRef.current;
-    //     let lastScrollTop = 0;
-
-    //     const handleScroll = () => {
-    //         const currentScrollTop = contents.scrollTop;
-    //         setIsSwiping(currentScrollTop > lastScrollTop);
-    //         lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
-    //     };
-
-    //     contents.addEventListener('scroll', handleScroll);
-    //     return () => contents.removeEventListener('scroll', handleScroll);
-    // }, []);
 
     const handleHeart = () => {
         dispatch(heart(post?.id));
         setLikeCount((prev) => prev + (isHeart ? -1 : 1));
         setIsHeart(!isHeart);
+    };
+
+    const handleSharePost = () => {
+        dispatch(sharePost(post?.id));
+        setShareCount((prev) => prev + (isShare ? -1 : 1));
+        setIsShare(!isShare);
     };
 
     const renderHeader = () => (
@@ -138,16 +135,31 @@ export default function Details() {
                                 count: likeCount,
                             },
                             {
-                                icon: <PiArrowsClockwiseBold />,
-                                count: post?.number_view,
+                                icon: (
+                                    <PiArrowsClockwiseBold
+                                        color={isShare ? 'green' : ''}
+                                    />
+                                ),
+                                count: shareCount,
                             },
                             {
                                 icon: <FaChartLine />,
-                                count: post?.number_share,
+                                count: post?.number_view,
                             },
                         ].map((item, index) => (
                             <div
-                                onClick={index === 0 ? handleHeart : undefined}
+                                onClick={() => {
+                                    switch (index) {
+                                        case 0:
+                                            handleHeart();
+                                            break;
+                                        case 1:
+                                            handleSharePost();
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }}
                                 key={index}
                                 className="flex items-center text-gray-400"
                             >

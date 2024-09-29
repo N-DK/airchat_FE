@@ -70,7 +70,8 @@ export const submitPost = (content, audio) => async (dispatch, getState) => {
 };
 
 export const listPost =
-    (redirect, limit, offset) => async (dispatch, getState) => {
+    (redirect, limit, offset, channel_id = null, trending = 0) =>
+    async (dispatch, getState) => {
         try {
             dispatch({
                 type: POST_LIST_REQUEST,
@@ -85,7 +86,7 @@ export const listPost =
             };
             const { data } = await axios.post(
                 `https://talkie.transtechvietnam.com/${redirect}`,
-                { limit, offset },
+                { limit, offset, channel_id, trending },
                 config,
             );
             dispatch({

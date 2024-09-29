@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Message() {
+export default function Message({ title = 'Profile updated' }) {
     // hiện thị 2s sau mới ẩn
     const [show, setShow] = useState(true);
 
@@ -18,7 +18,7 @@ export default function Message() {
         >
             <div className="bg-[#333333] dark:bg-dark2Primary h-[40px] rounded-sm">
                 <div className="flex items-center justify-start h-full pl-4">
-                    <div className="text-white">Profile updated</div>
+                    <div className="text-white">{title}</div>
                 </div>
             </div>
         </div>

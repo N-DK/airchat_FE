@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Avatar } from 'antd';
@@ -15,8 +15,9 @@ import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { bookMark, deletePost, heart } from '../redux/actions/PostActions';
+import ListPostItems from './ListPostItems';
 
-const ListPostProfile = ({ list, setIsOpen, setIdDelete }) => {
+const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -134,31 +135,43 @@ const ListPostProfile = ({ list, setIsOpen, setIdDelete }) => {
         );
     };
 
-    return list?.map((item, i) => (
-        <div
-            key={i}
-            className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary"
-        >
-            <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
-                <Avatar
-                    src={`https://talkie.transtechvietnam.com/${item.avatar}`}
-                    className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                    alt="avatar"
-                />
-                <div className="absolute bottom-0 right-[-3px] z-20 bg-blue-500 border border-white rounded-full">
-                    <RiAddLine size="1.1rem" className="p-[2px] text-white" />
-                </div>
-                <div className="absolute top-0 left-0 bg-white h-10 md:h-12 w-10 md:w-12 rounded-full"></div>
-            </div>
-            <div className="w-full">
-                <div className="relative bg-bluePrimary dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3">
-                    {renderPostOptions(item)}
-                    {renderPostContent(item)}
-                    {renderPostActions(item)}
-                </div>
-            </div>
-        </div>
-    ));
+    return (
+        <>
+            {list
+                ?.filter((item) => item.user_id === userInfo.id)
+                .map((item, i) => (
+                    <div
+                        key={i}
+                        className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary"
+                    >
+                        <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
+                            <Avatar
+                                src={`https://talkie.transtechvietnam.com/${item.avatar}`}
+                                className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                alt="avatar"
+                            />
+                            <div className="absolute bottom-0 right-[-3px] z-20 bg-blue-500 border border-white rounded-full">
+                                <RiAddLine
+                                    size="1.1rem"
+                                    className="p-[2px] text-white"
+                                />
+                            </div>
+                            <div className="absolute top-0 left-0 bg-white h-10 md:h-12 w-10 md:w-12 rounded-full"></div>
+                        </div>
+                        <div className="w-full">
+                            <div className="relative bg-bluePrimary dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3">
+                                {renderPostOptions(item)}
+                                {renderPostContent(item)}
+                                {renderPostActions(item)}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            <ListPostItems
+                postsList={list?.filter((item) => item.user_id !== userInfo.id)}
+            />
+        </>
+    );
 };
 
 export default ListPostProfile;
