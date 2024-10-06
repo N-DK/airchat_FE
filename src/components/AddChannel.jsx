@@ -5,12 +5,14 @@ import { AppContext } from '../AppContext';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addChannel } from '../redux/actions/ChannelActions';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function AddChannel() {
     const [file, setFile] = useState(null);
     const [channelName, setChannelName] = useState('');
     const { isAddChannel, toggleIsAddChannel } = useContext(AppContext);
     const [isContinue, setIsContinue] = useState(false);
+    const { loading: loadingAdd } = useSelector((state) => state.channelAdd);
 
     const modalRef = useRef(null);
     const dispatch = useDispatch();
@@ -158,6 +160,11 @@ export default function AddChannel() {
                         />
                     </div>
                 </div>
+                {loadingAdd && (
+                    <div className="fixed w-full h-full top-0 left-0 bg-black/60 flex justify-center items-center">
+                        <LoadingSpinner />
+                    </div>
+                )}
             </div>
         </>
     );

@@ -45,7 +45,11 @@ export default function EditChannel({ data }) {
 
     const modalRef = useRef(null);
     const dispatch = useDispatch();
-    const { channel, error } = useSelector((state) => state.channelAdd);
+    const {
+        channel,
+        error,
+        loading: loadingEdit,
+    } = useSelector((state) => state.channelAdd);
     const { isSuccess, loading: loadingDelete } = useSelector(
         (state) => state.channelDelete,
     );
@@ -231,7 +235,7 @@ export default function EditChannel({ data }) {
                         Delete Channel
                     </button>
                 </div>
-                {loadingDelete && (
+                {(loadingDelete || loadingEdit) && (
                     <div className="fixed w-full h-full top-0 left-0 bg-black/60 flex justify-center items-center">
                         <LoadingSpinner />
                     </div>
