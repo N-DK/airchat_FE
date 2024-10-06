@@ -100,6 +100,7 @@ export default function Profile() {
     const userMute = useSelector((state) => state.userMute);
     const userDeletePost = useSelector((state) => state.userDeletePost);
     const userBookMark = useSelector((state) => state.userBookMark);
+    const userSharePost = useSelector((state) => state.userSharePost);
 
     const { success: isSuccessDeletePost } = userDeletePost;
     const { userInfo: userInfoProfile, loading: loadingProfile } = userProfile;
@@ -116,11 +117,11 @@ export default function Profile() {
     const { isSuccess: isSuccessBlock } = userBlock;
     const { isSuccess: isSuccessMute } = userMute;
     const { success: isSuccessBookmark } = userBookMark;
-
+    const { isSuccess: isSuccessShare } = userSharePost;
     const modalHandle = () => {
         if (isEditProfile) toggleIsEditProfile();
         if (isRecord) toggleIsRecord();
-        if (showDrawerFollow) toggleShowDrawerFollow();
+        // if (showDrawerFollow) toggleShowDrawerFollow();
     };
 
     const isFollowing = useCallback(() => {
@@ -164,12 +165,16 @@ export default function Profile() {
     );
 
     useEffect(() => {
+        if (showDrawerFollow) toggleShowDrawerFollow();
+    }, [window.location.pathname]);
+
+    useEffect(() => {
         if (stranger_id) dispatch(getProfileStranger(stranger_id));
         dispatch(profile());
         dispatch(listFollow());
         dispatch(listBlock());
         dispatch(listMute());
-    }, [dispatch]);
+    }, [dispatch, stranger_id]);
 
     useEffect(() => {
         if (isSuccessBlock) dispatch(listBlock());
@@ -235,6 +240,12 @@ export default function Profile() {
             dispatch(listPostProfile('bookmarks', 100, 0));
         }
     }, [isSuccessBookmark, dispatch, showActions]);
+
+    useEffect(() => {
+        if (isSuccessShare && showActions === 'posts') {
+            dispatch(listPostProfile('posts', 100, 0));
+        }
+    }, [isSuccessShare, dispatch, showActions]);
 
     const renderActionButtons = () => (
         <div className="flex gap-3 text-black dark:text-white">
@@ -363,7 +374,7 @@ export default function Profile() {
     return userInfo || (stranger_id && userInfoStranger) ? (
         <>
             <div className="relative flex flex-col justify-between h-screen overflow-hidden bg-slatePrimary dark:bg-darkPrimary">
-                <div className="overflow-auto scrollbar-none">
+                <div className="overflow-auto scrollbar-none pb-[100px]">
                     <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
                         <button onClick={() => navigate(-1)}>
                             <FaAngleLeft className="text-lg md:text-[22px]" />

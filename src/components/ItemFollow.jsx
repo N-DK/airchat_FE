@@ -6,9 +6,9 @@ import React, {
     useEffect,
 } from 'react';
 import { Avatar } from 'antd';
-import { follow, profile } from '../redux/actions/UserActions';
+import { follow } from '../redux/actions/UserActions';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { AppContext } from '../AppContext';
 
 export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
@@ -17,18 +17,16 @@ export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
     const [isLoading, setIsLoading] = useState(false);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { pathname } = useLocation();
-    const dispatch = useDispatch();
-
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!userInfo) dispatch(profile());
-    }, [dispatch]);
 
     const userId = useMemo(
         () => data?.stranger_id ?? data?.following_stranger_id ?? data?.id,
         [data],
     );
+
+    useEffect(() => {
+        if (isFollowing) setLocalIsFollowing(isFollowing);
+    }, [isFollowing]);
 
     const handleClick = useCallback(
         async (e) => {
@@ -50,7 +48,13 @@ export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
     const navigateToProfile = useCallback(() => {
         if (showDrawerFollow) toggleShowDrawerFollow();
         navigate(`/profile${userId === userInfo?.id ? '' : `/${userId}`}`);
-    }, [userInfo]);
+    }, [
+        showDrawerFollow,
+        toggleShowDrawerFollow,
+        navigate,
+        userId,
+        userInfo?.id,
+    ]);
 
     const buttonClass = useMemo(
         () =>
@@ -59,6 +63,8 @@ export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
             } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`,
         [localIsFollowing, isLoading],
     );
+
+    const showButton = pathname === '/profile' || userInfo?.id !== data?.id;
 
     return (
         <div
@@ -76,7 +82,7 @@ export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
                     <span className="text-gray-500">{data?.username}</span>
                 </div>
             </div>
-            {(pathname === '/profile' || userInfo?.id !== data?.id) && (
+            {showButton && (
                 <button
                     onClick={handleClick}
                     disabled={isLoading}

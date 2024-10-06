@@ -5,6 +5,7 @@ export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
     const [isAddChannel, setIsAddChannel] = useState(false);
+    const [isEditChannel, setIsEditChannel] = useState(false);
     const [isEditProfile, setIsEditProfile] = useState(false);
     const [isRecord, setIsRecord] = useState(false);
     const [isRunAuto, setIsRunAuto] = useState(false);
@@ -14,8 +15,10 @@ export const AppProvider = ({ children }) => {
     const [showInviteFriend, setShowInviteFriend] = useState(false);
     const [showDrawerFollow, setShowDrawerFollow] = useState(false);
     const [showDrawerBlockAccount, setShowDrawerBlockAccount] = useState(false);
+    const [showDrawerNewDirect, setShowDrawerNewDirect] = useState(false);
 
     const toggleIsAddChannel = () => setIsAddChannel((prev) => !prev);
+    const toggleIsEditChannel = () => setIsEditChannel((prev) => !prev);
     const toggleIsRecord = () => setIsRecord((prev) => !prev);
     const toggleIsEditProfile = () => setIsEditProfile((prev) => !prev);
     const toggleIsRunAuto = () => setIsRunAuto((prev) => !prev);
@@ -27,6 +30,8 @@ export const AppProvider = ({ children }) => {
     const toggleShowDrawerFollow = () => setShowDrawerFollow((prev) => !prev);
     const toggleShowDrawerBlockAccount = () =>
         setShowDrawerBlockAccount((prev) => !prev);
+    const toggleShowDrawerNewDirect = () =>
+        setShowDrawerNewDirect((prev) => !prev);
     return (
         <AppContext.Provider
             value={{
@@ -50,6 +55,10 @@ export const AppProvider = ({ children }) => {
                 toggleShowDrawerFollow,
                 showDrawerBlockAccount,
                 toggleShowDrawerBlockAccount,
+                showDrawerNewDirect,
+                toggleShowDrawerNewDirect,
+                isEditChannel,
+                toggleIsEditChannel,
             }}
         >
             {children}

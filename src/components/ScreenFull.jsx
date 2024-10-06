@@ -1,4 +1,4 @@
-import { useContext, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { CgCompressRight } from 'react-icons/cg';
 import { HiPause, HiMiniPlay } from 'react-icons/hi2';
 import { AppContext } from '../AppContext';
@@ -35,6 +35,28 @@ export default function ScreenFull({ postsList }) {
         postsList,
     );
 
+    // useEffect(() => {
+    //     if (
+    //         postsList?.[currentItemIndex] &&
+    //         postsList?.[currentItemIndex]?.audio
+    //     ) {
+    //         const audio = new Audio(
+    //             `${BASE_URL}${postsList?.[currentItemIndex]?.audio}`,
+    //         );
+    //         audio.play();
+    //         // setPingStates((prev) => ({
+    //         //     ...prev,
+    //         //     [postsList?.[currentItemIndex]?.id]: true,
+    //         // }));
+    //         audio.addEventListener('ended', () => {
+    //             if (!isRunAuto) toggleIsRunAuto();
+    //         });
+    //         audio.addEventListener('playing', () => {
+    //             if (isRunAuto) toggleIsRunAuto();
+    //         });
+    //     }
+    // }, [currentItemIndex, postsList]);
+
     return (
         <div className="z-50 h-full w-full fixed right-0 top-0">
             <div
@@ -65,7 +87,7 @@ export default function ScreenFull({ postsList }) {
                             </div>
                             <div className="col-span-2 w-full my-16 md:my-20 min-h-9 md:min-h-16 flex items-center justify-center">
                                 <SoundWave
-                                    play={pingStates[item._id]}
+                                    play={pingStates[item.id]}
                                     color="white"
                                 />
                             </div>

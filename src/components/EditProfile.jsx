@@ -51,7 +51,7 @@ export default function EditProfile() {
             setErrorName('Must be between 2 and 20 characters');
             return 'error';
         }
-        if (!user.website.startsWith('www.')) {
+        if (!user.website.startsWith('www.') && user.website !== '') {
             setErrorWebsite('Website must start with www.');
             return 'error';
         }

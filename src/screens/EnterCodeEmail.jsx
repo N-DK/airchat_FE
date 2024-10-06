@@ -4,7 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkUserCode } from './../redux/actions/UserActions';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { CHECK_ACCOUNT_RESET } from '../redux/constants/UserConstants';
+import {
+    CHECK_ACCOUNT_RESET,
+    USER_LOGIN_SUCCESS,
+} from '../redux/constants/UserConstants';
 import React from 'react';
 
 export default function EnterCodeEmail() {
@@ -22,7 +25,7 @@ export default function EnterCodeEmail() {
         dispatch({
             type: CHECK_ACCOUNT_RESET,
         });
-        navigate('/'); // /login/email
+        navigate('/login/email'); // /login/email
     };
 
     const handleInputChange = (e) => {
@@ -38,6 +41,7 @@ export default function EnterCodeEmail() {
 
     useEffect(() => {
         if (userInfo?.results) {
+            dispatch({ type: USER_LOGIN_SUCCESS, payload: userInfo });
             navigate('/aboutyou');
         }
     }, [userInfo]);

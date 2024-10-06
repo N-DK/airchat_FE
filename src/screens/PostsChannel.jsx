@@ -17,8 +17,23 @@ import FooterChat from '../components/FooterChat';
 import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import ListPostItems from '../components/ListPostItems';
+import { FaEllipsisH } from 'react-icons/fa';
+import { Menu } from '@headlessui/react';
+import { HiOutlineDotsHorizontal } from 'react-icons/hi';
+import EditChannel from '../components/EditChannel';
+import { profile } from '../redux/actions/UserActions';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
+
+const NotifyPinChannel = ({ message, show }) => (
+    <div
+        className={`bg-white absolute left-1/2 transform -translate-x-1/2 w-auto z-50 dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+            show ? 'translate-y-0 mt-3' : '-translate-y-full'
+        }`}
+    >
+        <h6 className="text-black dark:text-white">{message}</h6>
+    </div>
+);
 
 export default function PostsChannel() {
     const { id } = useParams();
@@ -26,15 +41,20 @@ export default function PostsChannel() {
     const { state } = useLocation();
     const dispatch = useDispatch();
     const { isRecord, toggleIsRecord } = useContext(AppContext);
+    const { isEditChannel, toggleIsEditChannel } = useContext(AppContext);
 
     const [isSwiping, setIsSwiping] = useState(false);
     const [postsList, setPostList] = useState([]);
     const [isPinChannel, setIsPinChannel] = useState(false);
+    const [showNotify, setShowNotify] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
 
     const contentsChattingRef = useRef(null);
 
-    const { userInfo } = useSelector((state) => state.userLogin);
-    const { loading, posts } = useSelector((state) => state.channelPosts);
+    const { userInfo } = useSelector((state) => state.userProfile);
+    const { loading, posts, owner } = useSelector(
+        (state) => state.channelPosts,
+    );
     const { menus } = useSelector((state) => state.menuBar);
     const { channel } = useSelector((state) => state.channelPin);
     const { isSuccess: isSuccessFollow } = useSelector(
@@ -42,12 +62,19 @@ export default function PostsChannel() {
     );
 
     const handlePinChannel = useCallback(() => {
-        dispatch(pinChannel(state?.channelData?.id));
-    }, [dispatch, state?.channelData?.id]);
+        dispatch(pinChannel(id));
+        setShowNotify(true);
+        setNotifyMessage(isPinChannel ? 'Channel unpinned' : 'Channel pinned');
+        setTimeout(() => setShowNotify(false), 1200);
+    }, [dispatch, id, isPinChannel]);
 
     useEffect(() => {
         dispatch(barMenu());
     }, [dispatch, channel]);
+
+    useEffect(() => {
+        if (!userInfo) dispatch(profile());
+    }, [dispatch]);
 
     useEffect(() => {
         if (menus && state?.channelData) {
@@ -88,14 +115,42 @@ export default function PostsChannel() {
         }
     }, [dispatch, id, isSuccessFollow]);
 
+    const Dropdown = () => {
+        return (
+            <Menu as="div" className="relative inline-block text-left z-50">
+                <Menu.Button className="relative ml-4">
+                    <HiOutlineDotsHorizontal className="text-xl dark:text-white md:text-[30px]" />
+                </Menu.Button>
+
+                <Menu.Items className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y dark:border-none divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary">
+                    <div className="py-1">
+                        <Menu.Item>
+                            {({ active }) => (
+                                <button
+                                    onClick={() => toggleIsEditChannel()}
+                                    className={`flex justify-between w-full px-4 py-2 text-sm dark:text-white`}
+                                >
+                                    Edit channel
+                                </button>
+                            )}
+                        </Menu.Item>
+                    </div>
+                </Menu.Items>
+            </Menu>
+        );
+    };
+
     const renderHeader = () => (
         <div
             className={`z-20 px-6 md:px-10 bg-white dark:bg-darkPrimary pb-[26px] ${
                 isSwiping ? 'translate-y-[-150px] opacity-0' : 'opacity-100'
             } transition-all duration-500`}
         >
-            <div className="flex justify-between items-center relative pt-12">
-                <button onClick={() => navigate(-1)}>
+            <div className="flex justify-center items-center relative pt-12">
+                <button
+                    className="absolute left-0"
+                    onClick={() => navigate(-1)}
+                >
                     <FaChevronLeft className="text-lg md:text-[22px] text-black dark:text-white" />
                 </button>
                 <div className="flex items-center gap-3">
@@ -118,9 +173,14 @@ export default function PostsChannel() {
                         />
                     </div>
                 </div>
-                <button>
-                    <TbUpload className="text-xl md:text-[30px] text-black dark:text-white" />
-                </button>
+                <div className="absolute right-0">
+                    <button>
+                        <TbUpload className="text-xl md:text-[30px] text-black dark:text-white" />
+                    </button>
+                    {owner && userInfo && owner === userInfo?.id && (
+                        <Dropdown />
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -132,7 +192,7 @@ export default function PostsChannel() {
         >
             <div className="flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6 border-b-[6px] border-gray-200 dark:border-dark2Primary">
                 <Avatar
-                    src={userInfo.avatar}
+                    src={`${DOMAIN}${userInfo?.image}`}
                     className="h-10 w-10 rounded-full object-cover"
                     alt="icon"
                 />
@@ -141,7 +201,7 @@ export default function PostsChannel() {
                     className="bg-white flex-1 dark:bg-dark2Primary shadow-xl rounded-2xl w-full p-3 md:p-5"
                 >
                     <h5 className="text-black dark:text-white">
-                        {userInfo.name}
+                        {userInfo?.name}
                     </h5>
                     <button className="text-gray-400">
                         New post to followers...
@@ -161,6 +221,7 @@ export default function PostsChannel() {
         <div className="relative flex flex-col justify-between h-screen overflow-hidden">
             {renderHeader()}
             {renderContent()}
+            <EditChannel data={{ ...state?.channelData, id }} />
             <RecordModal />
             <div
                 onClick={toggleIsRecord}
@@ -171,6 +232,7 @@ export default function PostsChannel() {
                 }`}
             />
             <FooterChat title="home" isSwiping={isSwiping} isPlay={true} />
+            <NotifyPinChannel message={notifyMessage} show={showNotify} />
         </div>
     );
 }

@@ -1,3 +1,4 @@
+// import { initSocket } from '../../services/socket.service';
 import {
     USER_LOGIN_REQUEST,
     USER_LOGIN_SUCCESS,
@@ -78,6 +79,18 @@ import {
     USER_SEARCH_REQUEST,
     USER_SEARCH_SUCCESS,
     USER_SEARCH_FAIL,
+    USER_DELETE_ACCOUNT_REQUEST,
+    USER_DELETE_ACCOUNT_SUCCESS,
+    USER_DELETE_ACCOUNT_FAIL,
+    USER_ADD_RECENT_SEARCH_REQUEST,
+    USER_ADD_RECENT_SEARCH_SUCCESS,
+    USER_ADD_RECENT_SEARCH_FAIL,
+    USER_GET_RECENT_SEARCH_REQUEST,
+    USER_GET_RECENT_SEARCH_SUCCESS,
+    USER_GET_RECENT_SEARCH_FAIL,
+    USER_CLEAR_RECENT_SEARCH_REQUEST,
+    USER_CLEAR_RECENT_SEARCH_SUCCESS,
+    USER_CLEAR_RECENT_SEARCH_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -89,19 +102,19 @@ export const login = (email, password) => async (dispatch) => {
         dispatch({
             type: USER_LOGIN_REQUEST,
         });
-        // const config = {
-        //     headers: {
-        //         Content_type: 'application/json',
-        //     },
-        // };
-        // const { data } = await axios.post(
-        //     'https://talkie.transtechvietnam.com/login',
-        //     { email, password },
-        //     config,
-        // );
-        const token = {
-            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwLCJwaG9uZSI6bnVsbCwiZW1haWwiOiJuZGsyNzExMDNAZ21haWwuY29tIiwiaWF0IjoxNzI3MjY0MzE4LCJleHAiOjE3Mjk4NTYzMTh9.6ksM56hJbicDGZlO34_jhuRKam3ZBFc33NH-6HBU6aM',
+        const config = {
+            headers: {
+                Content_type: 'application/json',
+            },
         };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/login',
+            { email, password },
+            config,
+        );
+
+        const token = { token: data.token };
+
         dispatch({
             type: USER_LOGIN_SUCCESS,
             payload: token,
@@ -130,6 +143,7 @@ export const logout = () => (dispatch) => {
 
 export const updateUserProfile = (user) => async (dispatch, getState) => {
     try {
+        console.log('UPDATE USER');
         dispatch({
             type: USER_UPDATE_PROFILE_REQUEST,
         });
@@ -138,12 +152,11 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
         } = getState();
         const config = {
             headers: {
-                Authorization: `Bearer ${userInfo.token}`,
-                Content_type: 'application/json',
+                'x-cypher-token': userInfo.token,
             },
         };
         const { data } = await axios.put(
-            `https://talkie.transtechvietnam.com/users/profile`,
+            `https://talkie.transtechvietnam.com/update-user`,
             user,
             config,
         );
@@ -239,11 +252,11 @@ export const checkUserEmail = (email) => async (dispatch) => {
             payload: data,
         });
 
-        console.log('token: data.token', data);
+        // console.log('token: data.token', data);
 
-        const token = { token: data.token };
+        // const token = { token: data.token };
 
-        localStorage.setItem('userInfo', JSON.stringify(token));
+        // localStorage.setItem('userInfo', JSON.stringify(token));
     } catch (error) {
         dispatch({
             type: CHECK_USER_EMAIL_FAIL,
@@ -268,16 +281,21 @@ export const checkUserCode = (email, otp) => async (dispatch) => {
             },
         );
 
-        console.log(data);
+        await axios.post(
+            'https://talkie.transtechvietnam.com/update-user',
+            { password: '000000' },
+            {
+                headers: {
+                    'x-cypher-token': data.token,
+                },
+            },
+        );
 
         dispatch({
             type: USER_CODE_SUCCESS,
             payload: data,
         });
-        // dispatch({
-        //   type: USER_LOGIN_SUCCESS,
-        //   payload: data.token,
-        // });
+
         localStorage.setItem('userInfo', JSON.stringify(data));
     } catch (error) {
         dispatch({
@@ -339,16 +357,21 @@ export const profile = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
             'https://talkie.transtechvietnam.com/get-profile',
             config,
         );
+        if (!data.data[0]) {
+            localStorage.removeItem('userInfo');
+            window.location.href = '/';
+        }
         dispatch({
             type: USER_PROFILE_SUCCESS,
             payload: data.data[0],
@@ -361,6 +384,13 @@ export const profile = () => async (dispatch, getState) => {
                     ? error.response.data.message
                     : error.message,
         });
+        if (
+            error?.response?.status === 401 ||
+            error?.response?.status === 403
+        ) {
+            localStorage.removeItem('userInfo');
+            window.location.href = '/';
+        }
     }
 };
 
@@ -371,10 +401,11 @@ export const updateUser = (user) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -669,10 +700,11 @@ export const uploadAvatar = (avatar) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const formData = new FormData();
@@ -957,6 +989,146 @@ export const search = (key) => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: USER_SEARCH_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const deleteAccount = (_data) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_DELETE_ACCOUNT_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/delete-account',
+            _data,
+            config,
+        );
+        dispatch({
+            type: USER_DELETE_ACCOUNT_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_DELETE_ACCOUNT_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const addRecentSearch = (__data) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_ADD_RECENT_SEARCH_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/add-recent-search',
+            __data,
+            config,
+        );
+        dispatch({
+            type: USER_ADD_RECENT_SEARCH_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_ADD_RECENT_SEARCH_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getRecentSearch =
+    (limit = 100, offset = 0) =>
+    async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: USER_GET_RECENT_SEARCH_REQUEST,
+            });
+            const {
+                userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
+            } = getState();
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
+                },
+            };
+
+            const { data } = await axios.post(
+                'https://talkie.transtechvietnam.com/recent-search',
+                { limit, offset },
+                config,
+            );
+            dispatch({
+                type: USER_GET_RECENT_SEARCH_SUCCESS,
+                payload: data?.data,
+            });
+        } catch (error) {
+            dispatch({
+                type: USER_GET_RECENT_SEARCH_FAIL,
+                payload:
+                    error.response && error.response.data.message
+                        ? error.response.data.message
+                        : error.message,
+            });
+        }
+    };
+
+// curl --location 'localhost:9999/clear-recent-search' \
+// --header 'x-cypher-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInBob25lIjoiKzg0MzcyNDc3MjE2IiwiZW1haWwiOm51bGwsImlhdCI6MTcyNDI1OTY3OCwiZXhwIjoxNzI2ODUxNjc4fQ.fmL9PBpm3ydqzSTQ37kHUbJ0XUNxvsWqq-o7LGM0yP0'
+
+export const clearRecentSearch = () => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_CLEAR_RECENT_SEARCH_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
+            },
+        };
+        const { data } = await axios.get(
+            'https://talkie.transtechvietnam.com/clear-recent-search',
+            config,
+        );
+        dispatch({
+            type: USER_CLEAR_RECENT_SEARCH_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_CLEAR_RECENT_SEARCH_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

@@ -11,6 +11,11 @@ import {
     CHANNEL_PIN_REQUEST,
     CHANNEL_PIN_SUCCESS,
     CHANNEL_PIN_FAIL,
+    CHANNEL_DELETE_REQUEST,
+    CHANNEL_DELETE_SUCCESS,
+    CHANNEL_DELETE_FAIL,
+    CHANNEL_DELETE_RESET,
+    CHANNEL_ADD_RESET,
 } from '../constants/ChannelConstants';
 
 export const channelListReducer = (state = { channels: [] }, action) => {
@@ -37,6 +42,7 @@ export const channelPostsReducer = (state = { posts: [] }, action) => {
             return {
                 loading: false,
                 posts: action.payload,
+                owner: action.owner,
             };
         case CHANNEL_POSTS_FAIL:
             return { loading: false, error: action.payload };
@@ -53,6 +59,8 @@ export const channelAddReducer = (state = {}, action) => {
             return { loading: false, channel: action.payload };
         case CHANNEL_ADD_FAIL:
             return { loading: false, error: action.payload };
+        case CHANNEL_ADD_RESET:
+            return {};
         default:
             return state;
     }
@@ -66,6 +74,21 @@ export const channelPinReducer = (state = {}, action) => {
             return { loading: false, channel: action.payload };
         case CHANNEL_PIN_FAIL:
             return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const channelDeleteReducer = (state = {}, action) => {
+    switch (action.type) {
+        case CHANNEL_DELETE_REQUEST:
+            return { loading: true };
+        case CHANNEL_DELETE_SUCCESS:
+            return { loading: false, isSuccess: action.payload };
+        case CHANNEL_DELETE_FAIL:
+            return { loading: false, error: action.payload };
+        case CHANNEL_DELETE_RESET:
+            return {};
         default:
             return state;
     }

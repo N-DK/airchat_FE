@@ -24,6 +24,12 @@ import {
     POST_DELETE_REQUEST,
     POST_DELETE_SUCCESS,
     POST_DELETE_FAIL,
+    POST_REPORT_REQUEST,
+    POST_REPORT_SUCCESS,
+    POST_REPORT_FAIL,
+    POST_UPLOAD_IMAGE_REQUEST,
+    POST_UPLOAD_IMAGE_SUCCESS,
+    POST_UPLOAD_IMAGE_FAIL,
 } from '../constants/PostConstants';
 
 export const submitPost = (content, audio) => async (dispatch, getState) => {
@@ -78,10 +84,11 @@ export const listPost =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
             const { data } = await axios.post(
@@ -145,10 +152,11 @@ export const barMenu = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
@@ -295,6 +303,76 @@ export const deletePost = (post_id) => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: POST_DELETE_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const reportPost = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_REPORT_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/report-post',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: POST_REPORT_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_REPORT_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const uploadImage = (photo, id_post) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_UPLOAD_IMAGE_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+        } = getState();
+        const formData = new FormData();
+        formData.append('photo', photo);
+        formData.append('id_post', id_post);
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token,
+                'Content-Type': 'multipart/form-data',
+            },
+        };
+        const { data } = await axios.post(
+            `https://talkie.transtechvietnam.com/upload-photo-status`,
+            formData,
+            config,
+        );
+        dispatch({
+            type: POST_UPLOAD_IMAGE_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_UPLOAD_IMAGE_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

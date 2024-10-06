@@ -4,8 +4,8 @@ import PostItem from './PostItem';
 function ListPostItems({ postsList }) {
     return (
         <div>
-            {postsList?.map((item, i) => (
-                <PostItem key={item?.id} item={item} />
+            {postsList?.map((item, index) => (
+                <PostItem key={`${item?.id}-${index}`} item={item} />
             ))}
         </div>
     );

@@ -1,12 +1,29 @@
 import { Avatar } from 'antd';
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { addRecentSearch } from '../redux/actions/UserActions';
 
 export default function ChannelCircle({ data }) {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleAddRecentSearch = () => {
+        dispatch(
+            addRecentSearch({
+                channel_id: data?.id,
+                stranger_id: 0,
+            }),
+        );
+        navigate(`/channel/${data?.id}`, {
+            state: {
+                channelData: data,
+            },
+        });
+    };
 
     return (
-        <div onClick={() => navigate(`/channel/${data?.id}`)} className="mr-3">
+        <div onClick={handleAddRecentSearch} className="mr-3">
             <div className="flex flex-col justify-center items-center">
                 <figure className="mb-1">
                     <Avatar

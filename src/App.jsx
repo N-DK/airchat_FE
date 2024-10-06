@@ -21,6 +21,7 @@ import EnterCodeEmail from './screens/EnterCodeEmail';
 import Login from './screens/Login';
 import React from 'react';
 import ChatRoom from './screens/ChatRoom';
+import SearchScreen from './screens/SearchScreen';
 
 function App() {
     const userTheme = useSelector((state) => state.userTheme);
@@ -69,6 +70,10 @@ function App() {
                     <Route
                         path="/seeall"
                         element={<PrivateRouter comp={SeeAll} />}
+                    />
+                    <Route
+                        path="/search"
+                        element={<PrivateRouter comp={SearchScreen} />}
                     />
                     <Route
                         path="/notifications"

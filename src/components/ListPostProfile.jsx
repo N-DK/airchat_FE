@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Avatar } from 'antd';
 import moment from 'moment';
 import {
@@ -14,22 +14,53 @@ import {
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
-import { bookMark, deletePost, heart } from '../redux/actions/PostActions';
+import {
+    bookMark,
+    deletePost,
+    heart,
+    uploadImage,
+} from '../redux/actions/PostActions';
 import ListPostItems from './ListPostItems';
+import { LuImagePlus } from 'react-icons/lu';
+import LoadingSpinner from './LoadingSpinner';
 
 const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const { loading: loadingUpload, success } = useSelector(
+        (state) => state.postUploadImage,
+    );
+
+    const [file, setFile] = useState(null);
 
     const handleAction = (action, id, callback) => {
         dispatch(action(id));
         callback();
     };
 
+    const convertObjectURL = (selectedFile) => {
+        return URL.createObjectURL(selectedFile);
+    };
+
     const handleNavigate = (item) => {
         const userId =
-            item.reply.length > 0 ? `/?userId=${item.reply[0].user_id}` : '';
-        navigate(`/posts/details/${item.id}${userId}`);
+            item?.reply?.length > 0
+                ? `/?userId=${item?.reply[0]?.user_id}`
+                : '';
+        navigate(`/posts/details/${item?.id}${userId}`);
+    };
+
+    const handleUploadAvatar = (id_post) => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = () => {
+            const file = fileInput.files[0];
+            setFile(file);
+            dispatch(uploadImage(file, id_post));
+        };
+        fileInput.click();
     };
 
     const renderPostActions = (item) => {
@@ -96,6 +127,33 @@ const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
             <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
                 {item.content}
             </p>
+            {(item?.img || file) && (
+                <figure className="max-w-full relative">
+                    <Avatar
+                        src={
+                            file
+                                ? convertObjectURL(file)
+                                : `https://talkie.transtechvietnam.com/${item?.img}`
+                        }
+                        className="min-h-40 w-full object-cover rounded-xl"
+                    />
+                    {loadingUpload && (
+                        <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
+                            <LoadingSpinner />
+                        </div>
+                    )}
+                </figure>
+            )}
+            <div className="flex items-center mt-2">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleUploadAvatar(item?.id);
+                    }}
+                >
+                    <LuImagePlus className="dark:text-white" />
+                </button>
+            </div>
         </div>
     );
 
@@ -150,12 +208,7 @@ const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
                                 className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
                                 alt="avatar"
                             />
-                            <div className="absolute bottom-0 right-[-3px] z-20 bg-blue-500 border border-white rounded-full">
-                                <RiAddLine
-                                    size="1.1rem"
-                                    className="p-[2px] text-white"
-                                />
-                            </div>
+
                             <div className="absolute top-0 left-0 bg-white h-10 md:h-12 w-10 md:w-12 rounded-full"></div>
                         </div>
                         <div className="w-full">

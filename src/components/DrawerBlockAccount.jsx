@@ -5,7 +5,13 @@ import { Avatar, message } from 'antd';
 import { Menu } from '@headlessui/react';
 import { HiOutlineDotsHorizontal } from 'react-icons/hi';
 import { useDispatch, useSelector } from 'react-redux';
-import { block, listBlock, listMute, mute } from '../redux/actions/UserActions';
+import {
+    block,
+    listBlock,
+    listMute,
+    mute,
+    reportAcc,
+} from '../redux/actions/UserActions';
 import LoadingSpinner from './LoadingSpinner';
 import Message from './Message';
 import '../App.css';
@@ -16,6 +22,7 @@ const BlocAccountItem = ({
     isBlock,
     isMute,
     showMessage,
+    handleReport,
 }) => {
     const Dropdown = () => {
         return (
@@ -36,9 +43,12 @@ const BlocAccountItem = ({
                                     showMessage('Muted');
                                     handleAction(
                                         mute,
-                                        user?.blocked_id,
+                                        user?.blocked_id ?? user?.mute_id,
                                         `${
-                                            isMute(user?.blocked_id)
+                                            isMute(
+                                                user?.blocked_id ??
+                                                    user?.mute_id,
+                                            )
                                                 ? 'unmute'
                                                 : 'mute'
                                         }`,
@@ -46,7 +56,7 @@ const BlocAccountItem = ({
                                 }}
                             >
                                 <span>
-                                    {isMute(user?.blocked_id)
+                                    {isMute(user?.blocked_id ?? user?.mute_id)
                                         ? 'Unmute'
                                         : 'Mute'}
                                 </span>
@@ -56,11 +66,15 @@ const BlocAccountItem = ({
                         <Menu.Item>
                             <button
                                 onClick={() => {
+                                    showMessage('Blocked');
                                     handleAction(
                                         block,
-                                        user?.blocked_id,
+                                        user?.blocked_id ?? user?.mute_id,
                                         `${
-                                            isBlock(user?.blocked_id)
+                                            isBlock(
+                                                user?.blocked_id ??
+                                                    user?.mute_id,
+                                            )
                                                 ? 'unblock'
                                                 : 'block'
                                         }`,
@@ -69,7 +83,7 @@ const BlocAccountItem = ({
                                 className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-red-600"
                             >
                                 <span>
-                                    {isBlock(user?.blocked_id)
+                                    {isBlock(user?.blocked_id ?? user?.mute_id)
                                         ? 'Unblock'
                                         : 'Block'}
                                 </span>
@@ -77,7 +91,15 @@ const BlocAccountItem = ({
                             </button>
                         </Menu.Item>
                         <Menu.Item>
-                            <button className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-red-600">
+                            <button
+                                onClick={() => {
+                                    showMessage('Reported');
+                                    handleReport(
+                                        user?.blocked_id ?? user?.mute_id,
+                                    );
+                                }}
+                                className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-red-600"
+                            >
                                 <span>Report</span>
                                 <FaFlag size={16} />
                             </button>
@@ -105,7 +127,7 @@ const BlocAccountItem = ({
         </div>
     );
 };
-const DrawerBlockAccount = () => {
+const DrawerBlockAccount = ({ type }) => {
     const [messageApi, contextHolder] = message.useMessage();
     const showMessage = (message) => {
         messageApi.open({
@@ -113,10 +135,9 @@ const DrawerBlockAccount = () => {
             content: message,
             duration: 1,
         });
-        // setTimeout(() => {
-        //     debugger;
-        // }, 1200);
     };
+
+    const [userList, setUserList] = useState([]);
 
     const { showDrawerBlockAccount, toggleShowDrawerBlockAccount } =
         useContext(AppContext);
@@ -149,7 +170,13 @@ const DrawerBlockAccount = () => {
     const handleAction = useCallback(
         (action, id, type) => {
             dispatch(action(id, type));
-            // setSendMessage(true);
+        },
+        [dispatch],
+    );
+
+    const handleReport = useCallback(
+        (id) => {
+            dispatch(reportAcc(id));
         },
         [dispatch],
     );
@@ -163,10 +190,20 @@ const DrawerBlockAccount = () => {
     }, [isSuccessMute, dispatch]);
 
     useEffect(() => {
-        if (showDrawerBlockAccount && !userListBlock) {
+        if (type === 'block') {
             dispatch(listBlock());
+        } else if (type === 'mute') {
+            dispatch(listMute());
         }
-    }, [showDrawerBlockAccount, userListBlock]);
+    }, [type, dispatch]);
+
+    useEffect(() => {
+        if (type === 'block') {
+            setUserList(userListBlock);
+        } else if (type === 'mute') {
+            setUserList(mutes);
+        }
+    }, [type, userListBlock, mutes]);
 
     return (
         <>
@@ -187,15 +224,17 @@ const DrawerBlockAccount = () => {
                             <FaAngleLeft className="text-lg md:text-[22px]" />
                         </button>
                         <div className="text-black dark:text-white font-semibold">
-                            Blocked Accounts
+                            {type === 'block'
+                                ? 'Blocked Accounts'
+                                : 'Muted Accounts'}
                         </div>
                     </div>
                     {loading ? (
                         <LoadingSpinner />
                     ) : (
                         <div className="bg-slatePrimary dark:bg-dark2Primary h-full">
-                            {userListBlock?.length > 0 &&
-                                userListBlock.map((user, index) => (
+                            {userList?.length > 0 &&
+                                userList.map((user, index) => (
                                     <BlocAccountItem
                                         key={index}
                                         user={user}
@@ -203,6 +242,7 @@ const DrawerBlockAccount = () => {
                                         isBlock={isBlock}
                                         isMute={isMute}
                                         showMessage={showMessage}
+                                        handleReport={handleReport}
                                     />
                                 ))}
                         </div>

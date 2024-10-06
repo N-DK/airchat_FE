@@ -1,32 +1,42 @@
 import { Avatar } from 'antd';
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { addRecentSearch } from '../redux/actions/UserActions';
 
-export const PeopleCircle = ({ data }) => {
+export const PeopleCircle = ({ data, isAddRecentSearch = false }) => {
     const navigate = useNavigate();
     const { userInfo } = useSelector((state) => state.userProfile);
+    const dispatch = useDispatch();
+    const handleAddRecentSearch = () => {
+        if (isAddRecentSearch) {
+            dispatch(
+                addRecentSearch({
+                    channel_id: -1,
+                    stranger_id: data?.id || data?.user_id,
+                }),
+            );
+        }
+        const profileId = data?.id || data?.user_id;
+        const isOwnProfile = profileId === userInfo?.id;
+        const profilePath = isOwnProfile ? '/profile' : `/profile/${profileId}`;
+        navigate(profilePath);
+    };
+
     return (
-        <div
-            onClick={() =>
-                navigate(
-                    `/profile${
-                        data?.id === userInfo?.id ? '' : `/${data?.id}`
-                    }`,
-                )
-            }
-            className="mr-3 w-20"
-        >
+        <div onClick={handleAddRecentSearch} className="mr-3 w-20">
             <div className="flex flex-col justify-center items-center">
                 <div className="w-16 h-16 rounded-full overflow-hidden mb-1">
                     <Avatar
                         size={64}
-                        src={`https://talkie.transtechvietnam.com/${data?.image}`}
+                        src={`https://talkie.transtechvietnam.com/${
+                            data?.image ?? data?.user_avatar
+                        }`}
                         alt={data?.name}
                     />
                 </div>
                 <p className="dark:text-white w-full text-center truncate">
-                    {data?.name}
+                    {data?.name ?? data?.name_user}
                 </p>
                 <p className="text-sm text-gray-500 w-full text-center truncate">
                     {data?.username}

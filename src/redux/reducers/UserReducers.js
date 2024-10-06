@@ -83,6 +83,18 @@ import {
     USER_SEARCH_REQUEST,
     USER_SEARCH_SUCCESS,
     USER_SEARCH_FAIL,
+    USER_DELETE_ACCOUNT_REQUEST,
+    USER_DELETE_ACCOUNT_SUCCESS,
+    USER_DELETE_ACCOUNT_FAIL,
+    USER_ADD_RECENT_SEARCH_REQUEST,
+    USER_ADD_RECENT_SEARCH_SUCCESS,
+    USER_ADD_RECENT_SEARCH_FAIL,
+    USER_GET_RECENT_SEARCH_REQUEST,
+    USER_GET_RECENT_SEARCH_SUCCESS,
+    USER_GET_RECENT_SEARCH_FAIL,
+    USER_CLEAR_RECENT_SEARCH_REQUEST,
+    USER_CLEAR_RECENT_SEARCH_SUCCESS,
+    USER_CLEAR_RECENT_SEARCH_FAIL,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -450,6 +462,58 @@ export const userSearchReducer = (state = {}, action) => {
         case USER_SEARCH_SUCCESS:
             return { loading: false, search: action.payload };
         case USER_SEARCH_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userDeleteAccountReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_DELETE_ACCOUNT_REQUEST:
+            return { loading: true };
+        case USER_DELETE_ACCOUNT_SUCCESS:
+            return { loading: false, isSuccess: true };
+        case USER_DELETE_ACCOUNT_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userAddRecentSearchReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_ADD_RECENT_SEARCH_REQUEST:
+            return { loading: true };
+        case USER_ADD_RECENT_SEARCH_SUCCESS:
+            return { loading: false, isSuccess: true };
+        case USER_ADD_RECENT_SEARCH_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userGetRecentSearchReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_GET_RECENT_SEARCH_REQUEST:
+            return { loading: true };
+        case USER_GET_RECENT_SEARCH_SUCCESS:
+            return { loading: false, search: action.payload };
+        case USER_GET_RECENT_SEARCH_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userClearRecentSearchReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_CLEAR_RECENT_SEARCH_REQUEST:
+            return { loading: true };
+        case USER_CLEAR_RECENT_SEARCH_SUCCESS:
+            return { loading: false, isSuccess: true };
+        case USER_CLEAR_RECENT_SEARCH_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

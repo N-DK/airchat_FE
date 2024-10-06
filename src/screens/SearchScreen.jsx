@@ -16,9 +16,8 @@ import {
     search,
 } from '../redux/actions/UserActions';
 import PeopleCircle from '../components/PeopleCricle';
-import { FaC, FaChevronLeft } from 'react-icons/fa6';
 
-export default function SeeAll() {
+export default function SearchScreen() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [searchText, setSearchText] = useState('');
@@ -127,90 +126,57 @@ export default function SeeAll() {
 
     return (
         <div className="relative flex flex-col h-screen bg-slatePrimary dark:bg-dark2Primary overflow-hidden">
-            <div className=" flex justify-center pt-10 px-5 bg-white dark:bg-darkPrimary pb-[18px]">
-                <div className="relative w-full justify-center flex">
-                    <h4 className="dark:text-white">All Channels</h4>
-                    <button
-                        onClick={() => navigate('/chatting')}
-                        className="absolute top-1/2 -translate-y-1/2 left-4"
-                    >
-                        <FaChevronLeft className="dark:text-white" />
-                    </button>
+            <div className="flex justify-center pt-12 px-5 bg-white dark:bg-darkPrimary pb-[18px]">
+                <div className="flex gap-3 bg-grayPrimary dark:bg-dark2Primary items-center w-full rounded-full px-6 py-3">
+                    <IoSearch size="1.5rem" className="text-gray-500 m-0 p-0" />
+                    <input
+                        className="bg-inherit w-3/5 border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
+                        placeholder="Search"
+                        type="text"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                    />
                 </div>
-            </div>
-            <div className="mx-5 h-full overflow-auto scrollbar-none pb-[200px]">
-                <div className="mt-3">
-                    <div className="flex gap-3 bg-grayPrimary dark:bg-darkPrimary items-center w-full rounded-full px-6 py-3">
-                        <IoSearch
-                            size="1.5rem"
-                            className="text-gray-500 m-0 p-0"
-                        />
-                        <input
-                            className="bg-inherit w-3/5 border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
-                            placeholder="Search"
-                            type="text"
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                        />
-                    </div>
-                </div>
-                {searchText ? (
-                    <Search data={searchResult} />
-                ) : (
-                    <>
-                        {channels?.hosting?.length > 0 && (
-                            <div className="mt-8">
-                                <h5 className="font-bold text-black dark:text-white">
-                                    Hosting
-                                </h5>
-                                {loading ? (
-                                    <LoaderSkeletonChannels />
-                                ) : (
-                                    <div className="mt-4 flex flex-col gap-6">
-                                        {channels?.hosting?.map(
-                                            renderChannelItem,
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        {channels?.recent?.length > 0 && (
-                            <div className="mt-8">
-                                <h5 className="font-bold text-black dark:text-white">
-                                    Recently Active
-                                </h5>
-                                {loading ? (
-                                    <LoaderSkeletonChannels />
-                                ) : (
-                                    <div className="mt-4 flex flex-col gap-6">
-                                        {channels?.recent?.map(
-                                            renderChannelItem,
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        {channels?.trending?.length > 0 && (
-                            <div className="mt-8">
-                                <h5 className="font-bold text-black dark:text-white">
-                                    Trending
-                                </h5>
-                                {loading ? (
-                                    <LoaderSkeletonChannels />
-                                ) : (
-                                    <div className="mt-4 flex flex-col gap-6">
-                                        {channels?.trending?.map(
-                                            renderChannelItem,
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </>
-                )}
             </div>
 
-            <FooterChat title="" isSwiping={false} isPlay={false} />
+            {searchText ? (
+                <Search data={searchResult} />
+            ) : (
+                <div className="mx-5 h-full overflow-auto scrollbar-none pb-[200px]">
+                    {recentSearch?.length > 0 && (
+                        <div className="mt-2">
+                            <div className="flex items-center justify-between mb-4">
+                                <h5 className="font-bold text-black dark:text-white">
+                                    Recent searches
+                                </h5>
+                                <button
+                                    onClick={handleClearRecentSearch}
+                                    className="dark:text-white text-sm bg-black/20 rounded-full px-3 py-1"
+                                >
+                                    Clear
+                                </button>
+                            </div>
+                            <div className="flex overflow-x-auto scrollbar-none">
+                                {recentSearch.map(renderRecentSearchItem)}
+                            </div>
+                        </div>
+                    )}
+                    <div className="mt-8">
+                        <h5 className="font-bold text-black dark:text-white">
+                            Top Channels
+                        </h5>
+                        {loading ? (
+                            <LoaderSkeletonChannels />
+                        ) : (
+                            <div className="mt-4 flex flex-col gap-6">
+                                {channels?.trending?.map(renderChannelItem)}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            <FooterChat title="search" isSwiping={false} isPlay={false} />
         </div>
     );
 }

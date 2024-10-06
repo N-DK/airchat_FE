@@ -3,7 +3,7 @@ import { IoIosAdd } from 'react-icons/io';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../AppContext';
 import React from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addChannel } from '../redux/actions/ChannelActions';
 
 export default function AddChannel() {
@@ -11,6 +11,7 @@ export default function AddChannel() {
     const [channelName, setChannelName] = useState('');
     const { isAddChannel, toggleIsAddChannel } = useContext(AppContext);
     const [isContinue, setIsContinue] = useState(false);
+
     const modalRef = useRef(null);
     const dispatch = useDispatch();
 
@@ -74,86 +75,90 @@ export default function AddChannel() {
     }, []);
 
     return (
-        <div
-            ref={modalRef}
-            className={`absolute left-0 top-0 z-50 w-full h-screen ${
-                isAddChannel ? 'translate-y-14' : 'translate-y-[100vh]'
-            } transition-all duration-300`}
-        >
-            <div className="px-5 md:px-10 bg-white dark:bg-dark2Primary h-full rounded-t-3xl">
-                <div className="flex justify-between items-center pt-9">
-                    <button
-                        className="text-black dark:text-white"
-                        onClick={() => toggleIsAddChannel()}
-                    >
-                        <RiCloseFill size="2.3rem" />
-                    </button>
-                    <div>
-                        <h4 className="text-black dark:text-white">
-                            New Channel
-                        </h4>
-                    </div>
-                    <button onClick={handleCreateChannel}>
-                        <h4
-                            className={`${
-                                isContinue
-                                    ? 'text-black dark:text-bluePrimary'
-                                    : 'text-zinc-500'
-                            }`}
+        <>
+            <div
+                ref={modalRef}
+                className={`absolute left-0 top-0 z-50 w-full h-screen ${
+                    isAddChannel ? 'translate-y-14' : 'translate-y-[100vh]'
+                } transition-all duration-300`}
+            >
+                <div className="px-5 md:px-10 bg-white dark:bg-dark2Primary h-full rounded-t-3xl">
+                    <div className="flex justify-between items-center pt-9">
+                        <button
+                            className="text-black dark:text-white"
+                            onClick={() => toggleIsAddChannel()}
                         >
-                            Create
+                            <RiCloseFill size="2.3rem" />
+                        </button>
+                        <div>
+                            <h4 className="text-black dark:text-white">
+                                New Channel
+                            </h4>
+                        </div>
+                        <button onClick={handleCreateChannel}>
+                            <h4
+                                className={`${
+                                    isContinue
+                                        ? 'text-black dark:text-bluePrimary'
+                                        : 'text-zinc-500'
+                                }`}
+                            >
+                                Create
+                            </h4>
+                        </button>
+                    </div>
+
+                    <div className="mt-9">
+                        <p className="text-center text-lg text-zinc-500 dark:text-gray-400">
+                            Your channel will not be activated until at least 3
+                            separate people pose into it
+                        </p>
+                    </div>
+
+                    <div className="mt-10">
+                        <h4 className="text-black dark:text-white">
+                            Channel Name
                         </h4>
-                    </button>
-                </div>
+                        <input
+                            type="text"
+                            className="text-black dark:text-white mt-2 w-full bg-inherit placeholder-zinc-300 dark:placeholder-gray-400 text-3xl font-semibold outline-none"
+                            placeholder="Enter a name"
+                            value={channelName}
+                            onChange={(e) => setChannelName(e.target.value)}
+                        />
+                    </div>
 
-                <div className="mt-9">
-                    <p className="text-center text-lg text-zinc-500 dark:text-gray-400">
-                        Your channel will not be activated until at least 3
-                        separate people pose into it
-                    </p>
-                </div>
-
-                <div className="mt-10">
-                    <h4 className="text-black dark:text-white">Channel Name</h4>
-                    <input
-                        type="text"
-                        className="text-black dark:text-white mt-2 w-full bg-inherit placeholder-zinc-300 dark:placeholder-gray-400 text-3xl font-semibold outline-none"
-                        placeholder="Enter a name"
-                        value={channelName}
-                        onChange={(e) => setChannelName(e.target.value)}
-                    />
-                </div>
-
-                <div className="mt-10">
-                    <h4 className="text-black dark:text-white">
-                        Channel Photo
-                    </h4>
-                    <label htmlFor="file_input" className="inline-block">
-                        {!file ? (
-                            <div className="mt-3 flex justify-center items-center bg-grayPrimary h-[70px] md:h-[120px] w-[70px] md:w-[120px] rounded-2xl">
-                                <IoIosAdd
-                                    size="4rem"
-                                    className="text-zinc-400 p-2"
+                    <div className="mt-10">
+                        <h4 className="text-black dark:text-white">
+                            Channel Photo
+                        </h4>
+                        <label htmlFor="file_input" className="inline-block">
+                            {!file ? (
+                                <div className="mt-3 flex justify-center items-center bg-grayPrimary h-[70px] md:h-[120px] w-[70px] md:w-[120px] rounded-2xl">
+                                    <IoIosAdd
+                                        size="4rem"
+                                        className="text-zinc-400 p-2"
+                                    />
+                                </div>
+                            ) : (
+                                <img
+                                    src={convertObjectURL(file)}
+                                    className="mt-3 h-[70px] md:h-[120px] w-[70px] md:w-[120px] rounded-2xl object-cover"
+                                    alt=""
                                 />
-                            </div>
-                        ) : (
-                            <img
-                                src={convertObjectURL(file)}
-                                className="mt-3 h-[70px] md:h-[120px] w-[70px] md:w-[120px] rounded-2xl object-cover"
-                                alt=""
-                            />
-                        )}
-                    </label>
+                            )}
+                        </label>
 
-                    <input
-                        onChange={handleChange}
-                        hidden
-                        type="file"
-                        id="file_input"
-                        accept="image/*"
-                    />
+                        <input
+                            onChange={handleChange}
+                            hidden
+                            type="file"
+                            id="file_input"
+                            accept="image/*"
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

@@ -143,13 +143,13 @@ export default function RecordModal() {
             <div className="flex flex-col justify-between backdrop-blur-2xl px-6 pt-6 pb-9 md:p-10 bg-white/50 h-full rounded-t-3xl">
                 <div className="text-bluePrimary flex justify-between items-center">
                     <div className="flex gap-2 items-end">
-                        <div className="flex gap-2">
+                        {/* <div className="flex gap-2">
                             <span className="text-xl">To</span>
                             <span className="text-xl font-semibold">
                                 Following
                             </span>
                         </div>
-                        <BsChevronExpand size="1.6rem" />
+                        <BsChevronExpand size="1.6rem" /> */}
                     </div>
                     <RiCloseFill onClick={() => toggleIsRecord()} size="2rem" />
                 </div>

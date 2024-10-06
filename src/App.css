@@ -65,7 +65,7 @@
     z-index: 99999999;
     margin-bottom: 0;
     transform: translateY(-1px);
-    /* background-color: white; */
+    background-color: white;
     /* background-color: ; */
 }
 
@@ -98,6 +98,76 @@
 
 .swipeable-tabs {
     animation: swipe-tabs 0.3s ease-in-out forwards;
+}
+
+.dark-modal {
+    background-color: #334155 !important;
+    color: white !important;
+}
+
+.custom-context-menu {
+    position: absolute;
+    background-color: #333;
+    color: white;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 160px;
+}
+
+.menu-item {
+    padding: 10px;
+    border-bottom: 1px solid #555;
+    cursor: pointer;
+    text-align: left;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:hover {
+    background-color: #444;
+}
+
+.btn.heart {
+    position: relative;
+    height: 16px;
+    width: 16px;
+    background: none;
+}
+
+.btn.heart::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    background: url('https://res.cloudinary.com/dctauty0m/image/upload/v1717745777/img_mcurix.png')
+        no-repeat;
+    background-size: cover;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.btn.heart.active::before {
+    animation: animate 0.8s steps(28) 1 forwards;
+    background-position: right;
+}
+
+.btn.heart.initial-active::before {
+    background-position: right;
+}
+
+@keyframes animate {
+    0% {
+        background-position: left;
+    }
+    100% {
+        background-position: right;
+    }
 }
 
 @keyframes swipe-tabs {

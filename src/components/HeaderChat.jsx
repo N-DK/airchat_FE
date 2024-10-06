@@ -1,74 +1,153 @@
-import React, { useContext } from 'react';
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Avatar } from 'antd';
 import { IoIosAdd } from 'react-icons/io';
-import { FaRegUser } from 'react-icons/fa6';
+import { FaChevronDown, FaRegUser } from 'react-icons/fa6';
 import talkieLogo from '../assets/talkie-logo.png';
 import { AppContext } from '../AppContext';
 import LoaderSkeletonMenuBar from './LoaderSkeletonMenuBar';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
+import { Menu } from '@headlessui/react';
 
-const HeaderChat = ({ title, isSwiping }) => {
+const HeaderChat = ({ title, isSwiping, handleAction }) => {
     const { menus, loading } = useSelector((state) => state.menuBar);
     const navigate = useNavigate();
     const { toggleIsAddChannel } = useContext(AppContext);
 
+    const Dropdown = ({ item, i }) => {
+        const btnRef = useRef();
+        const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+
+        const handleNavigation = () => {
+            const currentPath =
+                window.location.pathname + window.location.search;
+            const targetPath = `/chatting/?redirect=${item.key}${
+                item.key.includes('group-channel') ? `/${item.channel_id}` : ''
+            }`;
+
+            if (currentPath !== targetPath) {
+                navigate(targetPath);
+                btnRef.current = null;
+            }
+        };
+
+        return (
+            <Menu
+                as="div"
+                className="relative inline-block text-left z-[9999px]"
+            >
+                <Menu.Button className="relative">
+                    <div
+                        ref={btnRef}
+                        onClick={() => {
+                            handleNavigation();
+                            if (btnRef?.current) {
+                                const rect =
+                                    btnRef?.current?.getBoundingClientRect();
+                                setMenuPosition({
+                                    top: rect?.bottom + 10,
+                                    left: rect?.left + rect?.width / 2 - 75,
+                                    width: 150,
+                                });
+                            }
+                        }}
+                        className={`text-[13px] md:text-base font-medium rounded-3xl px-4 py-2 ${
+                            i === menus.length - 1 ? 'mr-5' : ''
+                        } ${
+                            item.key.includes('group-channel')
+                                ? title === `${item.key}/${item.channel_id}`
+                                    ? 'bg-bluePrimary dark:bg-slate-500'
+                                    : 'bg-grayPrimary dark:bg-dark2Primary'
+                                : title === item.key
+                                ? 'bg-bluePrimary dark:bg-slate-500'
+                                : 'bg-grayPrimary dark:bg-dark2Primary'
+                        }`}
+                    >
+                        <div className="flex justify-center items-center gap-2">
+                            {item.key === 'for-you' && (
+                                <Avatar
+                                    src={
+                                        item.img && item.img !== '0'
+                                            ? `https://talkie.transtechvietnam.com/${item.img}`
+                                            : DEFAULT_PROFILE
+                                    }
+                                    alt="avatar"
+                                    className="w-5 h-5 object-cover rounded-full"
+                                />
+                            )}
+                            <span
+                                className={
+                                    item.key.includes('group-channel')
+                                        ? title ===
+                                          `${item.key}/${item.channel_id}`
+                                            ? 'text-white'
+                                            : 'text-black dark:text-gray-400'
+                                        : title === item.key
+                                        ? 'text-white'
+                                        : 'text-black dark:text-gray-400'
+                                }
+                            >
+                                {item.name}
+                            </span>
+                            {item.key === 'group-channel' && (
+                                <FaChevronDown className="dark:text-white" />
+                            )}
+                        </div>
+                    </div>
+                </Menu.Button>
+
+                {item.key === 'group-channel' && (
+                    <Menu.Items
+                        className="z-[9999px] fixed bg-white border border-gray-300 divide-y dark:border-none divide-gray-200 rounded-md shadow-lg dark:bg-dark2Primary"
+                        style={{
+                            width: `${menuPosition.width}px`,
+                            position: 'fixed',
+                            top: `${menuPosition.top}px`,
+                            left: `${menuPosition.left}px`,
+                        }}
+                    >
+                        <div className="py-1 z-[9999px]">
+                            <Menu.Item>
+                                <button
+                                    className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-white"
+                                    onClick={() =>
+                                        handleAction(
+                                            'trending',
+                                            item.channel_id,
+                                        )
+                                    }
+                                >
+                                    Trending
+                                </button>
+                            </Menu.Item>
+                            <Menu.Item>
+                                <button
+                                    className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-white"
+                                    onClick={() =>
+                                        handleAction('recent', item.channel_id)
+                                    }
+                                >
+                                    Recent
+                                </button>
+                            </Menu.Item>
+                        </div>
+                    </Menu.Items>
+                )}
+            </Menu>
+        );
+    };
+
     const renderMenuItems = () => {
         if (loading) return <LoaderSkeletonMenuBar />;
 
-        return menus?.map((item, i) => (
-            <button
-                key={i}
-                onClick={() =>
-                    navigate(
-                        `/chatting/?redirect=${item.key}${
-                            item.key.includes('group-channel')
-                                ? `/${item.channel_id}`
-                                : ''
-                        }`,
-                    )
-                }
-                className={`text-[13px] md:text-base font-medium rounded-3xl px-4 py-2 ${
-                    i === menus.length - 1 ? 'mr-5' : ''
-                } ${
-                    item.key.includes('group-channel')
-                        ? title === `${item.key}/${item.channel_id}`
-                            ? 'bg-bluePrimary dark:bg-slate-500'
-                            : 'bg-grayPrimary dark:bg-dark2Primary'
-                        : title === item.key
-                        ? 'bg-bluePrimary dark:bg-slate-500'
-                        : 'bg-grayPrimary dark:bg-dark2Primary'
-                }`}
-            >
-                <div className="flex justify-center items-center gap-2">
-                    {item.key === 'for-you' && (
-                        <Avatar
-                            src={
-                                item.img && item.img !== '0'
-                                    ? `https://talkie.transtechvietnam.com/${item.img}`
-                                    : DEFAULT_PROFILE
-                            }
-                            alt="avatar"
-                            className="w-5 h-5 object-cover rounded-full"
-                        />
-                    )}
-                    <span
-                        className={
-                            item.key.includes('group-channel')
-                                ? title === `${item.key}/${item.channel_id}`
-                                    ? 'text-white'
-                                    : 'text-black dark:text-gray-400'
-                                : title === item.key
-                                ? 'text-white'
-                                : 'text-black dark:text-gray-400'
-                        }
-                    >
-                        {item.name}
-                    </span>
-                </div>
-            </button>
-        ));
+        return menus?.map((item, i) => <Dropdown key={i} item={item} i={i} />);
     };
 
     return (

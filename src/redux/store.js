@@ -28,6 +28,10 @@ import {
     userAddViewPostReducer,
     userReportAccReducer,
     userSearchReducer,
+    userDeleteAccountReducer,
+    userGetRecentSearchReducer,
+    userAddRecentSearchReducer,
+    userClearRecentSearchReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -38,13 +42,23 @@ import {
     postListProfileReducer,
     postListReducer,
     postSubmitReducer,
+    reportPostReducer,
+    postUploadImageReducer,
 } from './reducers/PostReducers';
 import {
     channelListReducer,
     channelPostsReducer,
     channelAddReducer,
     channelPinReducer,
+    channelDeleteReducer,
 } from './reducers/ChannelReducers';
+import {
+    detailMessageReducers,
+    listMessageReducers,
+    searchUserReducers,
+    socketReducer,
+} from './reducers/MessageReducers';
+import { channel } from 'process';
 
 const reducer = combineReducers({
     userLogin: userLoginReducer,
@@ -85,6 +99,17 @@ const reducer = combineReducers({
     userAddViewPost: userAddViewPostReducer,
     userReportAcc: userReportAccReducer,
     userSearch: userSearchReducer,
+    userDeleteAccount: userDeleteAccountReducer,
+    reportPost: reportPostReducer,
+    detailMessage: detailMessageReducers,
+    listMessageRecent: listMessageReducers,
+    searchUser: searchUserReducers,
+    socket: socketReducer,
+    userGetRecentSearch: userGetRecentSearchReducer,
+    userAddRecentSearch: userAddRecentSearchReducer,
+    userClearRecentSearch: userClearRecentSearchReducer,
+    channelDelete: channelDeleteReducer,
+    postUploadImage: postUploadImageReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')
