@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { FaAngleLeft, FaBan, FaFlag, FaVolumeMute } from 'react-icons/fa';
 import { AppContext } from '../AppContext';
 import { Avatar, message } from 'antd';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { HiOutlineDotsHorizontal } from 'react-icons/hi';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -30,13 +30,16 @@ const BlocAccountItem = ({
                 as="div"
                 className="relative inline-block text-left z-[9999px]"
             >
-                <Menu.Button className="relative">
+                <MenuButton className="relative">
                     <HiOutlineDotsHorizontal className="text-xl md:text-[30px] text-black dark:text-white" />
-                </Menu.Button>
+                </MenuButton>
 
-                <Menu.Items className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary">
+                <MenuItems
+                    transition
+                    className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary"
+                >
                     <div className="py-1 z-[9999px]">
-                        <Menu.Item>
+                        <MenuItem>
                             <button
                                 className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-white"
                                 onClick={() => {
@@ -62,8 +65,8 @@ const BlocAccountItem = ({
                                 </span>
                                 <FaVolumeMute size={16} />
                             </button>
-                        </Menu.Item>
-                        <Menu.Item>
+                        </MenuItem>
+                        <MenuItem>
                             <button
                                 onClick={() => {
                                     showMessage('Blocked');
@@ -89,8 +92,8 @@ const BlocAccountItem = ({
                                 </span>
                                 <FaBan size={16} />
                             </button>
-                        </Menu.Item>
-                        <Menu.Item>
+                        </MenuItem>
+                        <MenuItem>
                             <button
                                 onClick={() => {
                                     showMessage('Reported');
@@ -103,9 +106,9 @@ const BlocAccountItem = ({
                                 <span>Report</span>
                                 <FaFlag size={16} />
                             </button>
-                        </Menu.Item>
+                        </MenuItem>
                     </div>
-                </Menu.Items>
+                </MenuItems>
             </Menu>
         );
     };
@@ -216,7 +219,7 @@ const DrawerBlockAccount = ({ type }) => {
                 }`}
             >
                 <div className="bg-white dark:bg-dark2Primary h-full">
-                    <div className="relative px-5 md:px-10 flex justify-center items-center py-3 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300">
+                    <div className="relative px-5 md:px-10 flex justify-center items-center pt-12 pb-4 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300 dark:border-grayPrimary">
                         <button
                             className="text-black dark:text-white absolute left-4"
                             onClick={toggleShowDrawerBlockAccount}

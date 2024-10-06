@@ -14,11 +14,18 @@ import { AppContext } from '../AppContext';
 import DrawerBlockAccount from '../components/DrawerBlockAccount';
 import ModalDelete from '../components/ModalDelete';
 import CustomContextMenu from '../components/CustomContextMenu';
+import DrawerNotification from '../components/DrawerNotification';
 
 export default function Settings() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { toggleShowDrawerBlockAccount } = useContext(AppContext);
+
+    const {
+        showDrawerBlockAccount,
+        showDrawerNotification,
+        toggleShowDrawerBlockAccount,
+        toggleShowDrawerNotification,
+    } = useContext(AppContext);
     const { theme } = useSelector((state) => state.userTheme);
     const [isOpen, setIsOpen] = useState(false);
     const { userInfo } = useSelector((state) => state.userProfile);
@@ -33,6 +40,11 @@ export default function Settings() {
             window.location.href = '/';
         }
     }, [isDeleteAccountSuccess]);
+
+    useEffect(() => {
+        if (showDrawerBlockAccount) toggleShowDrawerBlockAccount();
+        if (showDrawerNotification) toggleShowDrawerNotification();
+    }, [window.location.pathname]);
 
     const logoutHandle = () => dispatch(logout());
 
@@ -54,6 +66,7 @@ export default function Settings() {
                     </div>
                 </div>
                 <DrawerBlockAccount type={typeDrawer} />
+                <DrawerNotification />
                 <div className="h-full overflow-auto scrollbar-none px-6 md:px-10 pt-1 pb-10 flex gap-7 flex-col text-[16px]">
                     <div className="text-black dark:text-white md:text-xl bg-[#FAF8F9] dark:bg-dark2Primary rounded-xl px-3 md:px-5 py-2 md:py-4">
                         <div className="flex justify-between items-center border-b-[1px] border-gray-200 pb-4">
@@ -63,7 +76,12 @@ export default function Settings() {
                                 <BsChevronExpand size="1.2rem" />
                             </div>
                         </div>
-                        <p className="mt-3">Notification Settings</p>
+                        <p
+                            onClick={toggleShowDrawerNotification}
+                            className="mt-3"
+                        >
+                            Notification Settings
+                        </p>
                     </div>
                     <div className="md:text-xl flex items-center justify-between bg-[#FAF8F9] dark:bg-dark2Primary rounded-xl px-3 md:px-5 py-2 md:py-4">
                         <p className="text-black dark:text-white">Theme mode</p>

@@ -32,6 +32,7 @@ import {
     userGetRecentSearchReducer,
     userAddRecentSearchReducer,
     userClearRecentSearchReducer,
+    userGetNotificationReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -110,6 +111,7 @@ const reducer = combineReducers({
     userClearRecentSearch: userClearRecentSearchReducer,
     channelDelete: channelDeleteReducer,
     postUploadImage: postUploadImageReducer,
+    userGetNotification: userGetNotificationReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

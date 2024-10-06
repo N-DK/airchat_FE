@@ -34,7 +34,7 @@ import { deletePost, listPostProfile } from '../redux/actions/PostActions';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import ListPostItems from '../components/ListPostItems';
 import { IoIosSettings } from 'react-icons/io';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import ModalDelete from '../components/ModalDelete';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import DrawerFollower from '../components/DrawerFollower';
@@ -323,13 +323,16 @@ export default function Profile() {
     const Dropdown = () => {
         return (
             <Menu as="div" className="relative inline-block text-left z-50">
-                <Menu.Button className="relative">
+                <MenuButton className="relative">
                     <HiOutlineDotsHorizontal className="text-xl md:text-[30px]" />
-                </Menu.Button>
+                </MenuButton>
 
-                <Menu.Items className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary">
+                <MenuItems
+                    transition
+                    className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary"
+                >
                     <div className="py-1">
-                        <Menu.Item>
+                        <MenuItem>
                             {({ active }) => (
                                 <button
                                     onClick={() =>
@@ -347,8 +350,8 @@ export default function Profile() {
                                     {isBlock() ? 'Unblock' : 'Block'}
                                 </button>
                             )}
-                        </Menu.Item>
-                        <Menu.Item>
+                        </MenuItem>
+                        <MenuItem>
                             {({ active }) => (
                                 <button
                                     onClick={() =>
@@ -364,9 +367,9 @@ export default function Profile() {
                                     {isMute() ? 'Unmute' : 'Mute'}
                                 </button>
                             )}
-                        </Menu.Item>
+                        </MenuItem>
                     </div>
-                </Menu.Items>
+                </MenuItems>
             </Menu>
         );
     };

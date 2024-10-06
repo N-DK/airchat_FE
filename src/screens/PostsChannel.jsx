@@ -18,7 +18,7 @@ import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import ListPostItems from '../components/ListPostItems';
 import { FaEllipsisH } from 'react-icons/fa';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { HiOutlineDotsHorizontal } from 'react-icons/hi';
 import EditChannel from '../components/EditChannel';
 import { profile } from '../redux/actions/UserActions';
@@ -118,13 +118,16 @@ export default function PostsChannel() {
     const Dropdown = () => {
         return (
             <Menu as="div" className="relative inline-block text-left z-50">
-                <Menu.Button className="relative ml-4">
+                <MenuButton className="relative ml-4">
                     <HiOutlineDotsHorizontal className="text-xl dark:text-white md:text-[30px]" />
-                </Menu.Button>
+                </MenuButton>
 
-                <Menu.Items className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y dark:border-none divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary">
+                <MenuItems
+                    transition
+                    className="z-[999px] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y dark:border-none divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary"
+                >
                     <div className="py-1">
-                        <Menu.Item>
+                        <MenuItem>
                             {({ active }) => (
                                 <button
                                     onClick={() => toggleIsEditChannel()}
@@ -133,9 +136,9 @@ export default function PostsChannel() {
                                     Edit channel
                                 </button>
                             )}
-                        </Menu.Item>
+                        </MenuItem>
                     </div>
-                </Menu.Items>
+                </MenuItems>
             </Menu>
         );
     };

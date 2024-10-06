@@ -91,6 +91,9 @@ import {
     USER_CLEAR_RECENT_SEARCH_REQUEST,
     USER_CLEAR_RECENT_SEARCH_SUCCESS,
     USER_CLEAR_RECENT_SEARCH_FAIL,
+    USER_GET_NOTIFICATION_REQUEST,
+    USER_GET_NOTIFICATION_SUCCESS,
+    USER_GET_NOTIFICATION_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -1101,9 +1104,6 @@ export const getRecentSearch =
         }
     };
 
-// curl --location 'localhost:9999/clear-recent-search' \
-// --header 'x-cypher-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInBob25lIjoiKzg0MzcyNDc3MjE2IiwiZW1haWwiOm51bGwsImlhdCI6MTcyNDI1OTY3OCwiZXhwIjoxNzI2ODUxNjc4fQ.fmL9PBpm3ydqzSTQ37kHUbJ0XUNxvsWqq-o7LGM0yP0'
-
 export const clearRecentSearch = () => async (dispatch, getState) => {
     try {
         dispatch({
@@ -1129,6 +1129,39 @@ export const clearRecentSearch = () => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: USER_CLEAR_RECENT_SEARCH_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getNotification = () => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_GET_NOTIFICATION_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.get(
+            'https://talkie.transtechvietnam.com/get-setting-notification',
+            config,
+        );
+        dispatch({
+            type: USER_GET_NOTIFICATION_SUCCESS,
+            payload: data?.data?.[0],
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_GET_NOTIFICATION_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

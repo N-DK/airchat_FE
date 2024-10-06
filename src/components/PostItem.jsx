@@ -240,6 +240,14 @@ function PostItem({ item }) {
                         <p className="text-left line-clamp-5 md:text-lg text-black dark:text-white">
                             {data?.content}
                         </p>
+                        {data?.img && (
+                            <figure className="max-w-full relative my-2">
+                                <Avatar
+                                    src={`https://talkie.transtechvietnam.com/${data?.img}`}
+                                    className="min-h-40 w-full object-cover rounded-xl"
+                                />
+                            </figure>
+                        )}
                     </div>
 
                     <div className="absolute bottom-[-22px] items-center right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">

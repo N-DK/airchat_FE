@@ -95,6 +95,9 @@ import {
     USER_CLEAR_RECENT_SEARCH_REQUEST,
     USER_CLEAR_RECENT_SEARCH_SUCCESS,
     USER_CLEAR_RECENT_SEARCH_FAIL,
+    USER_GET_NOTIFICATION_REQUEST,
+    USER_GET_NOTIFICATION_SUCCESS,
+    USER_GET_NOTIFICATION_FAIL,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -514,6 +517,19 @@ export const userClearRecentSearchReducer = (state = {}, action) => {
         case USER_CLEAR_RECENT_SEARCH_SUCCESS:
             return { loading: false, isSuccess: true };
         case USER_CLEAR_RECENT_SEARCH_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userGetNotificationReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_GET_NOTIFICATION_REQUEST:
+            return { loading: true };
+        case USER_GET_NOTIFICATION_SUCCESS:
+            return { loading: false, notification: action.payload };
+        case USER_GET_NOTIFICATION_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

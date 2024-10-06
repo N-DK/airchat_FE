@@ -14,7 +14,7 @@ import talkieLogo from '../assets/talkie-logo.png';
 import { AppContext } from '../AppContext';
 import LoaderSkeletonMenuBar from './LoaderSkeletonMenuBar';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
-import { Menu } from '@headlessui/react';
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 
 const HeaderChat = ({ title, isSwiping, handleAction }) => {
     const { menus, loading } = useSelector((state) => state.menuBar);
@@ -43,7 +43,7 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                 as="div"
                 className="relative inline-block text-left z-[9999px]"
             >
-                <Menu.Button className="relative">
+                <MenuButton className="relative">
                     <div
                         ref={btnRef}
                         onClick={() => {
@@ -101,10 +101,11 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                             )}
                         </div>
                     </div>
-                </Menu.Button>
+                </MenuButton>
 
                 {item.key === 'group-channel' && (
-                    <Menu.Items
+                    <MenuItems
+                        transition
                         className="z-[9999px] fixed bg-white border border-gray-300 divide-y dark:border-none divide-gray-200 rounded-md shadow-lg dark:bg-dark2Primary"
                         style={{
                             width: `${menuPosition.width}px`,
@@ -114,7 +115,7 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                         }}
                     >
                         <div className="py-1 z-[9999px]">
-                            <Menu.Item>
+                            <MenuItem>
                                 <button
                                     className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-white"
                                     onClick={() =>
@@ -126,8 +127,8 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                                 >
                                     Trending
                                 </button>
-                            </Menu.Item>
-                            <Menu.Item>
+                            </MenuItem>
+                            <MenuItem>
                                 <button
                                     className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-white"
                                     onClick={() =>
@@ -136,9 +137,9 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                                 >
                                     Recent
                                 </button>
-                            </Menu.Item>
+                            </MenuItem>
                         </div>
-                    </Menu.Items>
+                    </MenuItems>
                 )}
             </Menu>
         );
