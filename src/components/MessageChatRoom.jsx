@@ -8,7 +8,7 @@ import React, {
     useCallback,
 } from 'react';
 import { FaHeart, FaRegHeart, FaTrash } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
     listenEvent,
     removeListener,
@@ -16,9 +16,12 @@ import {
 } from '../services/socket.service';
 import { EMIT_EVENT, LISTEN_EVENT } from '../constants/sockets.constant';
 import ModalDelete from './ModalDelete';
+import { setObjectActive } from '../redux/actions/SurfActions';
+import { debounce } from 'lodash';
 
 const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
     // console.log(message);
+    const dispatch = useDispatch();
     const [isVisible, setIsVisible] = useState(false);
     const [statusLike, setStatusLike] = useState(message?.number_heart > 0);
     const [isOpen, setIsOpen] = useState(false);
@@ -82,11 +85,11 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            ([entry]) => {
+            debounce(([entry]) => {
                 setIsVisible(entry.isIntersecting);
-            },
+            }, 200),
             {
-                threshold: 0.5,
+                threshold: 0.3,
                 rootMargin: '-90px 0px -710px 0px',
             },
         );
@@ -128,9 +131,34 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
         };
     }, [position, isVisible]);
 
+    useEffect(() => {
+        if (isVisible) {
+            dispatch(
+                setObjectActive({
+                    post: message,
+                    // audio:
+                    //     message?.audio ?? 'uploads/audio/1727407624717.wav'
+                    //         ? new Audio(
+                    //               `https://talkie.transtechvietnam.com/${message?.audio}`,
+                    //           )
+                    //         : null,
+
+                    audio: new Audio(
+                        `https://talkie.transtechvietnam.com/uploads/audio/1727407624717.wav`,
+                    ),
+                    element: document.getElementById(`message-${message?.id}`),
+                }),
+            );
+        }
+    }, [isVisible]);
+
     return (
         <>
-            <div ref={messageRef} className="mb-10">
+            <div
+                id={`message-${message?.id}`}
+                ref={messageRef}
+                className="mb-10"
+            >
                 <div className={messageClasses.container}>
                     <div className={messageClasses.avatar}>
                         <Avatar

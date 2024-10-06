@@ -10,6 +10,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import LoaderSkeletonPosts from './LoaderSkeletonPosts';
 import { addViewPost, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
+import { setObjectActive } from '../redux/actions/SurfActions';
+import { debounce } from 'lodash';
 
 function MessageItem({ position = 'right', message, setDetailsPostReply }) {
     const dispatch = useDispatch();
@@ -51,11 +53,11 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            ([entry]) => {
+            debounce(([entry]) => {
                 setIsVisible(entry.isIntersecting);
-            },
+            }, 200),
             {
-                threshold: 0.9,
+                threshold: 0.3,
                 rootMargin: '-200px 0px -510px 0px',
             },
         );
@@ -146,6 +148,24 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
             : baseUrl;
     }, [data.id, data.reply]);
 
+    useEffect(() => {
+        if (isVisible) {
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Audio(
+                              `https://talkie.transtechvietnam.com/${data?.audio}`,
+                          )
+                        : null,
+                    element: document.getElementById(
+                        `post-item-reply-${data?.id}`,
+                    ),
+                }),
+            );
+        }
+    }, [isVisible]);
+
     if (!message) {
         return (
             <div>
@@ -175,7 +195,7 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
                 </Link>
                 <div
                     className={`transition-all duration-300 flex-1 relative rounded-xl p-3 pb-4 bg-white dark:bg-dark2Primary ${
-                        isVisible ? 'shadow-2xl ' : ' shadow-md'
+                        isVisible ? 'shadow-2xl scale-[1.02]' : ' shadow-md'
                     }`}
                 >
                     <div

@@ -19,10 +19,12 @@ import MessageItem from './MessageItem';
 import { addViewPost, follow, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
 import { FaBookmark } from 'react-icons/fa6';
+import { setObjectActive } from '../redux/actions/SurfActions';
+import { debounce } from 'lodash';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
-function PostItem({ item }) {
+function PostItem({ item, contentsChattingRef }) {
     const navigate = useNavigate();
     const { pingStates } = usePingStates();
     const dispatch = useDispatch();
@@ -82,11 +84,11 @@ function PostItem({ item }) {
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            ([entry]) => {
+            debounce(([entry]) => {
                 setIsVisible(entry.isIntersecting);
-            },
+            }, 200),
             {
-                threshold: 0.85,
+                threshold: 0.5,
                 rootMargin: '-200px 0px -510px 0px',
             },
         );
@@ -109,8 +111,20 @@ function PostItem({ item }) {
     useEffect(() => {
         if (isVisible) {
             dispatch(setPostActive(data));
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Audio(
+                              `https://talkie.transtechvietnam.com/${data?.audio}`,
+                          )
+                        : null,
+                    element: document.getElementById(`post-item-${data?.id}`),
+                    parent: contentsChattingRef?.current,
+                }),
+            );
         }
-    }, [isVisible]);
+    }, [isVisible, contentsChattingRef]);
 
     const handleLike = useCallback(() => {
         dispatch(heart(data?.id));
@@ -211,15 +225,11 @@ function PostItem({ item }) {
             <div className="w-full">
                 <div
                     ref={divRef}
-                    className={`relative transition-all duration-300 rounded-2xl w-full px-4 pb-5 pt-3 ${
+                    className={`relative transition-all bg-white dark:bg-dark2Primary duration-300 rounded-2xl w-full px-4 pb-5 pt-3 ${
                         userInfo?.id === data?.user_id
                             ? 'bg-blue-100 dark:bg-blue-900'
                             : ''
-                    } ${
-                        isVisible
-                            ? 'shadow-2xl'
-                            : 'bg-white dark:bg-dark2Primary'
-                    }`}
+                    } ${isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'}`}
                 >
                     <div
                         id={`post-item-${data?.id}`}

@@ -61,7 +61,10 @@ import {
     searchUserReducers,
     socketReducer,
 } from './reducers/MessageReducers';
-import { channel } from 'process';
+import {
+    setObjectActiveReducer,
+    setObjectAudioCurrentReducer,
+} from './reducers/SurfReducers';
 
 const reducer = combineReducers({
     userLogin: userLoginReducer,
@@ -116,6 +119,8 @@ const reducer = combineReducers({
     userGetNotification: userGetNotificationReducer,
     postDeletePhoto: postDeletePhotoReducer,
     setPostActive: setPostActiveReducer,
+    setObjectActive: setObjectActiveReducer,
+    setObjectAudioCurrent: setObjectAudioCurrentReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

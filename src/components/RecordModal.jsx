@@ -137,7 +137,7 @@ export default function RecordModal() {
     return (
         <div
             className={`absolute left-0 bottom-0 z-50 w-full h-1/2 ${
-                isRecord ? 'translate-y-0' : 'translate-y-[100vh]'
+                isRecord ? 'translate-y-0' : 'translate-y-[200vh]'
             } transition-all duration-300`}
         >
             <div className="flex flex-col justify-between backdrop-blur-2xl px-6 pt-6 pb-9 md:p-10 bg-white/50 h-full rounded-t-3xl">

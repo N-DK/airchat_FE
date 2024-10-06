@@ -81,7 +81,7 @@ export default function AddChannel() {
             <div
                 ref={modalRef}
                 className={`absolute left-0 top-0 z-50 w-full h-screen ${
-                    isAddChannel ? 'translate-y-14' : 'translate-y-[100vh]'
+                    isAddChannel ? 'translate-y-14' : 'translate-y-[200vh]'
                 } transition-all duration-300`}
             >
                 <div className="px-5 md:px-10 bg-white dark:bg-dark2Primary h-full rounded-t-3xl">

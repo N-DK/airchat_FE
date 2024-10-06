@@ -16,6 +16,10 @@ import { Avatar, message } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaReply } from 'react-icons/fa6';
 import { setPostActive } from '../redux/actions/PostActions';
+import {
+    setObjectActive,
+    setObjectAudioCurrent,
+} from '../redux/actions/SurfActions';
 
 export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     const navigate = useNavigate();
@@ -28,6 +32,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
         toggleIsFullScreen,
         recordOption,
         toggleRecordOption,
+        isFullScreen,
     } = useContext(AppContext);
     const iconsMenu = [
         {
@@ -63,6 +68,10 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     const [isStartRecord, setIsStartRecord] = useState(false);
     const recognitionRef = useRef(null);
     const { post } = useSelector((state) => state.setPostActive);
+    const { object } = useSelector((state) => state.setObjectActive);
+    const { audioCurrent } = useSelector(
+        (state) => state.setObjectAudioCurrent,
+    );
     const dispatch = useDispatch();
 
     const navigateHandle = (name) => {
@@ -130,8 +139,10 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     }, [isStartRecord]);
 
     useEffect(() => {
+        audioCurrent?.pause();
         dispatch(setPostActive(null));
-    }, [window.location.pathname]);
+        dispatch(setObjectActive(null));
+    }, [window.location.pathname, audioCurrent, dispatch]);
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window) {
@@ -165,6 +176,61 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
             console.log('Web Speech API is not supported in this browser.');
         }
     }, [touchStartX, messageApi, handleSend]);
+
+    useEffect(() => {
+        if ((!isRunAuto || isFullScreen) && !audioCurrent?.paused)
+            audioCurrent?.pause();
+        if (isRunAuto && !isFullScreen && object) {
+            if (object.audio) {
+                if (!audioCurrent?.paused) audioCurrent?.pause();
+
+                const audio = object.audio;
+
+                audio.playbackRate = isRunSpeed;
+
+                dispatch(setObjectAudioCurrent(audio));
+
+                audio.onended = () => {
+                    handleScroll(object);
+                };
+
+                setTimeout(function () {
+                    audio?.play();
+                }, 150);
+            } else {
+                handleScroll(object);
+            }
+        }
+    }, [object, isRunAuto, isFullScreen, audioCurrent, isRunSpeed]);
+
+    useEffect(() => {
+        if (audioCurrent) {
+            audioCurrent.playbackRate = isRunSpeed;
+        }
+    }, [audioCurrent, isRunSpeed]);
+
+    const handleScroll = (object) => {
+        if (object.element) {
+            if (object.parent) {
+                const rect = object.element.getBoundingClientRect();
+
+                const parentRect = object.parent.getBoundingClientRect();
+
+                const scrollTop =
+                    object.parent.scrollTop + (rect.top - parentRect.top) - 100;
+
+                object.parent.scrollTo({
+                    top: scrollTop,
+                    behavior: 'smooth',
+                });
+            } else {
+                object.element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                });
+            }
+        }
+    };
 
     return (
         <>

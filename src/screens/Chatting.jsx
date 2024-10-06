@@ -275,7 +275,10 @@ export default function Chatting() {
 
                 <div className="relative bg-gray-200">
                     {postListData.length > 0 && (
-                        <ListPostItems postsList={postListData} />
+                        <ListPostItems
+                            postsList={postListData}
+                            contentsChattingRef={contentsChattingRef}
+                        />
                     )}
                     {loading && (
                         <div className="absolute bottom-[-450px] md:bottom-[-520px] left-0 w-full">
