@@ -4,7 +4,7 @@ import { IoMdMic } from 'react-icons/io';
 import { MdOutlineNotifications } from 'react-icons/md';
 import { HiOutlineMail } from 'react-icons/hi';
 import { CgArrowsExpandRight } from 'react-icons/cg';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../AppContext';
 import { HiPause } from 'react-icons/hi2';
@@ -139,10 +139,13 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     }, [isStartRecord]);
 
     useEffect(() => {
-        audioCurrent?.pause();
         dispatch(setPostActive(null));
         dispatch(setObjectActive(null));
-    }, [window.location.pathname, audioCurrent, dispatch]);
+    }, [window.location.href, dispatch]);
+
+    useEffect(() => {
+        audioCurrent?.pause();
+    }, [useLocation(), audioCurrent]);
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window) {
@@ -178,25 +181,33 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     }, [touchStartX, messageApi, handleSend]);
 
     useEffect(() => {
-        if ((!isRunAuto || isFullScreen) && !audioCurrent?.paused)
-            audioCurrent?.pause();
-        if (isRunAuto && !isFullScreen && object) {
+        if (!isRunAuto || isFullScreen) {
+            if (audioCurrent && !audioCurrent.paused) {
+                audioCurrent.pause();
+            }
+        } else if (isRunAuto && !isFullScreen && object) {
             if (object.audio) {
-                if (!audioCurrent?.paused) audioCurrent?.pause();
+                if (object.audio === audioCurrent) {
+                    if (audioCurrent.paused) {
+                        audioCurrent.play();
+                    }
+                } else {
+                    if (audioCurrent && !audioCurrent.paused) {
+                        audioCurrent.pause();
+                    }
 
-                const audio = object.audio;
+                    const audio = object.audio;
 
-                audio.playbackRate = isRunSpeed;
+                    audio.playbackRate = isRunSpeed;
 
-                dispatch(setObjectAudioCurrent(audio));
+                    dispatch(setObjectAudioCurrent(audio));
 
-                audio.onended = () => {
-                    handleScroll(object);
-                };
+                    audio.onended = () => {
+                        handleScroll(object);
+                    };
 
-                setTimeout(function () {
-                    audio?.play();
-                }, 150);
+                    audio.play();
+                }
             } else {
                 handleScroll(object);
             }
