@@ -33,6 +33,9 @@ import {
     POST_UPLOAD_IMAGE_SUCCESS,
     POST_UPLOAD_IMAGE_RESET,
     POST_UPLOAD_IMAGE_FAIL,
+    POST_DELETE_PHOTO_REQUEST,
+    POST_DELETE_PHOTO_SUCCESS,
+    POST_DELETE_PHOTO_FAIL,
 } from '../constants/PostConstants';
 
 export const postSubmitReducer = (state = {}, action) => {
@@ -197,6 +200,22 @@ export const postUploadImageReducer = (state = {}, action) => {
         case POST_UPLOAD_IMAGE_RESET:
             return {};
         case POST_UPLOAD_IMAGE_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const postDeletePhotoReducer = (state = {}, action) => {
+    switch (action.type) {
+        case POST_DELETE_PHOTO_REQUEST:
+            return { loading: true };
+        case POST_DELETE_PHOTO_SUCCESS:
+            return {
+                loading: false,
+                success: action.payload,
+            };
+        case POST_DELETE_PHOTO_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

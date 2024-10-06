@@ -30,7 +30,11 @@ import {
     mute,
     profile,
 } from '../redux/actions/UserActions';
-import { deletePost, listPostProfile } from '../redux/actions/PostActions';
+import {
+    deletePhoto,
+    deletePost,
+    listPostProfile,
+} from '../redux/actions/PostActions';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import ListPostItems from '../components/ListPostItems';
 import { IoIosSettings } from 'react-icons/io';
@@ -65,8 +69,11 @@ export default function Profile() {
     const [userInfo, setUserInfo] = useState(null);
     const [listPostUserProfile, setListPostUserProfile] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [isOpenDeletePhoto, setIsOpenDeletePhoto] = useState(false);
     const [idDelete, setIdDelete] = useState(null);
+    const [idDeletePhoto, setIdDeletePhoto] = useState(null);
     const [typeDrawer, setTypeDrawer] = useState(null);
+    const [isDeleteFilePhoto, setIsDeleteFilePhoto] = useState(false);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -300,6 +307,9 @@ export default function Profile() {
                     setIsOpen={setIsOpen}
                     setIdDelete={setIdDelete}
                     userInfo={userInfo}
+                    setIsOpenDeletePhoto={setIsOpenDeletePhoto}
+                    setIdDeletePhoto={setIdDeletePhoto}
+                    isDeleteFilePhoto={isDeleteFilePhoto}
                 />
             );
         }
@@ -531,9 +541,28 @@ export default function Profile() {
                 <FooterChat title="chatting" isSwiping={false} isPlay={true} />
             </div>
             <ModalDelete
+                title="Do you want to delete this post?"
                 isOpen={isOpen}
                 setIsOpen={setIsOpen}
                 handle={() => handleAction(deletePost, idDelete)}
+            />
+            <ModalDelete
+                title="Are you sure you want to delete this photo?"
+                subTitle=""
+                isOpen={isOpenDeletePhoto}
+                setIsOpen={setIsOpenDeletePhoto}
+                handle={() => {
+                    // listPostProfile?.find((item) => item.id == idDeletePhoto).img = null;
+                    setListPostUserProfile((prev) =>
+                        prev.map((item) =>
+                            item.id == idDeletePhoto
+                                ? { ...item, img: null }
+                                : item,
+                        ),
+                    );
+                    setIsDeleteFilePhoto(true);
+                    dispatch(deletePhoto(idDeletePhoto));
+                }}
             />
         </>
     ) : (

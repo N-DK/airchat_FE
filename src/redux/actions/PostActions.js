@@ -30,6 +30,9 @@ import {
     POST_UPLOAD_IMAGE_REQUEST,
     POST_UPLOAD_IMAGE_SUCCESS,
     POST_UPLOAD_IMAGE_FAIL,
+    POST_DELETE_PHOTO_REQUEST,
+    POST_DELETE_PHOTO_SUCCESS,
+    POST_DELETE_PHOTO_FAIL,
 } from '../constants/PostConstants';
 
 export const submitPost = (content, audio) => async (dispatch, getState) => {
@@ -373,6 +376,40 @@ export const uploadImage = (photo, id_post) => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: POST_UPLOAD_IMAGE_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const deletePhoto = (id_post) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_DELETE_PHOTO_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/delete-photo',
+            { id_post },
+            config,
+        );
+        dispatch({
+            type: POST_DELETE_PHOTO_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_DELETE_PHOTO_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

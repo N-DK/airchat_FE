@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import moment from 'moment';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Avatar } from 'antd';
@@ -207,10 +206,10 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
                             {data.content}
                         </p>
                         {data?.img && (
-                            <figure className="max-w-full relative my-2">
+                            <figure className="max-w-full min-h-40 relative my-2">
                                 <Avatar
                                     src={`https://talkie.transtechvietnam.com/${data?.img}`}
-                                    className="min-h-40 w-full object-cover rounded-xl"
+                                    className="h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
                         )}

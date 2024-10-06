@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar } from 'antd';
@@ -23,13 +23,29 @@ import {
 import ListPostItems from './ListPostItems';
 import { LuImagePlus } from 'react-icons/lu';
 import LoadingSpinner from './LoadingSpinner';
+import CustomContextMenuDeletePhoto from './CustomContextMenuDeletePhoto';
 
-const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
+const ListPostProfile = ({
+    list,
+    setIsOpen,
+    setIdDelete,
+    userInfo,
+    setIsOpenDeletePhoto,
+    setIdDeletePhoto,
+    isDeleteFilePhoto,
+}) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const pressTimer = useRef();
+    const [targetElement, setTargetElement] = useState(null);
+    const [rect, setRect] = useState(null);
+    const [contextMenuVisible, setContextMenuVisible] = useState(false);
 
     const { loading: loadingUpload, success } = useSelector(
         (state) => state.postUploadImage,
+    );
+    const { loading: loadingDeletePhoto } = useSelector(
+        (state) => state.postDeletePhoto,
     );
 
     const [file, setFile] = useState(null);
@@ -128,16 +144,24 @@ const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
                 {item.content}
             </p>
             {(item?.img || file) && (
-                <figure className="max-w-full relative">
+                <figure
+                    onTouchStart={(e) => {
+                        e.stopPropagation();
+                        handleTouchStart(item);
+                    }}
+                    onTouchEnd={handleTouchEnd}
+                    id={`delete-photo-${item.id}`}
+                    className="max-w-full relative min-h-40"
+                >
                     <Avatar
                         src={
                             file
                                 ? convertObjectURL(file)
                                 : `https://talkie.transtechvietnam.com/${item?.img}`
                         }
-                        className="min-h-40 w-full object-cover rounded-xl"
+                        className=" w-full h-full object-cover rounded-xl"
                     />
-                    {loadingUpload && (
+                    {(loadingUpload || loadingDeletePhoto) && (
                         <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
                             <LoadingSpinner />
                         </div>
@@ -193,6 +217,37 @@ const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
         );
     };
 
+    const handleTouchStart = (item) => {
+        pressTimer.current = setTimeout(() => {
+            setTargetElement(
+                document.getElementById(`delete-photo-${item?.id}`),
+            );
+            setRect(targetElement?.getBoundingClientRect());
+            setContextMenuVisible(true);
+        }, 500);
+    };
+
+    const handleTouchEnd = () => {
+        clearTimeout(pressTimer.current);
+    };
+
+    const closeContextMenu = () => setContextMenuVisible(false);
+
+    useEffect(() => {
+        setRect(targetElement?.getBoundingClientRect());
+    }, [targetElement]);
+
+    useEffect(() => {
+        if (isDeleteFilePhoto) {
+            setFile(null);
+        }
+    }, [isDeleteFilePhoto]);
+
+    const handleDeletePhoto = (id) => {
+        setIsOpenDeletePhoto(true);
+        setIdDeletePhoto(id);
+    };
+
     return (
         <>
             {list
@@ -222,6 +277,13 @@ const ListPostProfile = ({ list, setIsOpen, setIdDelete, userInfo }) => {
                 ))}
             <ListPostItems
                 postsList={list?.filter((item) => item.user_id !== userInfo.id)}
+            />
+            <CustomContextMenuDeletePhoto
+                isVisible={contextMenuVisible}
+                onClose={closeContextMenu}
+                targetElement={targetElement}
+                rect={rect}
+                handle={handleDeletePhoto}
             />
         </>
     );

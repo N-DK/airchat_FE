@@ -2,7 +2,13 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import React from 'react';
 
-export default function ModalDelete({ isOpen, setIsOpen, handle }) {
+export default function ModalDelete({
+    isOpen,
+    setIsOpen,
+    handle,
+    title = 'Delete',
+    subTitle = 'This action cannot be undone.',
+}) {
     function closeModal() {
         setIsOpen(false);
     }
@@ -47,11 +53,11 @@ export default function ModalDelete({ isOpen, setIsOpen, handle }) {
                                         as="h3"
                                         className="text-lg font-medium leading-6 text-gray-900 dark:dark-modal"
                                     >
-                                        Delete message
+                                        {title}
                                     </Dialog.Title>
                                     <div className="mt-2">
                                         <p className="text-sm text-gray-500">
-                                            This action cannot be undone.
+                                            {subTitle}
                                         </p>
                                     </div>
 

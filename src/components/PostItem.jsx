@@ -241,10 +241,10 @@ function PostItem({ item }) {
                             {data?.content}
                         </p>
                         {data?.img && (
-                            <figure className="max-w-full relative my-2">
+                            <figure className="max-w-full min-h-40 relative my-2">
                                 <Avatar
                                     src={`https://talkie.transtechvietnam.com/${data?.img}`}
-                                    className="min-h-40 w-full object-cover rounded-xl"
+                                    className="h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
                         )}
