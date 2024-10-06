@@ -36,6 +36,7 @@ import {
     POST_DELETE_PHOTO_REQUEST,
     POST_DELETE_PHOTO_SUCCESS,
     POST_DELETE_PHOTO_FAIL,
+    SET_POST_ACTIVE,
 } from '../constants/PostConstants';
 
 export const postSubmitReducer = (state = {}, action) => {
@@ -217,6 +218,15 @@ export const postDeletePhotoReducer = (state = {}, action) => {
             };
         case POST_DELETE_PHOTO_FAIL:
             return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const setPostActiveReducer = (state = {}, action) => {
+    switch (action.type) {
+        case SET_POST_ACTIVE:
+            return { post: action.payload };
         default:
             return state;
     }

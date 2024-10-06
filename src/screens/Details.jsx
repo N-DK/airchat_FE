@@ -211,10 +211,10 @@ export default function Details() {
                             {data?.content}
                         </p>
                         {data?.img && (
-                            <figure className="max-w-full min-h-40 relative my-2">
+                            <figure className="max-w-full relative my-2">
                                 <Avatar
                                     src={`https://talkie.transtechvietnam.com/${data?.img}`}
-                                    className="h-full w-full object-cover rounded-xl"
+                                    className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
                         )}

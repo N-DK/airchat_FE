@@ -12,7 +12,10 @@ import { HiMiniPlay } from 'react-icons/hi2';
 import { IoVideocam } from 'react-icons/io5';
 import React from 'react';
 import RecordCover from './RecordCover';
-import { message } from 'antd';
+import { Avatar, message } from 'antd';
+import { useDispatch, useSelector } from 'react-redux';
+import { FaReply } from 'react-icons/fa6';
+import { setPostActive } from '../redux/actions/PostActions';
 
 export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     const navigate = useNavigate();
@@ -59,6 +62,8 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     const [touchStartX, setTouchStartX] = useState(null);
     const [isStartRecord, setIsStartRecord] = useState(false);
     const recognitionRef = useRef(null);
+    const { post } = useSelector((state) => state.setPostActive);
+    const dispatch = useDispatch();
 
     const navigateHandle = (name) => {
         if (name == 'mic' && isPlay) {
@@ -123,6 +128,10 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
             startRecording();
         }
     }, [isStartRecord]);
+
+    useEffect(() => {
+        dispatch(setPostActive(null));
+    }, [window.location.pathname]);
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window) {
@@ -208,7 +217,17 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
                                                   } dark:text-white transition-all duration-500`
                                         }`}
                                     >
-                                        {item.icon}
+                                        {post ? (
+                                            <div className="relative">
+                                                <Avatar
+                                                    src={`https://talkie.transtechvietnam.com/${post.avatar}`}
+                                                    className="border-blue-500 border-[5px]"
+                                                />
+                                                <FaReply className="absolute bottom-1 shadow-2xl -left-0" />
+                                            </div>
+                                        ) : (
+                                            item.icon
+                                        )}
                                     </button>
                                 </RecordCover>
                             ) : (

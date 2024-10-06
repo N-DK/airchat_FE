@@ -14,7 +14,7 @@ import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Link, useNavigate } from 'react-router-dom';
 import { usePingStates } from '../hooks/usePingStates';
 import { useDispatch, useSelector } from 'react-redux';
-import { bookMark, heart } from '../redux/actions/PostActions';
+import { bookMark, heart, setPostActive } from '../redux/actions/PostActions';
 import MessageItem from './MessageItem';
 import { addViewPost, follow, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
@@ -105,6 +105,12 @@ function PostItem({ item }) {
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);
     }, [isHeart]);
+
+    useEffect(() => {
+        if (isVisible) {
+            dispatch(setPostActive(data));
+        }
+    }, [isVisible]);
 
     const handleLike = useCallback(() => {
         dispatch(heart(data?.id));
@@ -241,10 +247,10 @@ function PostItem({ item }) {
                             {data?.content}
                         </p>
                         {data?.img && (
-                            <figure className="max-w-full min-h-40 relative my-2">
+                            <figure className="max-w-full relative my-2">
                                 <Avatar
                                     src={`https://talkie.transtechvietnam.com/${data?.img}`}
-                                    className="h-full w-full object-cover rounded-xl"
+                                    className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
                         )}

@@ -33,6 +33,7 @@ import {
     POST_DELETE_PHOTO_REQUEST,
     POST_DELETE_PHOTO_SUCCESS,
     POST_DELETE_PHOTO_FAIL,
+    SET_POST_ACTIVE,
 } from '../constants/PostConstants';
 
 export const submitPost = (content, audio) => async (dispatch, getState) => {
@@ -416,4 +417,11 @@ export const deletePhoto = (id_post) => async (dispatch, getState) => {
                     : error.message,
         });
     }
+};
+
+export const setPostActive = (post) => async (dispatch) => {
+    dispatch({
+        type: SET_POST_ACTIVE,
+        payload: post,
+    });
 };
