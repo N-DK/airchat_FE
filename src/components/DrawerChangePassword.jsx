@@ -90,7 +90,7 @@ const ItemNotification = ({ item, handle, indexActive }) => {
     );
 };
 
-const DrawerNotification = () => {
+const DrawerChangePassword = () => {
     const { showDrawerNotification, toggleShowDrawerNotification } =
         useContext(AppContext);
     const dispatch = useDispatch();
@@ -136,4 +136,4 @@ const DrawerNotification = () => {
     );
 };
 
-export default DrawerNotification;
+export default DrawerChangePassword;
