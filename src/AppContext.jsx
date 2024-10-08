@@ -17,6 +17,8 @@ export const AppProvider = ({ children }) => {
     const [showDrawerBlockAccount, setShowDrawerBlockAccount] = useState(false);
     const [showDrawerNewDirect, setShowDrawerNewDirect] = useState(false);
     const [showDrawerNotification, setShowDrawerNotification] = useState(false);
+    const [showDrawerChangePassword, setShowDrawerChangePassword] =
+        useState(false);
 
     const toggleIsAddChannel = () => setIsAddChannel((prev) => !prev);
     const toggleIsEditChannel = () => setIsEditChannel((prev) => !prev);
@@ -35,6 +37,9 @@ export const AppProvider = ({ children }) => {
         setShowDrawerNewDirect((prev) => !prev);
     const toggleShowDrawerNotification = () =>
         setShowDrawerNotification((prev) => !prev);
+    const toggleShowDrawerChangePassword = () => {
+        setShowDrawerChangePassword((prev) => !prev);
+    };
     return (
         <AppContext.Provider
             value={{
@@ -64,6 +69,8 @@ export const AppProvider = ({ children }) => {
                 toggleIsEditChannel,
                 showDrawerNotification,
                 toggleShowDrawerNotification,
+                showDrawerChangePassword,
+                toggleShowDrawerChangePassword,
             }}
         >
             {children}

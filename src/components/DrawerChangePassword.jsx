@@ -1,138 +1,172 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { FaAngleLeft } from 'react-icons/fa';
+import { FaAngleLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { AppContext } from '../AppContext';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-    getNotification,
-    settingNotification,
-} from '../redux/actions/UserActions';
 import '../App.css';
-import { HiOutlineChevronUpDown } from 'react-icons/hi2';
+import { changePassword } from '../redux/actions/UserActions';
 
-const settings = [
-    {
-        name: 'Replies',
-        key: 'replies',
-    },
-    {
-        name: 'Mentions',
-        key: 'mentions',
-    },
-    {
-        name: 'Likes',
-        key: 'likes',
-    },
-    {
-        name: 'Reposts',
-        key: 'reposts',
-        isBorder: false,
-    },
-];
+const Notify = ({ message, show }) => (
+    <div
+        className={`bg-white absolute top-0 left-1/2 transform -translate-x-1/2 w-auto z-50 dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+            show ? 'translate-y-0 mt-3' : '-translate-y-[120%]'
+        }`}
+    >
+        <h6 className="text-black dark:text-white">{message}</h6>
+    </div>
+);
 
-const settingsNotification = ['None', 'Following', 'All'];
+const InputPassword = ({ label, value, setValue }) => {
+    const [showPassword, setShowPassword] = useState(false);
 
-const ItemNotification = ({ item, handle, indexActive }) => {
-    const [activeText, setActiveText] = useState(
-        settingsNotification[indexActive],
-    );
-    const dispatch = useDispatch();
-    useEffect(() => {
-        setActiveText(settingsNotification[indexActive]);
-    }, [indexActive]);
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
     return (
-        <div
-            className={`flex items-center justify-between py-4 mx-6 ${
-                item.isBorder || item.isBorder === undefined
-                    ? 'border-b dark:border-grayPrimary'
-                    : ''
-            } dark:text-white`}
-        >
-            <p>{item.name}</p>
-            <Menu
-                as="div"
-                className="relative inline-block text-left z-[999px]"
-            >
-                <MenuButton className="relative flex items-center text-gray-500 dark:text-gray-400">
-                    {activeText}
-                    <HiOutlineChevronUpDown className="text-xl md:text-[30px]" />
-                </MenuButton>
-
-                <MenuItems
-                    transition
-                    className="z-[999] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary dark:border-none"
+        <div className="flex flex-col mt-5 ">
+            <label className="text-black dark:text-white font-semibold">
+                {label}
+            </label>
+            <div className="relative mt-2">
+                <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    className="w-full h-12 px-4  rounded-lg dark:bg-darkPrimary dark:text-white outline-none"
+                    autoComplete="new-password"
+                    style={{
+                        WebkitTextSecurity: showPassword ? 'none' : 'disc', // Ẩn mật khẩu
+                    }}
+                />
+                <div
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                    onClick={togglePasswordVisibility}
                 >
-                    <div className="py-1">
-                        {settingsNotification.map((not, index) => (
-                            <MenuItem key={index}>
-                                <p
-                                    onClick={() => {
-                                        dispatch(
-                                            settingNotification({
-                                                [item.key]: index,
-                                            }),
-                                        );
-                                        setActiveText(
-                                            settingsNotification[index],
-                                        );
-                                    }}
-                                    className="p-2 px-4"
-                                >
-                                    {not}
-                                </p>
-                            </MenuItem>
-                        ))}
-                    </div>
-                </MenuItems>
-            </Menu>
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
+            </div>
         </div>
     );
 };
 
 const DrawerChangePassword = () => {
-    const { showDrawerNotification, toggleShowDrawerNotification } =
+    const { showDrawerChangePassword, toggleShowDrawerChangePassword } =
         useContext(AppContext);
     const dispatch = useDispatch();
-    const { notification } = useSelector((state) => state.userGetNotification);
+    const { isSuccess, error: errorChangePassword } = useSelector(
+        (state) => state.userChangePassword,
+    );
+
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isContinue, setIsContinue] = useState(false);
+    const [error, setError] = useState('');
+    const [showNotify, setShowNotify] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
+
+    const handleChangePassword = () => {
+        if (isContinue) {
+            dispatch(
+                changePassword({
+                    old_pass: oldPassword,
+                    new_pass: newPassword,
+                    logout_all: 1,
+                }),
+            );
+        }
+    };
 
     useEffect(() => {
-        dispatch(getNotification());
-    }, []);
+        if (!oldPassword || !newPassword || !confirmPassword) {
+            setIsContinue(false);
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setError('Password does not match');
+            setIsContinue(false);
+        } else if (newPassword.length < 6) {
+            setError('Password must be at least 6 characters');
+            setIsContinue(false);
+        } else {
+            setError('');
+            setIsContinue(true);
+        }
+    }, [oldPassword, newPassword, confirmPassword]);
+
+    useEffect(() => {
+        if (errorChangePassword) {
+            setError(errorChangePassword);
+        }
+    }, [errorChangePassword]);
+
+    useEffect(() => {
+        if (isSuccess) {
+            setShowNotify(true);
+            setNotifyMessage('Change password successfully');
+            setTimeout(() => setShowNotify(false), 1200);
+        }
+    }, [isSuccess]);
 
     return (
-        <>
-            <div
-                className={`absolute left-0 top-0 z-50 w-full h-screen transition-all duration-300 ${
-                    showDrawerNotification
-                        ? 'translate-x-0'
-                        : 'translate-x-full'
-                }`}
-            >
-                <div className="bg-white dark:bg-dark2Primary h-full">
-                    <div className="relative px-5 md:px-10 flex justify-center items-center pt-12 pb-4 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300 dark:border-grayPrimary">
-                        <button
-                            className="text-black dark:text-white absolute left-4"
-                            onClick={toggleShowDrawerNotification}
-                        >
-                            <FaAngleLeft className="text-lg md:text-[22px]" />
-                        </button>
-                        <div className="text-black dark:text-white font-semibold">
-                            Notification Settings
+        <div>
+            <div>
+                <div
+                    className={`absolute left-0 top-0 z-50 w-full h-screen transition-all duration-300 ${
+                        showDrawerChangePassword
+                            ? 'translate-x-0'
+                            : 'translate-x-full'
+                    }`}
+                >
+                    <div className="bg-white dark:bg-dark2Primary h-full relative">
+                        <div className="relative px-5 md:px-10 flex justify-center items-center pt-12 pb-4 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300 dark:border-grayPrimary">
+                            <button
+                                className="text-black dark:text-white absolute left-4"
+                                onClick={toggleShowDrawerChangePassword}
+                            >
+                                <FaAngleLeft className="text-lg md:text-[22px]" />
+                            </button>
+                            <div className="text-black dark:text-white font-semibold">
+                                Change Password
+                            </div>
                         </div>
-                    </div>
-                    <div className="mx-5 rounded-2xl mt-6 dark:bg-darkPrimary">
-                        {settings?.map((setting) => (
-                            <ItemNotification
-                                key={setting.name}
-                                item={setting}
-                                indexActive={notification?.[setting.key]}
+                        <div className="mx-5 mt-6">
+                            <InputPassword
+                                label={'Old password'}
+                                value={oldPassword}
+                                setValue={setOldPassword}
                             />
-                        ))}
+                            <InputPassword
+                                label={'New password'}
+                                value={newPassword}
+                                setValue={setNewPassword}
+                            />
+                            <InputPassword
+                                label={'Confirm password'}
+                                value={confirmPassword}
+                                setValue={setConfirmPassword}
+                            />
+                        </div>
+                        <div className="mt-3 mx-5">
+                            <span className="text-red-500">{error}</span>
+                        </div>
+                        <button
+                            disabled={!isContinue}
+                            onClick={handleChangePassword}
+                            className={`absolute bottom-10 w-[90%] left-1/2 -translate-x-1/2 h-12 bg-blue-500 text-white rounded-lg ${
+                                isContinue
+                                    ? ''
+                                    : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-gray-500'
+                            }`}
+                        >
+                            Change password
+                        </button>
                     </div>
                 </div>
+                <Notify message={notifyMessage} show={showNotify} />
             </div>
-        </>
+        </div>
     );
 };
 

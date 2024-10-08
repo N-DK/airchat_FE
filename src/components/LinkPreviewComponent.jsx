@@ -35,7 +35,7 @@ const LinkPreviewComponent = ({ post_id, url, setData }) => {
             <div
                 onClick={(e) => {
                     e.stopPropagation();
-                    navigate(preview.url);
+                    window.location.href = preview.url;
                 }}
                 className="grid"
             >

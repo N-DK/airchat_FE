@@ -101,6 +101,9 @@ import {
     USER_SETTING_NOTIFICATION_REQUEST,
     USER_SETTING_NOTIFICATION_SUCCESS,
     USER_SETTING_NOTIFICATION_FAIL,
+    USER_CHANGE_PASSWORD_REQUEST,
+    USER_CHANGE_PASSWORD_SUCCESS,
+    USER_CHANGE_PASSWORD_FAIL,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -546,6 +549,19 @@ export const userSettingNotificationReducer = (state = {}, action) => {
         case USER_SETTING_NOTIFICATION_SUCCESS:
             return { loading: false, isSuccess: action.payload };
         case USER_SETTING_NOTIFICATION_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userChangePasswordReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_CHANGE_PASSWORD_REQUEST:
+            return { loading: true };
+        case USER_CHANGE_PASSWORD_SUCCESS:
+            return { loading: false, isSuccess: action.payload };
+        case USER_CHANGE_PASSWORD_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

@@ -11,9 +11,16 @@ import {
 } from '../redux/actions/UserActions';
 import { FaAngleLeft, FaSpinner } from 'react-icons/fa6';
 import Message from './Message';
+import DrawerChangePassword from './DrawerChangePassword';
 
 export default function EditProfile() {
-    const { isEditProfile, toggleIsEditProfile } = useContext(AppContext);
+    const {
+        isEditProfile,
+        toggleIsEditProfile,
+        showDrawerChangePassword,
+        toggleShowDrawerChangePassword,
+    } = useContext(AppContext);
+
     const modalRef = useRef(null);
     const dispatch = useDispatch();
 
@@ -228,6 +235,19 @@ export default function EditProfile() {
                             onChange={(e) => setBio(e.target.value)}
                         />
                     </div>
+                    <div
+                        onClick={toggleShowDrawerChangePassword}
+                        className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5"
+                    >
+                        <h6 className="text-black dark:text-white md:text-xl">
+                            Password
+                        </h6>
+                        <input
+                            className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
+                            type="password"
+                            value={'********'}
+                        />
+                    </div>
                     <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
                         <h6 className="text-black dark:text-white md:text-xl">
                             Website
@@ -250,6 +270,7 @@ export default function EditProfile() {
                     </div>
                 </div>
             </div>
+            <DrawerChangePassword />
             {sendMessage && <Message />}
         </div>
     );

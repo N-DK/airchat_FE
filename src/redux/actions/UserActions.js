@@ -97,6 +97,9 @@ import {
     USER_SETTING_NOTIFICATION_REQUEST,
     USER_SETTING_NOTIFICATION_SUCCESS,
     USER_SETTING_NOTIFICATION_FAIL,
+    USER_CHANGE_PASSWORD_REQUEST,
+    USER_CHANGE_PASSWORD_SUCCESS,
+    USER_CHANGE_PASSWORD_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -1194,11 +1197,45 @@ export const settingNotification = (data) => async (dispatch, getState) => {
         );
         dispatch({
             type: USER_SETTING_NOTIFICATION_SUCCESS,
-            payload: _data.result,
+            payload: _data.results,
         });
     } catch (error) {
         dispatch({
             type: USER_SETTING_NOTIFICATION_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const changePassword = (data) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_CHANGE_PASSWORD_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data: _data } = await axios.post(
+            'https://talkie.transtechvietnam.com/change-password',
+            data,
+            config,
+        );
+        dispatch({
+            type: USER_CHANGE_PASSWORD_SUCCESS,
+            payload: _data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_CHANGE_PASSWORD_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message
