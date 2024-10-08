@@ -33,6 +33,7 @@ import {
     userAddRecentSearchReducer,
     userClearRecentSearchReducer,
     userGetNotificationReducer,
+    userSettingNotificationReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -123,6 +124,7 @@ const reducer = combineReducers({
     setObjectActive: setObjectActiveReducer,
     setObjectAudioCurrent: setObjectAudioCurrentReducer,
     postUpdate: postUpdateReducer,
+    userSettingNotification: userSettingNotificationReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

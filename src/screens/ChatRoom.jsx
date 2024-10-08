@@ -53,6 +53,8 @@ const ChatRoom = () => {
 
     const handleNewMessage = useCallback(
         (message) => {
+            console.log('new message', message);
+
             setMessages((prevMessages) => [
                 ...prevMessages,
                 {
@@ -65,6 +67,7 @@ const ChatRoom = () => {
                     video: message.videoPath,
                     number_heart: 0,
                     created_at: Date.now() / 1000,
+                    sender_avt: message.avatarw,
                 },
             ]);
         },
@@ -170,9 +173,11 @@ const ChatRoom = () => {
                                 ],
                                 id: prev?.[prev.length - 1]?.id + 1,
                                 sender_id: userInfo?.id,
+                                sender_name: userInfo?.name,
                                 message: newMessage,
                                 number_heart: 0,
                                 created_at: Date.now() / 1000,
+                                sender_avt: userInfo?.image,
                             },
                         ];
                     });

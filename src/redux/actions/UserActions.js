@@ -94,6 +94,9 @@ import {
     USER_GET_NOTIFICATION_REQUEST,
     USER_GET_NOTIFICATION_SUCCESS,
     USER_GET_NOTIFICATION_FAIL,
+    USER_SETTING_NOTIFICATION_REQUEST,
+    USER_SETTING_NOTIFICATION_SUCCESS,
+    USER_SETTING_NOTIFICATION_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -1162,6 +1165,40 @@ export const getNotification = () => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: USER_GET_NOTIFICATION_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const settingNotification = (data) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_SETTING_NOTIFICATION_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data: _data } = await axios.post(
+            'https://talkie.transtechvietnam.com/setting-notification',
+            data,
+            config,
+        );
+        dispatch({
+            type: USER_SETTING_NOTIFICATION_SUCCESS,
+            payload: _data.result,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_SETTING_NOTIFICATION_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

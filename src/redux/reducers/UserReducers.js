@@ -98,6 +98,9 @@ import {
     USER_GET_NOTIFICATION_REQUEST,
     USER_GET_NOTIFICATION_SUCCESS,
     USER_GET_NOTIFICATION_FAIL,
+    USER_SETTING_NOTIFICATION_REQUEST,
+    USER_SETTING_NOTIFICATION_SUCCESS,
+    USER_SETTING_NOTIFICATION_FAIL,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -530,6 +533,19 @@ export const userGetNotificationReducer = (state = {}, action) => {
         case USER_GET_NOTIFICATION_SUCCESS:
             return { loading: false, notification: action.payload };
         case USER_GET_NOTIFICATION_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userSettingNotificationReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_SETTING_NOTIFICATION_REQUEST:
+            return { loading: true };
+        case USER_SETTING_NOTIFICATION_SUCCESS:
+            return { loading: false, isSuccess: action.payload };
+        case USER_SETTING_NOTIFICATION_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;
