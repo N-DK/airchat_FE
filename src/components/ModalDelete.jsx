@@ -8,6 +8,7 @@ export default function ModalDelete({
     handle,
     title = 'Delete',
     subTitle = 'This action cannot be undone.',
+    buttonOKText = 'Delete',
 }) {
     function closeModal() {
         setIsOpen(false);
@@ -78,7 +79,7 @@ export default function ModalDelete({
                                                     closeModal();
                                                 }}
                                             >
-                                                Delete
+                                                {buttonOKText}
                                             </button>
                                         </div>
                                     </div>

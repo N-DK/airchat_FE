@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Avatar } from 'antd';
+import { Avatar, Mentions } from 'antd';
 import moment from 'moment';
 import {
     FaRegHeart,
@@ -11,19 +11,46 @@ import {
     FaRegBookmark,
     FaChartLine,
 } from 'react-icons/fa';
-import { PiArrowsClockwiseBold } from 'react-icons/pi';
+import { PiArrowsClockwiseBold, PiSpinnerBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
-import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
+import { RiAddLine, RiDeleteBin6Line, RiSearch2Line } from 'react-icons/ri';
 import {
     bookMark,
     deletePost,
     heart,
+    updatePost,
     uploadImage,
 } from '../redux/actions/PostActions';
 import ListPostItems from './ListPostItems';
 import { LuImagePlus } from 'react-icons/lu';
 import LoadingSpinner from './LoadingSpinner';
 import CustomContextMenuDeletePhoto from './CustomContextMenuDeletePhoto';
+import { IoMdLink } from 'react-icons/io';
+import { GoMention } from 'react-icons/go';
+import useDebounce from '../hooks/useDebounce';
+import { searchUser } from '../redux/actions/MessageAction';
+import { SEARCH_USER_SUCCESS } from '../redux/constants/MessageConstants';
+import LinkPreviewComponent from './LinkPreviewComponent';
+
+const MentionsItem = ({ user, handle, isMentions }) => {
+    return (
+        <div
+            onClick={handle}
+            className={`flex items-center p-2 py-1 rounded-lg  mr-2 ${
+                isMentions ? 'dark:bg-blue-500' : 'dark:bg-darkPrimary'
+            }`}
+        >
+            <figure className="mr-1 w-5 h-5 flex items-center justify-center">
+                <Avatar
+                    src={`https://talkie.transtechvietnam.com/${user?.image}`}
+                    alt="avatar"
+                    className=" w-full h-full"
+                />
+            </figure>
+            <p className="dark:text-white text-sm">{user?.name}</p>
+        </div>
+    );
+};
 
 const ListPostProfile = ({
     list,
@@ -33,6 +60,8 @@ const ListPostProfile = ({
     setIsOpenDeletePhoto,
     setIdDeletePhoto,
     isDeleteFilePhoto,
+    setIsOpenLink,
+    urlPaste,
 }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -40,6 +69,7 @@ const ListPostProfile = ({
     const [targetElement, setTargetElement] = useState(null);
     const [rect, setRect] = useState(null);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
+    const [isShowSearch, setIsShowSearch] = useState(false);
 
     const { loading: loadingUpload, success } = useSelector(
         (state) => state.postUploadImage,
@@ -137,49 +167,181 @@ const ListPostProfile = ({
         );
     };
 
-    const renderPostContent = (item) => (
-        <div onClick={() => handleNavigate(item)}>
-            {renderPostHeader(item)}
-            <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
-                {item.content}
-            </p>
-            {(item?.img || file) && (
-                <figure
-                    onTouchStart={(e) => {
-                        e.stopPropagation();
-                        handleTouchStart(item);
-                    }}
-                    onTouchEnd={handleTouchEnd}
-                    id={`delete-photo-${item.id}`}
-                    className="max-w-full relative min-h-40"
-                >
-                    <Avatar
-                        src={
-                            file
-                                ? convertObjectURL(file)
-                                : `https://talkie.transtechvietnam.com/${item?.img}`
-                        }
-                        className=" w-full h-full object-cover rounded-xl"
-                    />
-                    {(loadingUpload || loadingDeletePhoto) && (
-                        <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
-                            <LoadingSpinner />
+    const renderPostContent = (item) => {
+        const [searchText, setSearchText] = useState('');
+        const [result, setResult] = useState([]);
+        const [tagsUser, setTagsUser] = useState(item?.tag_user_detail);
+        const [data, setData] = useState(item);
+        const debouncedSearch = useDebounce(searchText, 500);
+        const debouncedTagsUser = useDebounce(tagsUser, 200);
+        const isFirstRender = useRef(true);
+
+        const { users, loading } = useSelector((state) => state.searchUser);
+
+        const handleMentions = (user) => {
+            if (tagsUser.some((tag) => tag?.id === user?.id)) {
+                setTagsUser((prev) =>
+                    prev.filter((tag) => tag?.id !== user?.id),
+                );
+            } else {
+                setTagsUser((prev) => [...prev, user]);
+            }
+        };
+
+        const isMentions = (user_id) => {
+            return tagsUser?.some((tag) => tag?.id === user_id);
+        };
+
+        useEffect(() => {
+            if (isFirstRender.current) {
+                isFirstRender.current = false;
+                return;
+            }
+
+            dispatch(
+                updatePost(data.id, {
+                    tag_user:
+                        debouncedTagsUser.map((tag) => tag.id).length === 0
+                            ? null
+                            : debouncedTagsUser.map((tag) => tag.id),
+                }),
+            );
+        }, [debouncedTagsUser]);
+
+        useEffect(() => {
+            if (debouncedSearch) {
+                dispatch(searchUser(debouncedSearch));
+            } else {
+                setResult([]);
+                dispatch({ type: SEARCH_USER_SUCCESS, payload: [] });
+            }
+        }, [debouncedSearch]);
+
+        useEffect(() => {
+            if (users.length > 0) {
+                setResult([
+                    ...users.filter(
+                        (user) =>
+                            !tagsUser.some((tag) => tag?.id === user?.id) &&
+                            user?.id !== userInfo.id,
+                    ),
+                    ...tagsUser,
+                ]);
+            }
+        }, [users]);
+
+        return (
+            <div onClick={() => handleNavigate(data)}>
+                {renderPostHeader(data)}
+                <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
+                    {data.content}
+                </p>
+                {(data.tag_user || tagsUser.length > 0) && (
+                    <div className="flex flex-wrap">
+                        {tagsUser?.map((tag, i) => (
+                            <span
+                                className={`font-semibold dark:text-white mr-2`}
+                                key={i}
+                            >
+                                {tag?.name}
+                            </span>
+                        ))}
+                    </div>
+                )}
+                {(data.img || file) && (
+                    <figure
+                        onTouchStart={(e) => {
+                            e.stopPropagation();
+                            handleTouchStart(item);
+                        }}
+                        onTouchEnd={handleTouchEnd}
+                        id={`delete-photo-${data.id}`}
+                        className="max-w-full relative min-h-40 mt-2"
+                    >
+                        <Avatar
+                            src={
+                                file
+                                    ? convertObjectURL(file)
+                                    : `https://talkie.transtechvietnam.com/${data.img}`
+                            }
+                            className=" w-full h-full object-cover rounded-xl"
+                        />
+                        {(loadingUpload || loadingDeletePhoto) && (
+                            <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
+                                <LoadingSpinner />
+                            </div>
+                        )}
+                    </figure>
+                )}
+                {(data.url || urlPaste) && (
+                    <div>
+                        <LinkPreviewComponent
+                            url={urlPaste ?? data.url}
+                            post_id={data.id}
+                            setData={setData}
+                        />
+                    </div>
+                )}
+                <div className="flex items-center mt-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleUploadAvatar(data.id);
+                        }}
+                    >
+                        <LuImagePlus className="dark:text-white mr-2" />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsOpenLink(true);
+                        }}
+                    >
+                        <IoMdLink className="dark:text-white mr-2" size={20} />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsShowSearch((prev) => !prev);
+                        }}
+                    >
+                        <GoMention className="dark:text-white mr-2" />
+                    </button>
+                </div>
+                {isShowSearch && (
+                    <>
+                        <div className="w-[80%] flex flex-wrap gap-1 mt-2">
+                            {(result.length > 0 ? result : tagsUser).map(
+                                (user, i) => (
+                                    <MentionsItem
+                                        key={i}
+                                        user={user}
+                                        handle={(e) => {
+                                            e.stopPropagation();
+                                            handleMentions(user);
+                                        }}
+                                        isMentions={isMentions(user?.id)}
+                                    />
+                                ),
+                            )}
                         </div>
-                    )}
-                </figure>
-            )}
-            <div className="flex items-center mt-2">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        handleUploadAvatar(item?.id);
-                    }}
-                >
-                    <LuImagePlus className="dark:text-white" />
-                </button>
+                        <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%]">
+                            <input
+                                onChange={(e) => setSearchText(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                placeholder="Search"
+                                className="border-none outline-none bg-transparent w-full dark:text-white dark:placeholder-gray-400"
+                            />
+                            <RiSearch2Line className="dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
+                            {loading && (
+                                <PiSpinnerBold className="dark:text-white absolute right-1 top-1/2 -translate-y-1/2 spinner" />
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
-        </div>
-    );
+        );
+    };
 
     const renderPostOptions = (item) => {
         const [isBookMark, setIsBookMark] = useState(!!item.bookmark);

@@ -70,10 +70,12 @@ export default function Profile() {
     const [listPostUserProfile, setListPostUserProfile] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isOpenDeletePhoto, setIsOpenDeletePhoto] = useState(false);
+    const [isOpenLink, setIsOpenLink] = useState(false);
     const [idDelete, setIdDelete] = useState(null);
     const [idDeletePhoto, setIdDeletePhoto] = useState(null);
     const [typeDrawer, setTypeDrawer] = useState(null);
     const [isDeleteFilePhoto, setIsDeleteFilePhoto] = useState(false);
+    const [urlPaste, setUrlPaste] = useState(null);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -170,6 +172,12 @@ export default function Profile() {
         },
         [dispatch],
     );
+
+    const handlePasteUrl = useCallback(() => {
+        navigator.clipboard.readText().then((text) => {
+            setUrlPaste(text);
+        });
+    }, []);
 
     useEffect(() => {
         if (showDrawerFollow) toggleShowDrawerFollow();
@@ -308,8 +316,10 @@ export default function Profile() {
                     setIdDelete={setIdDelete}
                     userInfo={userInfo}
                     setIsOpenDeletePhoto={setIsOpenDeletePhoto}
+                    setIsOpenLink={setIsOpenLink}
                     setIdDeletePhoto={setIdDeletePhoto}
                     isDeleteFilePhoto={isDeleteFilePhoto}
+                    urlPaste={urlPaste}
                 />
             );
         }
@@ -547,12 +557,19 @@ export default function Profile() {
                 handle={() => handleAction(deletePost, idDelete)}
             />
             <ModalDelete
+                title="Add Link"
+                subTitle="Would you like to paste link from clipboard to add it?"
+                isOpen={isOpenLink}
+                setIsOpen={setIsOpenLink}
+                handle={handlePasteUrl}
+                buttonOKText="Paste"
+            />
+            <ModalDelete
                 title="Are you sure you want to delete this photo?"
                 subTitle=""
                 isOpen={isOpenDeletePhoto}
                 setIsOpen={setIsOpenDeletePhoto}
                 handle={() => {
-                    // listPostProfile?.find((item) => item.id == idDeletePhoto).img = null;
                     setListPostUserProfile((prev) =>
                         prev.map((item) =>
                             item.id == idDeletePhoto

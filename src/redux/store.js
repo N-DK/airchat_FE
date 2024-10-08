@@ -47,6 +47,7 @@ import {
     postUploadImageReducer,
     postDeletePhotoReducer,
     setPostActiveReducer,
+    postUpdateReducer,
 } from './reducers/PostReducers';
 import {
     channelListReducer,
@@ -121,6 +122,7 @@ const reducer = combineReducers({
     setPostActive: setPostActiveReducer,
     setObjectActive: setObjectActiveReducer,
     setObjectAudioCurrent: setObjectAudioCurrentReducer,
+    postUpdate: postUpdateReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

@@ -34,6 +34,9 @@ import {
     POST_DELETE_PHOTO_SUCCESS,
     POST_DELETE_PHOTO_FAIL,
     SET_POST_ACTIVE,
+    POST_UPDATE_REQUEST,
+    POST_UPDATE_SUCCESS,
+    POST_UPDATE_FAIL,
 } from '../constants/PostConstants';
 
 export const submitPost = (content, audio) => async (dispatch, getState) => {
@@ -411,6 +414,40 @@ export const deletePhoto = (id_post) => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: POST_DELETE_PHOTO_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const updatePost = (id_post, __data) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_UPDATE_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.post(
+            `https://talkie.transtechvietnam.com/post-status-update`,
+            { id_post, ...__data },
+            config,
+        );
+        dispatch({
+            type: POST_UPDATE_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_UPDATE_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message
