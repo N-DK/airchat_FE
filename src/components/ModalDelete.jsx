@@ -1,6 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 export default function ModalDelete({
     isOpen,
@@ -9,7 +10,10 @@ export default function ModalDelete({
     title = 'Delete',
     subTitle = 'This action cannot be undone.',
     buttonOKText = 'Delete',
+    buttonOKColor = '',
 }) {
+    const userTheme = useSelector((state) => state.userTheme);
+    const { theme } = userTheme;
     function closeModal() {
         setIsOpen(false);
     }
@@ -49,10 +53,22 @@ export default function ModalDelete({
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:dark-modal p-6 text-left align-middle shadow-xl transition-all">
+                                <Dialog.Panel
+                                    className={`w-full max-w-md transform overflow-hidden rounded-2xl p-6 text-left align-middle shadow-xl transition-all
+                                        ${
+                                            theme == 'dark'
+                                                ? 'bg-darkPrimary'
+                                                : 'bg-white'
+                                        }
+                                        `}
+                                >
                                     <Dialog.Title
                                         as="h3"
-                                        className="text-lg font-medium leading-6 text-gray-900 dark:dark-modal"
+                                        className={`text-lg font-medium leading-6  ${
+                                            theme == 'dark'
+                                                ? 'text-white'
+                                                : 'text-gray-900'
+                                        }`}
                                     >
                                         {title}
                                     </Dialog.Title>
@@ -73,7 +89,7 @@ export default function ModalDelete({
                                             </button>
                                             <button
                                                 type="button"
-                                                className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                                                className={`inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${buttonOKColor}`}
                                                 onClick={() => {
                                                     handle();
                                                     closeModal();

@@ -22,94 +22,99 @@ import Login from './screens/Login';
 import React from 'react';
 import ChatRoom from './screens/ChatRoom';
 import SearchScreen from './screens/SearchScreen';
+import PrivacyModal from './components/ModalPolicy';
+import './App.css';
 
 function App() {
     const userTheme = useSelector((state) => state.userTheme);
     const { theme } = userTheme;
 
     return (
-        <div className={`${theme == 'dark' ? 'dark' : ''}`}>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<HomeScreen />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route
-                        path="/login/phonenumber"
-                        element={<LogInPhoneNumber />}
-                    />
-                    <Route path="/login/email" element={<LogInEmail />} />
-                    <Route
-                        path="/entercode/phonenumber"
-                        element={<EnterCodePhoneNumber />}
-                    />
-                    <Route
-                        path="/entercode/email"
-                        element={<EnterCodeEmail />}
-                    />
+        <>
+            <div className={`${theme == 'dark' ? 'dark' : ''}`}>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/" element={<HomeScreen />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route
+                            path="/login/phonenumber"
+                            element={<LogInPhoneNumber />}
+                        />
+                        <Route path="/login/email" element={<LogInEmail />} />
+                        <Route
+                            path="/entercode/phonenumber"
+                            element={<EnterCodePhoneNumber />}
+                        />
+                        <Route
+                            path="/entercode/email"
+                            element={<EnterCodeEmail />}
+                        />
 
-                    <Route
-                        path="/aboutyou"
-                        element={<PrivateRouter comp={AboutYou} />}
-                    />
-                    <Route
-                        path="/selectavatar"
-                        element={<PrivateRouter comp={SelectAvatar} />}
-                    />
-                    <Route
-                        path="/selectpermissions"
-                        element={<PrivateRouter comp={SelectPermissions} />}
-                    />
-                    <Route
-                        path="/selectinterested"
-                        element={<PrivateRouter comp={SelectInterested} />}
-                    />
-                    <Route
-                        path="/chatting"
-                        element={<PrivateRouter comp={Chatting} />}
-                    />
-                    <Route
-                        path="/seeall"
-                        element={<PrivateRouter comp={SeeAll} />}
-                    />
-                    <Route
-                        path="/search"
-                        element={<PrivateRouter comp={SearchScreen} />}
-                    />
-                    <Route
-                        path="/notifications"
-                        element={<PrivateRouter comp={Notifications} />}
-                    />
-                    <Route
-                        path="/messages"
-                        element={<PrivateRouter comp={Messages} />}
-                    />
-                    <Route
-                        path="/messages/t/:id"
-                        element={<PrivateRouter comp={ChatRoom} />}
-                    />
-                    <Route
-                        path="/profile"
-                        element={<PrivateRouter comp={Profile} />}
-                    />
-                    <Route
-                        path="/profile/:stranger_id"
-                        element={<PrivateRouter comp={Profile} />}
-                    />
-                    <Route
-                        path="/settings"
-                        element={<PrivateRouter comp={Settings} />}
-                    />
-                    <Route
-                        path="/posts/details/:id"
-                        element={<PrivateRouter comp={Details} />}
-                    />
-                    <Route
-                        path="/channel/:id"
-                        element={<PrivateRouter comp={PostsChannel} />}
-                    />
-                </Routes>
-            </BrowserRouter>
-        </div>
+                        <Route
+                            path="/aboutyou"
+                            element={<PrivateRouter comp={AboutYou} />}
+                        />
+                        <Route
+                            path="/selectavatar"
+                            element={<PrivateRouter comp={SelectAvatar} />}
+                        />
+                        <Route
+                            path="/selectpermissions"
+                            element={<PrivateRouter comp={SelectPermissions} />}
+                        />
+                        <Route
+                            path="/selectinterested"
+                            element={<PrivateRouter comp={SelectInterested} />}
+                        />
+                        <Route
+                            path="/chatting"
+                            element={<PrivateRouter comp={Chatting} />}
+                        />
+                        <Route
+                            path="/seeall"
+                            element={<PrivateRouter comp={SeeAll} />}
+                        />
+                        <Route
+                            path="/search"
+                            element={<PrivateRouter comp={SearchScreen} />}
+                        />
+                        <Route
+                            path="/notifications"
+                            element={<PrivateRouter comp={Notifications} />}
+                        />
+                        <Route
+                            path="/messages"
+                            element={<PrivateRouter comp={Messages} />}
+                        />
+                        <Route
+                            path="/messages/t/:id"
+                            element={<PrivateRouter comp={ChatRoom} />}
+                        />
+                        <Route
+                            path="/profile"
+                            element={<PrivateRouter comp={Profile} />}
+                        />
+                        <Route
+                            path="/profile/:stranger_id"
+                            element={<PrivateRouter comp={Profile} />}
+                        />
+                        <Route
+                            path="/settings"
+                            element={<PrivateRouter comp={Settings} />}
+                        />
+                        <Route
+                            path="/posts/details/:id"
+                            element={<PrivateRouter comp={Details} />}
+                        />
+                        <Route
+                            path="/channel/:id"
+                            element={<PrivateRouter comp={PostsChannel} />}
+                        />
+                    </Routes>
+                </BrowserRouter>
+            </div>
+            <PrivacyModal />
+        </>
     );
 }
 

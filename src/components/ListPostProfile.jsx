@@ -279,6 +279,7 @@ const ListPostProfile = ({
                             url={urlPaste ?? data.url}
                             post_id={data.id}
                             setData={setData}
+                            dataUrl={data.url}
                         />
                     </div>
                 )}

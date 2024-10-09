@@ -11,6 +11,7 @@ import { HiPause } from 'react-icons/hi2';
 import { FaArrowUp } from 'react-icons/fa6';
 import RecordRTC from 'recordrtc';
 import React from 'react';
+import ModalDelete from './ModalDelete';
 
 export default function RecordModal() {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -25,6 +26,8 @@ export default function RecordModal() {
     const [recorder, setRecorder] = useState(null);
     const [stream, setStream] = useState(null);
     const [recognition, setRecognition] = useState(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isAllow, setIsAllow] = useState(false);
 
     const submitRecordHandle = () => {
         const blob = recorder.getBlob();
@@ -83,6 +86,10 @@ export default function RecordModal() {
         if (recognition) {
             recognition.stop();
         }
+    };
+
+    const handleAllow = () => {
+        setIsAllow(true);
     };
 
     useEffect(() => {
@@ -185,13 +192,23 @@ export default function RecordModal() {
                     </div>
 
                     <button
-                        onClick={() =>
-                            (audio || video) && recordContents && !permission
-                                ? submitRecordHandle()
-                                : permission
-                                ? setPermission(!permission)
-                                : getMicrophonePermission()
-                        }
+                        onClick={() => {
+                            if (isAllow) {
+                                if (
+                                    (audio || video) &&
+                                    recordContents &&
+                                    !permission
+                                ) {
+                                    submitRecordHandle();
+                                } else if (permission) {
+                                    setPermission(!permission);
+                                } else {
+                                    getMicrophonePermission();
+                                }
+                            } else {
+                                setIsOpen(true);
+                            }
+                        }}
                         className="relative flex justify-center items-center min-w-[56px] h-[56px] bg-bluePrimary text-white rounded-full shadow-md"
                     >
                         {loading ? (
@@ -210,6 +227,15 @@ export default function RecordModal() {
                     </button>
                 </div>
             </div>
+            <ModalDelete
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                title="Allow Microphone Access"
+                subTitle="Please allow microphone access to record audio for voice commands and messages."
+                handle={handleAllow}
+                buttonOKText="Allow"
+                buttonOKColor="bg-dark2Primary"
+            />
         </div>
     );
 }

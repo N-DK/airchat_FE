@@ -154,17 +154,24 @@ const ChatRoom = () => {
     }, [messages]);
 
     const sendNewMessage = useCallback(
-        (message) => {
+        (message, audio) => {
             const newMessage = message;
+            console.log('payload', {
+                sender: userInfo?.name,
+                receiver: id,
+                message: newMessage,
+                audio: audio,
+            });
+
             if (socket?.connected) {
                 sendMessage(socket, EMIT_EVENT.PRIVATE_MESSAGE, {
                     sender: userInfo?.name,
                     receiver: id,
                     message: newMessage,
+                    audio: audio,
                 });
                 if (userInfo?.id != id) {
                     setMessages((prev) => {
-                        // console.log('lastId ', prev?.[prev.length - 1]?.id);
                         return [
                             ...prev,
                             {

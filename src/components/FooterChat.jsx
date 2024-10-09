@@ -66,6 +66,10 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [touchStartX, setTouchStartX] = useState(null);
     const [isStartRecord, setIsStartRecord] = useState(false);
+    const [audio, setAudio] = useState(null);
+    const [newMessage, setNewMessage] = useState('');
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
     const recognitionRef = useRef(null);
     const { post } = useSelector((state) => state.setPostActive);
     const { object } = useSelector((state) => state.setObjectActive);
@@ -116,11 +120,41 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
         if (recognitionRef.current) {
             recognitionRef.current.start();
         }
+        // Bắt đầu ghi âm âm thanh
+        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+            mediaRecorderRef.current = new MediaRecorder(stream);
+
+            mediaRecorderRef.current.ondataavailable = (event) => {
+                audioChunksRef.current.push(event.data);
+            };
+
+            mediaRecorderRef.current.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, {
+                    type: 'audio/wav',
+                });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64data = reader.result;
+                    // console.log(base64data);
+                    // const audioUrl = URL.createObjectURL(audioBlob);
+                    setAudio(base64data); // Cập nhật state với URL của blob
+                };
+
+                audioChunksRef.current = []; // Reset chunks để ghi âm mới
+            };
+
+            mediaRecorderRef.current.start(); // Bắt đầu ghi âm
+        });
     };
 
     const stopRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
+        }
+
+        if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.stop(); // Dừng ghi âm âm thanh
         }
     };
 
@@ -140,6 +174,14 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
         dispatch(setPostActive(null));
         dispatch(setObjectActive(null));
     }, [window.location.href, dispatch]);
+
+    useEffect(() => {
+        if (audio && newMessage) {
+            if (handleSend) handleSend(newMessage, audio);
+            setNewMessage('');
+            setAudio(null);
+        }
+    }, [audio, newMessage]);
 
     useEffect(() => {
         audioCurrent?.pause();
@@ -167,9 +209,11 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
             };
 
             recognition.onend = () => {
-                if (newTranscript && touchStartX >= 120) {
-                    if (handleSend) handleSend(newTranscript);
-                }
+                setNewMessage(newTranscript);
+                // if (newTranscript && touchStartX >= 120) {
+
+                // }
+                // if (handleSend) handleSend(newTranscript, audio);
             };
 
             recognitionRef.current = recognition;

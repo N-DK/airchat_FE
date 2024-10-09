@@ -29,6 +29,7 @@ import {
     disconnectSocket,
 } from '../redux/actions/MessageAction';
 import { CHANNEL_ADD_RESET } from '../redux/constants/ChannelConstants';
+import PrivacyModal from '../components/ModalPolicy';
 
 const INITIAL_LIMIT = 100;
 const INITIAL_OFFSET = 0;
@@ -64,13 +65,13 @@ export default function Chatting() {
     const { isSuccess: isSuccessFollow } = useSelector(
         (state) => state.userFollow,
     );
+
     const { channel, error } = useSelector((state) => state.channelAdd);
     const {
         posts: postListData,
         pages,
         loading,
     } = useSelector((state) => state.postList);
-    // const { socket, isConnected } = useSelector((state) => state.socket);
 
     const {
         isAddChannel,
@@ -218,13 +219,6 @@ export default function Chatting() {
 
         filterPostsWithAudio();
     }, [postListData]);
-
-    // useEffect(() => {
-    //     dispatch(connectSocket());
-    //     return () => {
-    //         dispatch(disconnectSocket());
-    //     };
-    // }, [dispatch]);
 
     useEffect(() => {
         if (channel || error) {

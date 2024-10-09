@@ -166,6 +166,10 @@ input[type='password']::-webkit-textfield-decoration-container {
     background-position: right;
 }
 
+.dark-modal {
+    background-color: #334155;
+}
+
 @keyframes animate {
     0% {
         background-position: left;

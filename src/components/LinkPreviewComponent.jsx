@@ -4,11 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { updatePost } from '../redux/actions/PostActions';
 import { IoCloseCircleOutline } from 'react-icons/io5';
 
-const LinkPreviewComponent = ({ post_id, url, setData }) => {
+const LinkPreviewComponent = ({ post_id, url, setData, dataUrl }) => {
     const [preview, setPreview] = useState(null);
     const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const isFirstRender = useRef(true);
     useEffect(() => {
         const fetchLinkPreview = async (url) => {
             const apiKey = '757012f243f5896e3548199d85b8108b';
@@ -19,9 +17,7 @@ const LinkPreviewComponent = ({ post_id, url, setData }) => {
             );
             const data = await response.json();
             if (data.error) return;
-            if (isFirstRender.current) {
-                isFirstRender.current = false;
-            } else {
+            if (dataUrl !== url) {
                 dispatch(updatePost(post_id, { url }));
             }
             setPreview(data);
