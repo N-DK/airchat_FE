@@ -115,14 +115,12 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     const startRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.start();
-            // setIsRecording(true);
         }
     };
 
     const stopRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
-            // setIsRecording(false);
         }
     };
 
@@ -152,7 +150,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
             const recognition = new window.webkitSpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'en-US'; // You can make this dynamic
+            recognition.lang = 'en-US'; // 'vi-VN'
             let newTranscript = '';
             recognition.onresult = (event) => {
                 let interimTranscript = '';

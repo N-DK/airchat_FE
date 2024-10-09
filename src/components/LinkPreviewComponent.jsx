@@ -55,7 +55,7 @@ const LinkPreviewComponent = ({ post_id, url, setData }) => {
                         className="absolute top-3 right-3 p-1 dark:text-white"
                         onClick={(e) => {
                             e.stopPropagation();
-                            dispatch(updatePost(post_id, { url: null }));
+                            dispatch(updatePost(post_id, { url: '' }));
                             setData((prev) => ({ ...prev, url: null }));
                         }}
                     >

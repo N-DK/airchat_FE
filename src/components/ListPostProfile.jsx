@@ -202,7 +202,7 @@ const ListPostProfile = ({
                 updatePost(data.id, {
                     tag_user:
                         debouncedTagsUser.map((tag) => tag.id).length === 0
-                            ? null
+                            ? ''
                             : debouncedTagsUser.map((tag) => tag.id),
                 }),
             );
