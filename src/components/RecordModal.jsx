@@ -21,6 +21,8 @@ export default function RecordModal({ handle }) {
     // const redirect = useLocation().search.split("=")[1] || "trending";
     const dispatch = useDispatch();
     const postSubmit = useSelector((state) => state.postSubmit);
+    const { post } = useSelector((state) => state.setPostActive);
+
     const { loading } = postSubmit;
     const [permission, setPermission] = useState(false);
     const [audio, setAudio] = useState(null);
@@ -47,7 +49,7 @@ export default function RecordModal({ handle }) {
                 if (isRecord) toggleIsRecord();
             };
         } else {
-            dispatch(submitPost(recordContents, audioFile));
+            dispatch(submitPost(recordContents, audioFile, post?.id));
         }
     };
 
@@ -104,6 +106,21 @@ export default function RecordModal({ handle }) {
 
     const handleAllow = () => {
         setIsAllow(true);
+        handleClick();
+    };
+
+    const handleClick = () => {
+        if (isAllow) {
+            if ((audio || video) && recordContents && !permission) {
+                submitRecordHandle();
+            } else if (permission) {
+                setPermission(!permission);
+            } else {
+                getMicrophonePermission();
+            }
+        } else {
+            setIsOpen(true);
+        }
     };
 
     useEffect(() => {
@@ -276,23 +293,7 @@ export default function RecordModal({ handle }) {
                     </div>
 
                     <button
-                        onClick={() => {
-                            if (isAllow) {
-                                if (
-                                    (audio || video) &&
-                                    recordContents &&
-                                    !permission
-                                ) {
-                                    submitRecordHandle();
-                                } else if (permission) {
-                                    setPermission(!permission);
-                                } else {
-                                    getMicrophonePermission();
-                                }
-                            } else {
-                                setIsOpen(true);
-                            }
-                        }}
+                        onClick={handleClick}
                         className="relative flex justify-center items-center min-w-[56px] h-[56px] bg-bluePrimary text-white rounded-full shadow-md"
                     >
                         {loading ? (

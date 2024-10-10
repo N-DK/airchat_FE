@@ -35,6 +35,7 @@ import {
     userGetNotificationReducer,
     userSettingNotificationReducer,
     userChangePasswordReducer,
+    listNotificationReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -127,6 +128,7 @@ const reducer = combineReducers({
     postUpdate: postUpdateReducer,
     userSettingNotification: userSettingNotificationReducer,
     userChangePassword: userChangePasswordReducer,
+    listNotification: listNotificationReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

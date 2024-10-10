@@ -100,6 +100,9 @@ import {
     USER_CHANGE_PASSWORD_REQUEST,
     USER_CHANGE_PASSWORD_SUCCESS,
     USER_CHANGE_PASSWORD_FAIL,
+    USER_LIST_NOTIFICATION_REQUEST,
+    USER_LIST_NOTIFICATION_SUCCESS,
+    USER_LIST_NOTIFICATION_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -1243,3 +1246,40 @@ export const changePassword = (data) => async (dispatch, getState) => {
         });
     }
 };
+
+export const getListNotification =
+    (key, limit = 10, offset = 0) =>
+    async (dispatch, getState) => {
+        try {
+            dispatch({
+                type: USER_LIST_NOTIFICATION_REQUEST,
+            });
+            const {
+                userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
+            } = getState();
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo.token ?? userInfoCode.token,
+                },
+            };
+            const { data } = await axios.post(
+                `https://talkie.transtechvietnam.com/list-notification-${key}`,
+                { limit, offset },
+                config,
+            );
+            dispatch({
+                type: USER_LIST_NOTIFICATION_SUCCESS,
+                payload: data?.data,
+                key,
+            });
+        } catch (error) {
+            dispatch({
+                type: USER_LIST_NOTIFICATION_FAIL,
+                payload:
+                    error.response && error.response.data.message
+                        ? error.response.data.message
+                        : error.message,
+            });
+        }
+    };

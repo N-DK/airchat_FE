@@ -39,48 +39,52 @@ import {
     POST_UPDATE_FAIL,
 } from '../constants/PostConstants';
 
-export const submitPost = (content, audio) => async (dispatch, getState) => {
-    try {
-        dispatch({
-            type: POST_SUBMIT_REQUEST,
-        });
-        const {
-            userLogin: { userInfo },
-        } = getState();
-        const formData = new FormData();
-        formData.append('content', content);
-        formData.append('audio', audio);
-        const config = {
-            headers: {
-                'x-cypher-token': userInfo.token,
-                'Content-Type': 'multipart/form-data',
-            },
-        };
-        const { data } = await axios.post(
-            `https://talkie.transtechvietnam.com/post-status`,
-            formData,
-            config,
-        );
-        setTimeout(() => {
+export const submitPost =
+    (content, audio, reply_post) => async (dispatch, getState) => {
+        try {
             dispatch({
-                type: POST_SUBMIT_SUCCESS,
-                payload: data.results,
+                type: POST_SUBMIT_REQUEST,
             });
-        }, 1000);
-    } catch (error) {
-        const message =
-            error.response && error.response.data.message
-                ? error.response.data.message
-                : error.message;
-        if (message === 'Not authorized, token failed') {
-            // dispatch(logout());
+            const {
+                userLogin: { userInfo },
+            } = getState();
+            const formData = new FormData();
+            formData.append('content', content);
+            formData.append('audio', audio);
+            if (reply_post) {
+                formData.append('reply_post', reply_post);
+            }
+            const config = {
+                headers: {
+                    'x-cypher-token': userInfo.token,
+                    'Content-Type': 'multipart/form-data',
+                },
+            };
+            const { data } = await axios.post(
+                `https://talkie.transtechvietnam.com/post-status`,
+                formData,
+                config,
+            );
+            setTimeout(() => {
+                dispatch({
+                    type: POST_SUBMIT_SUCCESS,
+                    payload: data.results,
+                });
+            }, 1000);
+        } catch (error) {
+            const message =
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message;
+            if (message === 'Not authorized, token failed') {
+                // dispatch(logout());
+            }
+            dispatch({
+                type: POST_SUBMIT_FAIL,
+                payload: message,
+            });
         }
-        dispatch({
-            type: POST_SUBMIT_FAIL,
-            payload: message,
-        });
-    }
-};
+    };
 
 export const listPost =
     (redirect, limit, offset, channel_id = null, trending = 0) =>

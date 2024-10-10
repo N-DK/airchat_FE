@@ -25,7 +25,7 @@ import LinkPreviewComponent from './LinkPreviewComponent';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
-function PostItem({ item, contentsChattingRef }) {
+function PostItem({ item, contentsChattingRef, setList }) {
     const navigate = useNavigate();
     const { pingStates } = usePingStates();
     const dispatch = useDispatch();

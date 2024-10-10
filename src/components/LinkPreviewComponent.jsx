@@ -42,15 +42,15 @@ const LinkPreviewComponent = ({ post_id, url, setData, dataUrl }) => {
                         <img src={preview.image} alt="Preview" />
                     </figure>
                     <div className="p-2 border-t border-gray-500">
-                        <p className="dark:text-white text-[12px]">
+                        <p className="dark:text-white text-white text-[12px]">
                             {preview.title}
                         </p>
-                        <p className="text-[12px] text-gray-500 dark:text-gray-400 line-clamp-2">
+                        <p className="text-[12px] text-gray-200 dark:text-gray-400 line-clamp-2">
                             {preview.description}
                         </p>
                     </div>
                     <button
-                        className="absolute top-3 right-3 p-1 dark:text-white"
+                        className="absolute top-3 right-3 p-1 dark:text-white text-white"
                         onClick={(e) => {
                             e.stopPropagation();
                             dispatch(updatePost(post_id, { url: '' }));

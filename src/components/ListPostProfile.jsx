@@ -305,7 +305,7 @@ const ListPostProfile = ({ list, userInfo }) => {
                         <div className="flex flex-wrap">
                             {tagsUser?.map((tag, i) => (
                                 <span
-                                    className={`font-semibold dark:text-white mr-2`}
+                                    className={`font-semibold dark:text-white text-white mr-2`}
                                     key={i}
                                 >
                                     {tag?.name}

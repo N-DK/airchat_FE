@@ -194,7 +194,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
                 const audioFile = new File([audioBlob], 'audio-recording.wav', {
                     type: 'audio/wav',
                 });
-                dispatch(submitPost(newMessage, audioFile));
+                dispatch(submitPost(newMessage, audioFile, post?.id));
             }
             setAudio(null);
             setNewMessage('');

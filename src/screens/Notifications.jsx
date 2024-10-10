@@ -1,16 +1,51 @@
 import { useEffect, useState } from 'react';
 import FooterChat from '../components/FooterChat';
-import { HiOutlineDotsHorizontal } from 'react-icons/hi';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaRegUser } from 'react-icons/fa6';
+import { FaRegUser, FaUser } from 'react-icons/fa6';
 import talkieLogo from '../assets/talkie-logo.png';
+import { Avatar } from 'antd';
+import moment from 'moment';
+import { FaUserAlt } from 'react-icons/fa';
+import { getListNotification } from '../redux/actions/UserActions';
+
+const NotificationItem = ({ item }) => {
+    return (
+        <div className="p-3 px-4 border-b border-gray-200 w-full">
+            <div className="flex items-start">
+                <i className="mr-4 mt-1">
+                    <FaUser size={20} />
+                </i>
+                <div>
+                    <figure className="mb-1">
+                        <Avatar
+                            src={`https://talkie.transtechvietnam.com/${item?.image}`}
+                            alt=""
+                        />
+                    </figure>
+                    <p className="dark:text-white">
+                        {item?.name} {item?.content}
+                        <span className="text-gray-500 dark:text-gray-400">
+                            {moment.unix(item?.created_at).fromNow(true)}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function Notifications() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { notification, key } = useSelector(
+        (state) => state.listNotification,
+    );
+    const [listMentions, setListMentions] = useState([]);
+    const [listFollowing, setListFollowing] = useState([]);
+
     const actions = [
         {
             id: 1,
@@ -24,6 +59,7 @@ export default function Notifications() {
             name: 'Mentions',
             contents: 'No Mentions',
             descriptions: 'Mentions and replies will show up here.',
+            key: 'mentions',
         },
         {
             id: 3,
@@ -31,13 +67,24 @@ export default function Notifications() {
             contents: 'No Activity',
             descriptions:
                 'Activity from users that you follow will show up here.',
+            key: 'follow',
         },
     ];
     const [showActions, setShowActions] = useState(1);
 
     useEffect(() => {
         dispatch({ type: POST_LIST_RESET });
+        dispatch(getListNotification('mentions'));
+        dispatch(getListNotification('follow'));
     }, []);
+
+    useEffect(() => {
+        if (notification && key === 'mentions') {
+            setListMentions(notification);
+        } else if (notification && key === 'follow') {
+            setListFollowing(notification);
+        }
+    }, [notification, key]);
 
     return (
         <div>
@@ -59,7 +106,7 @@ export default function Notifications() {
                         </figure>
                     </div>
                 </div>
-                <div className="flex justify-center relative px-6 bg-white dark:bg-darkPrimary">
+                <div className="flex justify-start relative bg-white dark:bg-darkPrimary">
                     {actions.map((item, i) => (
                         <button
                             onClick={() => setShowActions(i + 1)}
@@ -81,30 +128,80 @@ export default function Notifications() {
                             </span>
                         </button>
                     ))}
-                    {/* <button>
-          <HiOutlineDotsHorizontal
-            size="1.8rem"
-            className="text-black dark:text-gray-300 absolute right-0 top-50 translate-y-[-50%]"
-          />
-        </button> */}
                 </div>
             </div>
-            <div className="relative flex flex-col justify-between h-screen bg-slatePrimary dark:bg-dark2Primary">
-                <div className="absolute w-full left-0 top-44 flex justify-center">
-                    {actions.map(
-                        (item, i) =>
-                            showActions == i + 1 && (
-                                <div
-                                    key={i}
-                                    className="text-black dark:text-gray-300 flex flex-col items-center px-2"
-                                >
-                                    <h5>{item.contents}</h5>
-                                    <span className="text-[15px] text-center">
-                                        {item.descriptions}
-                                    </span>
-                                </div>
-                            ),
-                    )}
+            <div className="relative flex flex-col justify-between h-screen  dark:bg-dark2Primary">
+                <div className="absolute w-full left-0 top-[150px] min-h-full flex justify-center bg-slatePrimary">
+                    <div className="w-full">
+                        {listMentions.length === 0 &&
+                        listFollowing.length === 0 &&
+                        showActions === 1 ? (
+                            <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
+                                <h5>{actions[0].contents}</h5>
+                                <span className="text-[15px] text-center">
+                                    {actions[0].descriptions}
+                                </span>
+                            </div>
+                        ) : (
+                            <>
+                                {(showActions === 2 || showActions === 1) && (
+                                    <div className="w-full">
+                                        {listMentions.length === 0 ? (
+                                            <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
+                                                <h5>
+                                                    {
+                                                        actions[showActions - 1]
+                                                            .contents
+                                                    }
+                                                </h5>
+                                                <span className="text-[15px] text-center">
+                                                    {
+                                                        actions[showActions - 1]
+                                                            .descriptions
+                                                    }
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            listMentions.map((item, i) => (
+                                                <NotificationItem
+                                                    key={i}
+                                                    item={item}
+                                                />
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+
+                                {(showActions === 3 || showActions === 1) && (
+                                    <div className="w-full">
+                                        {listFollowing.length === 0 ? (
+                                            <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
+                                                <h5>
+                                                    {
+                                                        actions[showActions - 1]
+                                                            .contents
+                                                    }
+                                                </h5>
+                                                <span className="text-[15px] text-center">
+                                                    {
+                                                        actions[showActions - 1]
+                                                            .descriptions
+                                                    }
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            listFollowing.map((item, i) => (
+                                                <NotificationItem
+                                                    key={i}
+                                                    item={item}
+                                                />
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
 
