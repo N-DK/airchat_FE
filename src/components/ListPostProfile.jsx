@@ -147,8 +147,8 @@ const ListPostProfile = ({ list, userInfo }) => {
 
         const handleToggleSearch = (itemId) => {
             if (currentItemId !== itemId) {
-                setResult([]); // Reset result khi chuyển sang item khác
-                setCurrentItemId(itemId); // Cập nhật item hiện tại
+                setResult([]);
+                setCurrentItemId(itemId);
             }
             setIsShowSearch((prev) => !prev);
         };
@@ -258,7 +258,7 @@ const ListPostProfile = ({ list, userInfo }) => {
                     ...(tagsUser || []),
                 ]);
             }
-        }, [users, tagsUser]);
+        }, [users]);
 
         useEffect(() => {
             setRect(targetElement?.getBoundingClientRect());

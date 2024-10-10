@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, {
+    useEffect,
+    useState,
+    useCallback,
+    useMemo,
+    useRef,
+} from 'react';
 import FooterChat from '../components/FooterChat';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { FaAngleLeft } from 'react-icons/fa';
@@ -31,6 +37,8 @@ const ChatRoom = () => {
     const { socket, isConnected } = useSelector((state) => state.socket);
     // const [minHeight, setMinHeight] = useState('100%');
     const [messages, setMessages] = useState(initMessages);
+    const [loadingSurf, setLoadingSurf] = useState(true);
+    const refContainer = useRef(null);
 
     useEffect(() => {
         const sortedMessages = initMessages?.sort((a, b) => a?.id - b?.id);
@@ -88,71 +96,6 @@ const ChatRoom = () => {
         }
     }, []);
 
-    useEffect(() => {
-        const setupSocketListeners = () => {
-            if (isConnected && socket?.connected && socket) {
-                listenEvent(
-                    socket,
-                    LISTEN_EVENT.NEW_PRIVATE_MESSAGE,
-                    handleNewMessage,
-                );
-                listenEvent(
-                    socket,
-                    LISTEN_EVENT.MESSAGE_READ_NOTIFICATION,
-                    handleMessageReadNotification,
-                );
-                listenEvent(
-                    socket,
-                    LISTEN_EVENT.MESSAGE_DELETE_NOTIFICATION,
-                    handleMessageDeleteNotification,
-                );
-            }
-        };
-
-        const cleanupSocketListeners = () => {
-            if (socket?.connected && socket) {
-                removeListener(
-                    socket,
-                    LISTEN_EVENT.NEW_PRIVATE_MESSAGE,
-                    handleNewMessage,
-                );
-                removeListener(
-                    socket,
-                    LISTEN_EVENT.MESSAGE_READ_NOTIFICATION,
-                    handleMessageReadNotification,
-                );
-            }
-        };
-
-        if (isConnected && socket && socket?.connected) {
-            setupSocketListeners();
-        }
-
-        return cleanupSocketListeners;
-    }, [
-        socket,
-        isConnected,
-        handleNewMessage,
-        handleMessageReadNotification,
-        handleMessageDeleteNotification,
-    ]);
-
-    useEffect(() => {
-        if (id) dispatch(detailMessage(id));
-    }, [id, dispatch]);
-
-    // useEffect(() => {
-    //     if (messages?.length > 0) {
-    //         const newHeight =
-    //             messages.length <= 5
-    //                 ? `${100 + messages.length * 14}%`
-    //                 : `${100 + messages.length * 12.2}%`;
-    //         setMinHeight(newHeight);
-    //     } else {
-    //         setMinHeight('100%');
-    //     }
-    // }, [messages]);
-
     const base64ToBlob = (base64, mimeType) => {
         const byteString = atob(base64.split(',')[1]);
         const ab = new ArrayBuffer(byteString.length);
@@ -208,21 +151,106 @@ const ChatRoom = () => {
         [socket, userInfo, id, messages, getMessageIndex],
     );
 
+    useEffect(() => {
+        const setupSocketListeners = () => {
+            if (isConnected && socket?.connected && socket) {
+                listenEvent(
+                    socket,
+                    LISTEN_EVENT.NEW_PRIVATE_MESSAGE,
+                    handleNewMessage,
+                );
+                listenEvent(
+                    socket,
+                    LISTEN_EVENT.MESSAGE_READ_NOTIFICATION,
+                    handleMessageReadNotification,
+                );
+                listenEvent(
+                    socket,
+                    LISTEN_EVENT.MESSAGE_DELETE_NOTIFICATION,
+                    handleMessageDeleteNotification,
+                );
+            }
+        };
+
+        const cleanupSocketListeners = () => {
+            if (socket?.connected && socket) {
+                removeListener(
+                    socket,
+                    LISTEN_EVENT.NEW_PRIVATE_MESSAGE,
+                    handleNewMessage,
+                );
+                removeListener(
+                    socket,
+                    LISTEN_EVENT.MESSAGE_READ_NOTIFICATION,
+                    handleMessageReadNotification,
+                );
+            }
+        };
+
+        if (isConnected && socket && socket?.connected) {
+            setupSocketListeners();
+        }
+
+        return cleanupSocketListeners;
+    }, [
+        socket,
+        isConnected,
+        handleNewMessage,
+        handleMessageReadNotification,
+        handleMessageDeleteNotification,
+    ]);
+
+    useEffect(() => {
+        if (id) dispatch(detailMessage(id));
+    }, [id, dispatch]);
+
+    useEffect(() => {
+        if (refContainer.current && messages?.length > 0) {
+            refContainer.current.scrollTop =
+                refContainer.current.scrollHeight - 1000;
+
+            setTimeout(() => {
+                setLoadingSurf(false);
+            }, 400);
+        }
+    }, [refContainer, messages]);
+
+    // useEffect(() => {
+    //     if (messages?.length > 0) {
+    //         const newHeight =
+    //             messages.length <= 5
+    //                 ? `${100 + messages.length * 14}%`
+    //                 : `${100 + messages.length * 12.2}%`;
+    //         setMinHeight(newHeight);
+    //     } else {
+    //         setMinHeight('100%');
+    //     }
+    // }, [messages]);
+
     const renderMessages = useMemo(() => {
         if (loadingMessage) return <LoadingSpinner />;
         if (messages?.length > 0) {
-            return messages.map((message, index) => (
-                <MessageChatRoom
-                    key={index}
-                    position={
-                        message?.sender_name === userInfo?.name
-                            ? 'left'
-                            : 'right'
-                    }
-                    message={message}
-                    setMessages={setMessages}
-                />
-            ));
+            return (
+                <div>
+                    {loadingSurf && (
+                        <div className="fixed w-full top-[90px] left-0 z-30 bg-white pt-[10px] dark:bg-dark2Primary bottom-0">
+                            <LoadingSpinner position="justify-center items-start" />
+                        </div>
+                    )}
+                    {messages.map((message, index) => (
+                        <MessageChatRoom
+                            key={index}
+                            position={
+                                message?.sender_name === userInfo?.name
+                                    ? 'left'
+                                    : 'right'
+                            }
+                            message={message}
+                            setMessages={setMessages}
+                        />
+                    ))}
+                </div>
+            );
         }
 
         return (
@@ -246,11 +274,14 @@ const ChatRoom = () => {
                 </div>
             </div>
         );
-    }, [loadingMessage, messages, userInfo, initMessages]);
+    }, [loadingMessage, messages, userInfo, initMessages, loadingSurf]);
 
     return (
         <div className="relative flex flex-col justify-between h-screen  overflow-hidden">
-            <div className="overflow-auto scrollbar-none h-screen w-screen pb-[640px] dark:bg-dark2Primary">
+            <div
+                ref={refContainer}
+                className="overflow-auto scrollbar-none h-screen w-screen pb-[640px] dark:bg-dark2Primary"
+            >
                 <div className="fixed z-50 top-0 left-0 w-full h-[90px] bg-slatePrimary dark:bg-darkPrimary border-b-[1px] border-gray-200 dark:border-dark2Primary">
                     <div className="flex items-center justify-center h-full px-6 md:px-10 relative text-black dark:text-white">
                         <button
@@ -268,7 +299,7 @@ const ChatRoom = () => {
                     </div>
                 </div>
                 <div className="">
-                    <div className="dark:border-dark2Primary dark:bg-dark2Primary bg-slatePrimary pt-[100px] px-4">
+                    <div className="dark:border-dark2Primary dark:bg-dark2Primary pt-[100px] px-4">
                         {renderMessages}
                     </div>
                 </div>

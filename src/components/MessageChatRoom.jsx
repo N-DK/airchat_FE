@@ -90,7 +90,7 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
             }, 200),
             {
                 threshold: 0.3,
-                rootMargin: '-100px 0px -600px 0px', //-90px 0px -710px 0px
+                rootMargin: '-100px 0px -650px 0px',
             },
         );
 
