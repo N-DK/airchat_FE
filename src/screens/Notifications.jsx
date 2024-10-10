@@ -6,6 +6,8 @@ import { POST_LIST_RESET } from '../redux/constants/PostConstants';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaRegUser } from 'react-icons/fa6';
+import talkieLogo from '../assets/talkie-logo.png';
+
 export default function Notifications() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -40,20 +42,22 @@ export default function Notifications() {
     return (
         <div>
             <div className=" flex flex-col fixed z-10 w-full bg-white dark:bg-darkPrimary">
-                <div className="relative my-4">
-                    <button
-                        onClick={() => navigate('/profile')}
-                        className="absolute top-1/2 translate-y-[-50%] left-10 dark:text-white"
-                    >
-                        <FaRegUser className="text-xl md:text-2xl" />
-                    </button>
-                    <figure className="w-12 mx-auto ">
-                        <img
-                            className="w-full"
-                            src="./src/assets/talkie-logo.png"
-                            alt="asd"
-                        />
-                    </figure>
+                <div className="relative my-4 pt-12 px-6">
+                    <div className="relative">
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="absolute top-1/2 -translate-y-1/2 left-0 dark:text-white"
+                        >
+                            <FaRegUser className="text-xl md:text-2xl" />
+                        </button>
+                        <figure className="w-9 mx-auto">
+                            <img
+                                src={talkieLogo}
+                                className="w-full"
+                                alt="Talkie Logo"
+                            />
+                        </figure>
+                    </div>
                 </div>
                 <div className="flex justify-center relative px-6 bg-white dark:bg-darkPrimary">
                     {actions.map((item, i) => (
@@ -86,7 +90,7 @@ export default function Notifications() {
                 </div>
             </div>
             <div className="relative flex flex-col justify-between h-screen bg-slatePrimary dark:bg-dark2Primary">
-                <div className="absolute w-full left-0 top-32 flex justify-center">
+                <div className="absolute w-full left-0 top-44 flex justify-center">
                     {actions.map(
                         (item, i) =>
                             showActions == i + 1 && (

@@ -201,11 +201,14 @@ const ChatRoom = () => {
     ]);
 
     useEffect(() => {
-        if (id) dispatch(detailMessage(id));
+        if (id) {
+            dispatch(detailMessage(id));
+            setLoadingSurf(true);
+        }
     }, [id, dispatch]);
 
     useEffect(() => {
-        if (refContainer.current && messages?.length > 0) {
+        if (refContainer.current && messages?.length > 0 && loadingSurf) {
             refContainer.current.scrollTop =
                 refContainer.current.scrollHeight - 1000;
 
