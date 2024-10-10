@@ -9,21 +9,23 @@ const LinkPreviewComponent = ({ post_id, url, setData, dataUrl }) => {
     const dispatch = useDispatch();
     useEffect(() => {
         const fetchLinkPreview = async (url) => {
-            const apiKey = '757012f243f5896e3548199d85b8108b';
-            const response = await fetch(
-                `https://api.linkpreview.net/?key=${apiKey}&q=${encodeURIComponent(
-                    url,
-                )}`,
-            );
-            const data = await response.json();
-            if (data.error) return;
-            if (dataUrl !== url) {
-                dispatch(updatePost(post_id, { url }));
+            if (url) {
+                const apiKey = '757012f243f5896e3548199d85b8108b';
+                const response = await fetch(
+                    `https://api.linkpreview.net/?key=${apiKey}&q=${encodeURIComponent(
+                        url,
+                    )}`,
+                );
+                const data = await response.json();
+                if (data.error) return;
+                if (dataUrl !== url) {
+                    dispatch(updatePost(post_id, { url }));
+                }
+                setPreview(data);
             }
-            setPreview(data);
         };
 
-        fetchLinkPreview(url);
+        fetchLinkPreview(url || dataUrl);
     }, [url]);
 
     return (

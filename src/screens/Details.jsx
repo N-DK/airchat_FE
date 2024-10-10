@@ -30,6 +30,7 @@ import icon1 from '../assets/Untitled-2.png';
 import { sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from '../components/CustomContextMenu';
 import { FaBookmark } from 'react-icons/fa6';
+import LinkPreviewComponent from '../components/LinkPreviewComponent';
 
 export default function Details() {
     const { id } = useParams();
@@ -210,6 +211,18 @@ export default function Details() {
                         <p className="md:text-lg text-black dark:text-white">
                             {data?.content}
                         </p>
+                        {data?.tag_user_detail && (
+                            <div className="flex flex-wrap">
+                                {data?.tag_user_detail?.map((tag, i) => (
+                                    <span
+                                        className={`font-semibold dark:text-white mr-2`}
+                                        key={i}
+                                    >
+                                        {tag?.name}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                         {data?.img && (
                             <figure className="max-w-full relative my-2">
                                 <Avatar
@@ -217,6 +230,16 @@ export default function Details() {
                                     className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
+                        )}
+                        {data?.url && (
+                            <div>
+                                <LinkPreviewComponent
+                                    url={data.url}
+                                    post_id={data.id}
+                                    // setData={setData}
+                                    dataUrl={data.url}
+                                />
+                            </div>
                         )}
                     </div>
                     <div className="absolute items-center bottom-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">

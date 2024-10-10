@@ -12,6 +12,7 @@ import { addViewPost, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
+import LinkPreviewComponent from './LinkPreviewComponent';
 
 function MessageItem({ position = 'right', message, setDetailsPostReply }) {
     const dispatch = useDispatch();
@@ -225,6 +226,18 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
                         >
                             {data.content}
                         </p>
+                        {data?.tag_user_detail && (
+                            <div className="flex flex-wrap">
+                                {data?.tag_user_detail?.map((tag, i) => (
+                                    <span
+                                        className={`font-semibold dark:text-white mr-2`}
+                                        key={i}
+                                    >
+                                        {tag?.name}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                         {data?.img && (
                             <figure className="max-w-full relative my-2">
                                 <Avatar
@@ -232,6 +245,16 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
                                     className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
+                        )}
+                        {data?.url && (
+                            <div>
+                                <LinkPreviewComponent
+                                    url={data.url}
+                                    post_id={data.id}
+                                    // setData={setData}
+                                    dataUrl={data.url}
+                                />
+                            </div>
                         )}
                     </div>
                     <div
