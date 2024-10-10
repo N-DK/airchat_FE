@@ -1,7 +1,7 @@
 import { RiCloseFill } from 'react-icons/ri';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../AppContext';
-import { IoMdMic } from 'react-icons/io';
+import { IoMdLink, IoMdMic } from 'react-icons/io';
 import { BsChevronExpand } from 'react-icons/bs';
 // import { useLocation } from "react-router-dom";
 import { submitPost } from '../redux/actions/PostActions';
@@ -12,8 +12,11 @@ import { FaArrowUp } from 'react-icons/fa6';
 import RecordRTC from 'recordrtc';
 import React from 'react';
 import ModalDelete from './ModalDelete';
+import SoundWave from './SoundWave';
+import { LuImagePlus } from 'react-icons/lu';
+import { GoMention } from 'react-icons/go';
 
-export default function RecordModal() {
+export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
     // const redirect = useLocation().search.split("=")[1] || "trending";
     const dispatch = useDispatch();
@@ -28,13 +31,24 @@ export default function RecordModal() {
     const [recognition, setRecognition] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [isAllow, setIsAllow] = useState(false);
+    const [duration, setDuration] = useState(0);
 
     const submitRecordHandle = () => {
         const blob = recorder.getBlob();
         const audioFile = new File([blob], 'audio-recording.wav', {
             type: 'audio/wav',
         });
-        dispatch(submitPost(recordContents, audioFile));
+        if (handle) {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                const base64data = reader.result;
+                handle(recordContents, base64data);
+                if (isRecord) toggleIsRecord();
+            };
+        } else {
+            dispatch(submitPost(recordContents, audioFile));
+        }
     };
 
     const getMicrophonePermission = async () => {
@@ -60,10 +74,10 @@ export default function RecordModal() {
 
     const startRecordingHandle = () => {
         if (recorder) {
-            recorder.startRecording();
+            recorder?.startRecording();
         }
         if (recognition) {
-            recognition.start();
+            recognition?.start();
         }
     };
 
@@ -141,6 +155,43 @@ export default function RecordModal() {
         }
     }, [loading]);
 
+    useEffect(() => {
+        if (audio) {
+            const audioElement = new Audio(audio);
+
+            // Xử lý sự kiện khi metadata được tải thành công
+            const handleLoadedMetadata = () => {
+                setDuration(audioElement.duration); // Cập nhật duration khi metadata có sẵn
+                setAudio(audioElement);
+            };
+
+            // Lắng nghe sự kiện 'loadedmetadata'
+            audioElement.addEventListener(
+                'loadedmetadata',
+                handleLoadedMetadata,
+            );
+
+            // Xử lý lỗi nếu tệp âm thanh không hợp lệ
+            audioElement.addEventListener('error', () => {
+                console.error("Audio file couldn't be loaded.");
+            });
+
+            // Cleanup sự kiện khi component unmount
+            return () => {
+                audioElement.removeEventListener(
+                    'loadedmetadata',
+                    handleLoadedMetadata,
+                );
+            };
+        }
+    }, [audio]);
+
+    const formatTime = (lengthInSeconds) => {
+        const minutes = Math.floor(lengthInSeconds / 60);
+        const seconds = lengthInSeconds % 60;
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    };
+
     return (
         <div
             className={`absolute left-0 bottom-0 z-50 w-full h-1/2 ${
@@ -171,17 +222,50 @@ export default function RecordModal() {
                         cols="30"
                         rows="10"
                     ></textarea>
+                    <div className="flex items-center mt-2">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
+                            <LuImagePlus className="dark:text-white mr-2" />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
+                            <IoMdLink
+                                className="dark:text-white mr-2"
+                                size={20}
+                            />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
+                        >
+                            <GoMention className="dark:text-white mr-2" />
+                        </button>
+                    </div>
                 </div>
 
                 <div className={`flex justify-center items-center gap-5`}>
                     <div
                         className={`${
                             (audio || video) && recordContents && !permission
-                                ? 'w-3/4 md:w-full opacity-100'
+                                ? 'md:w-full opacity-100'
                                 : 'w-0 opacity-0'
                         } transition-all flex justify-end duration-500`}
                     >
-                        {audio && <audio src={audio} controls></audio>}
+                        {audio && (
+                            <div className="relative w-full">
+                                <SoundWave play={true} color="white" />
+                                {/* <span className="absolute -top-8 left-0 text-bluePrimary text-lg">
+                                    {formatTime(duration)} Actions
+                                </span> */}
+                            </div>
+                        )}
                         {video && (
                             <video
                                 className="w-full h-24 rounded-lg border"

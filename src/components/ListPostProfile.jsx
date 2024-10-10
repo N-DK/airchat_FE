@@ -236,7 +236,7 @@ const ListPostProfile = ({
                 <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
                     {data.content}
                 </p>
-                {(data.tag_user || tagsUser.length > 0) && (
+                {(data?.tag_user || tagsUser?.length > 0) && (
                     <div className="flex flex-wrap">
                         {tagsUser?.map((tag, i) => (
                             <span
@@ -248,7 +248,7 @@ const ListPostProfile = ({
                         ))}
                     </div>
                 )}
-                {(data.img || file) && (
+                {(data?.img || file) && (
                     <figure
                         onTouchStart={(e) => {
                             e.stopPropagation();
@@ -273,7 +273,7 @@ const ListPostProfile = ({
                         )}
                     </figure>
                 )}
-                {(data.url || urlPaste) && (
+                {(data?.url || urlPaste) && (
                     <div>
                         <LinkPreviewComponent
                             url={urlPaste ?? data.url}

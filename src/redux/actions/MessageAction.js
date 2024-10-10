@@ -48,7 +48,7 @@ export const listMessageRecent =
     };
 
 export const detailMessage =
-    (friend_id, limit = 10, offset = 0) =>
+    (friend_id, limit = 100, offset = 0) =>
     async (dispatch, getState) => {
         try {
             dispatch({ type: DETAIL_MESSAGE_REQUEST });

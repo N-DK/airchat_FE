@@ -90,7 +90,7 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
             }, 200),
             {
                 threshold: 0.3,
-                rootMargin: '-90px 0px -710px 0px',
+                rootMargin: '-100px 0px -600px 0px', //-90px 0px -710px 0px
             },
         );
 
@@ -136,16 +136,15 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
             dispatch(
                 setObjectActive({
                     post: message,
-                    // audio:
-                    //     message?.audio ?? 'uploads/audio/1727407624717.wav'
-                    //         ? new Audio(
-                    //               `https://talkie.transtechvietnam.com/${message?.audio}`,
-                    //           )
-                    //         : null,
-
-                    audio: new Audio(
-                        `https://talkie.transtechvietnam.com/uploads/audio/1727407624717.wav`,
-                    ),
+                    audio: message?.audio
+                        ? message?.audio.startsWith('blob:')
+                            ? new Audio(message?.audio)
+                            : new Audio(
+                                  message?.audio.startsWith('http')
+                                      ? message?.audio
+                                      : `https://talkie.transtechvietnam.com${message?.audio}`,
+                              )
+                        : null,
                     element: document.getElementById(`message-${message?.id}`),
                 }),
             );

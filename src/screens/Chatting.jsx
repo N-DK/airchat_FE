@@ -21,7 +21,7 @@ import { AppContext } from '../AppContext';
 import { usePingStates } from '../hooks/usePingStates';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
-import { barMenu, listPost } from '../redux/actions/PostActions';
+import { barMenu, listPost, submitPost } from '../redux/actions/PostActions';
 import { profile } from '../redux/actions/UserActions';
 import { USER_PROFILE_SUCCESS } from '../redux/constants/UserConstants';
 import {

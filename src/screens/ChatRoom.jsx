@@ -29,7 +29,7 @@ const ChatRoom = () => {
         useSelector((state) => state.detailMessage);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { socket, isConnected } = useSelector((state) => state.socket);
-    const [minHeight, setMinHeight] = useState('100%');
+    // const [minHeight, setMinHeight] = useState('100%');
     const [messages, setMessages] = useState(initMessages);
 
     useEffect(() => {
@@ -63,7 +63,7 @@ const ChatRoom = () => {
                     message: message.message,
                     id: message.messageID,
                     temp_image: message.temp_image,
-                    audio: message.audioPath,
+                    audio: `https://talkie.transtechvietnam.com${message.audioPath}`,
                     video: message.videoPath,
                     number_heart: 0,
                     created_at: Date.now() / 1000,
@@ -141,29 +141,39 @@ const ChatRoom = () => {
         if (id) dispatch(detailMessage(id));
     }, [id, dispatch]);
 
-    useEffect(() => {
-        if (messages?.length > 0) {
-            const newHeight =
-                messages.length <= 5
-                    ? `${100 + messages.length * 14}%`
-                    : `${100 + messages.length * 11.2}%`;
-            setMinHeight(newHeight);
-        } else {
-            setMinHeight('100%');
+    // useEffect(() => {
+    //     if (messages?.length > 0) {
+    //         const newHeight =
+    //             messages.length <= 5
+    //                 ? `${100 + messages.length * 14}%`
+    //                 : `${100 + messages.length * 12.2}%`;
+    //         setMinHeight(newHeight);
+    //     } else {
+    //         setMinHeight('100%');
+    //     }
+    // }, [messages]);
+
+    const base64ToBlob = (base64, mimeType) => {
+        const byteString = atob(base64.split(',')[1]);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
         }
-    }, [messages]);
+        return new Blob([ab], { type: mimeType });
+    };
 
     const sendNewMessage = useCallback(
         (message, audio) => {
             const newMessage = message;
-            console.log('payload', {
-                sender: userInfo?.name,
-                receiver: id,
-                message: newMessage,
-                audio: audio,
-            });
 
             if (socket?.connected) {
+                // console.log('payload', {
+                //     sender: userInfo?.name,
+                //     receiver: id,
+                //     message: newMessage,
+                //     audio: audio,
+                // });
                 sendMessage(socket, EMIT_EVENT.PRIVATE_MESSAGE, {
                     sender: userInfo?.name,
                     receiver: id,
@@ -172,6 +182,9 @@ const ChatRoom = () => {
                 });
                 if (userInfo?.id != id) {
                     setMessages((prev) => {
+                        const blob = base64ToBlob(audio, 'audio/wav');
+                        const audioURL = URL.createObjectURL(blob);
+
                         return [
                             ...prev,
                             {
@@ -185,6 +198,7 @@ const ChatRoom = () => {
                                 number_heart: 0,
                                 created_at: Date.now() / 1000,
                                 sender_avt: userInfo?.image,
+                                audio: audioURL,
                             },
                         ];
                     });
@@ -235,8 +249,8 @@ const ChatRoom = () => {
     }, [loadingMessage, messages, userInfo, initMessages]);
 
     return (
-        <div className="relative flex flex-col justify-between h-screen overflow-hidden">
-            <div className="overflow-auto scrollbar-none h-screen w-screen dark:bg-dark2Primary">
+        <div className="relative flex flex-col justify-between h-screen  overflow-hidden">
+            <div className="overflow-auto scrollbar-none h-screen w-screen pb-[640px] dark:bg-dark2Primary">
                 <div className="fixed z-50 top-0 left-0 w-full h-[90px] bg-slatePrimary dark:bg-darkPrimary border-b-[1px] border-gray-200 dark:border-dark2Primary">
                     <div className="flex items-center justify-center h-full px-6 md:px-10 relative text-black dark:text-white">
                         <button
@@ -253,23 +267,26 @@ const ChatRoom = () => {
                         </h5>
                     </div>
                 </div>
-                <div className="h-full">
-                    <div
-                        className="dark:border-dark2Primary dark:bg-dark2Primary bg-slatePrimary pt-[100px] px-4"
-                        style={{ minHeight }}
-                    >
+                <div className="">
+                    <div className="dark:border-dark2Primary dark:bg-dark2Primary bg-slatePrimary pt-[100px] px-4">
                         {renderMessages}
                     </div>
                 </div>
             </div>
-            <RecordModal />
+            <RecordModal handle={sendNewMessage} />
             <FooterChat
                 title="messages"
                 isPlay={true}
                 handleSend={sendNewMessage}
             />
             {/* <button
-                onClick={sendNewMessage}
+                onClick={() => {
+                    console.log('alo');
+                    sendNewMessage(
+                        'ALO',
+                        'blob:http://localhost:5173/5cfc239d-ebed-4737-9d18-7ea47a5cfe90',
+                    );
+                }}
                 className="absolute top-[70%] left-4 bg-slate-600"
             >
                 SEND MESSAGE

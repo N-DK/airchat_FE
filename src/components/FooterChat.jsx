@@ -15,7 +15,7 @@ import RecordCover from './RecordCover';
 import { Avatar, message } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaReply } from 'react-icons/fa6';
-import { setPostActive } from '../redux/actions/PostActions';
+import { setPostActive, submitPost } from '../redux/actions/PostActions';
 import {
     setObjectActive,
     setObjectAudioCurrent,
@@ -163,6 +163,16 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
         [],
     );
 
+    const base64ToBlob = (base64, mimeType) => {
+        const byteString = atob(base64.split(',')[1]); // Loại bỏ phần tiền tố 'data:audio/wav;base64,' nếu có
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], { type: mimeType });
+    };
+
     useEffect(() => {
         if (isStartRecord) {
             console.log('IS START RECORD');
@@ -177,9 +187,17 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
 
     useEffect(() => {
         if (audio && newMessage) {
-            if (handleSend) handleSend(newMessage, audio);
-            setNewMessage('');
+            if (handleSend) {
+                handleSend(newMessage, audio);
+            } else {
+                const audioBlob = base64ToBlob(audio, 'audio/wav');
+                const audioFile = new File([audioBlob], 'audio-recording.wav', {
+                    type: 'audio/wav',
+                });
+                dispatch(submitPost(newMessage, audioFile));
+            }
             setAudio(null);
+            setNewMessage('');
         }
     }, [audio, newMessage]);
 
@@ -192,7 +210,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
             const recognition = new window.webkitSpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'en-US'; // 'vi-VN'
+            recognition.lang = 'vi-VN'; // 'vi-VN, en-US'
             let newTranscript = '';
             recognition.onresult = (event) => {
                 let interimTranscript = '';
@@ -210,8 +228,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
 
             recognition.onend = () => {
                 setNewMessage(newTranscript);
-                // if (newTranscript && touchStartX >= 120) {
-
+                // if (newTranscript ) {
                 // }
                 // if (handleSend) handleSend(newTranscript, audio);
             };
