@@ -37,7 +37,7 @@ const LinkPreviewComponent = ({ post_id, url, setData, dataUrl, setUrl }) => {
                 }}
                 className="grid"
             >
-                <div className="rounded-lg dark:bg-darkPrimary overflow-hidden mt-1 relative">
+                <div className="rounded-lg dark:bg-darkPrimary bg-gray-500 overflow-hidden mt-1 relative">
                     <figure>
                         <img src={preview.image} alt="Preview" />
                     </figure>
@@ -49,20 +49,22 @@ const LinkPreviewComponent = ({ post_id, url, setData, dataUrl, setUrl }) => {
                             {preview.description}
                         </p>
                     </div>
-                    <button
-                        className="absolute top-3 right-3 p-1 dark:text-white text-white"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (setUrl) {
-                                setUrl(null);
-                            } else {
-                                dispatch(updatePost(post_id, { url: '' }));
-                                setData((prev) => ({ ...prev, url: null }));
-                            }
-                        }}
-                    >
-                        <IoCloseCircleOutline size={20} />
-                    </button>
+                    {window.location.pathname === '/profile' && (
+                        <button
+                            className="absolute top-3 right-3 p-1 dark:text-white text-white"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (setUrl) {
+                                    setUrl(null);
+                                } else {
+                                    dispatch(updatePost(post_id, { url: '' }));
+                                    setData((prev) => ({ ...prev, url: null }));
+                                }
+                            }}
+                        >
+                            <IoCloseCircleOutline size={20} />
+                        </button>
+                    )}
                 </div>
             </div>
         )

@@ -90,7 +90,7 @@ function PostItem({ item, contentsChattingRef, setList }) {
             }, 200),
             {
                 threshold: 0.45,
-                rootMargin: '-200px 0px -510px 0px',
+                rootMargin: '-100px 0px -610px 0px',
             },
         );
 
