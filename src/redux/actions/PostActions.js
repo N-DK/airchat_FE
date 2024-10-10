@@ -40,7 +40,7 @@ import {
 } from '../constants/PostConstants';
 
 export const submitPost =
-    (content, audio, reply_post) => async (dispatch, getState) => {
+    (content, audio, reply_post, file, url) => async (dispatch, getState) => {
         try {
             dispatch({
                 type: POST_SUBMIT_REQUEST,
@@ -53,6 +53,12 @@ export const submitPost =
             formData.append('audio', audio);
             if (reply_post) {
                 formData.append('reply_post', reply_post);
+            }
+            if (file) {
+                formData.append('image', file);
+            }
+            if (url) {
+                formData.append('url', url);
             }
             const config = {
                 headers: {

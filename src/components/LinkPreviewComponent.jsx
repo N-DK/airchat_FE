@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { updatePost } from '../redux/actions/PostActions';
 import { IoCloseCircleOutline } from 'react-icons/io5';
 
-const LinkPreviewComponent = ({ post_id, url, setData, dataUrl }) => {
+const LinkPreviewComponent = ({ post_id, url, setData, dataUrl, setUrl }) => {
     const [preview, setPreview] = useState(null);
     const dispatch = useDispatch();
     useEffect(() => {
         const fetchLinkPreview = async (url) => {
-            if (url) {
+            if (url && url !== 'www.fff.lll') {
                 const apiKey = '757012f243f5896e3548199d85b8108b';
                 const response = await fetch(
                     `https://api.linkpreview.net/?key=${apiKey}&q=${encodeURIComponent(
@@ -18,7 +18,7 @@ const LinkPreviewComponent = ({ post_id, url, setData, dataUrl }) => {
                 );
                 const data = await response.json();
                 if (data.error) return;
-                if (dataUrl !== url) {
+                if (dataUrl !== url && post_id) {
                     dispatch(updatePost(post_id, { url }));
                 }
                 setPreview(data);
@@ -53,8 +53,12 @@ const LinkPreviewComponent = ({ post_id, url, setData, dataUrl }) => {
                         className="absolute top-3 right-3 p-1 dark:text-white text-white"
                         onClick={(e) => {
                             e.stopPropagation();
-                            dispatch(updatePost(post_id, { url: '' }));
-                            setData((prev) => ({ ...prev, url: null }));
+                            if (setUrl) {
+                                setUrl(null);
+                            } else {
+                                dispatch(updatePost(post_id, { url: '' }));
+                                setData((prev) => ({ ...prev, url: null }));
+                            }
                         }}
                     >
                         <IoCloseCircleOutline size={20} />

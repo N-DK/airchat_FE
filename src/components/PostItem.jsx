@@ -89,7 +89,7 @@ function PostItem({ item, contentsChattingRef, setList }) {
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                threshold: 0.5,
+                threshold: 0.45,
                 rootMargin: '-200px 0px -510px 0px',
             },
         );

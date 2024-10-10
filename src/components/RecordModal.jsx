@@ -1,5 +1,5 @@
 import { RiCloseFill } from 'react-icons/ri';
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../AppContext';
 import { IoMdLink, IoMdMic } from 'react-icons/io';
 import { BsChevronExpand } from 'react-icons/bs';
@@ -15,6 +15,12 @@ import ModalDelete from './ModalDelete';
 import SoundWave from './SoundWave';
 import { LuImagePlus } from 'react-icons/lu';
 import { GoMention } from 'react-icons/go';
+import LinkPreviewComponent from './LinkPreviewComponent';
+import useDebounce from '../hooks/useDebounce';
+import { searchUser } from '../redux/actions/MessageAction';
+import { SEARCH_USER_SUCCESS } from '../redux/constants/MessageConstants';
+import { Avatar } from 'antd';
+import { IoCloseCircleOutline } from 'react-icons/io5';
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -34,6 +40,16 @@ export default function RecordModal({ handle }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isAllow, setIsAllow] = useState(false);
     const [duration, setDuration] = useState(0);
+    const [file, setFile] = useState(null);
+    const [isOpenLink, setIsOpenLink] = useState(false);
+    const [isOpenDeletePhoto, setIsOpenDeletePhoto] = useState(false);
+
+    // const [isShowSearch, setIsShowSearch] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [result, setResult] = useState([]);
+    // const [tagsUser, setTagsUser] = useState([]);
+    const [url, setUrl] = useState('');
+    const debouncedSearch = useDebounce(searchText, 500);
 
     const submitRecordHandle = () => {
         const blob = recorder.getBlob();
@@ -49,7 +65,9 @@ export default function RecordModal({ handle }) {
                 if (isRecord) toggleIsRecord();
             };
         } else {
-            dispatch(submitPost(recordContents, audioFile, post?.id));
+            dispatch(
+                submitPost(recordContents, audioFile, post?.id, file, url),
+            );
         }
     };
 
@@ -106,7 +124,6 @@ export default function RecordModal({ handle }) {
 
     const handleAllow = () => {
         setIsAllow(true);
-        handleClick();
     };
 
     const handleClick = () => {
@@ -123,6 +140,12 @@ export default function RecordModal({ handle }) {
         }
     };
 
+    const handlePasteUrl = useCallback(() => {
+        navigator.clipboard.readText().then((text) => {
+            setUrl(text);
+        });
+    }, []);
+
     useEffect(() => {
         if (permission) {
             startRecordingHandle();
@@ -130,6 +153,19 @@ export default function RecordModal({ handle }) {
             stopRecordingHandle();
         }
     }, [permission]);
+
+    useEffect(() => {
+        if (debouncedSearch) {
+            dispatch(searchUser(debouncedSearch));
+        } else {
+            setResult([]);
+            dispatch({ type: SEARCH_USER_SUCCESS, payload: [] });
+        }
+    }, [debouncedSearch]);
+
+    useEffect(() => {
+        if (isAllow) handleClick();
+    }, [isAllow]);
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window) {
@@ -203,10 +239,26 @@ export default function RecordModal({ handle }) {
         }
     }, [audio]);
 
+    const convertObjectURL = (selectedFile) => {
+        return URL.createObjectURL(selectedFile);
+    };
+
     const formatTime = (lengthInSeconds) => {
         const minutes = Math.floor(lengthInSeconds / 60);
         const seconds = lengthInSeconds % 60;
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    };
+
+    const handleUploadAvatar = () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = () => {
+            const file = fileInput.files[0];
+            setFile(file);
+            // dispatch(uploadImage(file, id_post));
+        };
+        fileInput.click();
     };
 
     return (
@@ -218,53 +270,131 @@ export default function RecordModal({ handle }) {
             <div className="flex flex-col justify-between backdrop-blur-2xl px-6 pt-6 pb-9 md:p-10 bg-white/50 h-full rounded-t-3xl">
                 <div className="text-bluePrimary flex justify-between items-center">
                     <div className="flex gap-2 items-end">
-                        {/* <div className="flex gap-2">
+                        <div className="flex gap-2">
                             <span className="text-xl">To</span>
                             <span className="text-xl font-semibold">
-                                Following
+                                {post?.name}
                             </span>
                         </div>
-                        <BsChevronExpand size="1.6rem" /> */}
+                        {/* <BsChevronExpand size="1.6rem" /> */}
                     </div>
                     <RiCloseFill onClick={() => toggleIsRecord()} size="2rem" />
                 </div>
 
-                <div className="bg-bluePrimary rounded-3xl h-32 flex flex-col justify-between items-start px-4 py-3 shadow-md">
+                <div className="bg-bluePrimary rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
                     <textarea
                         value={recordContents}
                         onChange={(e) => setRecordContents(e.target.value)}
                         readOnly={!recordContents}
                         className="w-full bg-inherit text-white placeholder-white outline-none"
                         placeholder="Tap the microphone to record..."
+                        style={{ minHeight: '32px' }}
                         cols="30"
-                        rows="10"
+                        rows="3"
                     ></textarea>
+                    {file && (
+                        <figure
+                            // onTouchStart={(e) => {
+                            //     e.stopPropagation();
+                            //     handleTouchStart(item);
+                            // }}
+                            // onTouchEnd={handleTouchEnd}
+                            // id={`delete-photo-${data.id}`}
+                            className="relative"
+                        >
+                            <Avatar
+                                src={convertObjectURL(file)}
+                                className=" w-full h-full object-cover rounded-xl"
+                            />
+                            <button
+                                className="absolute top-3 right-3 p-1 dark:text-red-600 text-red-600"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setFile(null);
+                                }}
+                            >
+                                <IoCloseCircleOutline size={20} />
+                            </button>
+                            {/* {(loadingUpload || loadingDeletePhoto) && (
+                                <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
+                                    <LoadingSpinner />
+                                </div>
+                            )} */}
+                        </figure>
+                    )}
+                    {url && (
+                        <div>
+                            <LinkPreviewComponent
+                                setUrl={setUrl}
+                                url={url}
+                                // post_id={data.id}
+                                // setData={setData}
+                                // dataUrl={data.url}
+                            />
+                        </div>
+                    )}
                     <div className="flex items-center mt-2">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
+                                handleUploadAvatar();
                             }}
                         >
-                            <LuImagePlus className="dark:text-white mr-2" />
+                            <LuImagePlus className="dark:text-white text-white mr-2" />
                         </button>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
+                                setIsOpenLink(true);
                             }}
                         >
                             <IoMdLink
-                                className="dark:text-white mr-2"
+                                className="dark:text-white text-white mr-2"
                                 size={20}
                             />
                         </button>
-                        <button
+                        {/* <button
                             onClick={(e) => {
                                 e.stopPropagation();
+                                // handleToggleSearch(data.id);
                             }}
                         >
-                            <GoMention className="dark:text-white mr-2" />
-                        </button>
+                            <GoMention className="dark:text-white text-white mr-2" />
+                        </button> */}
                     </div>
+                    {/* {isShowSearch && (
+                        <>
+                            <div className="w-[80%] flex flex-wrap gap-1 mt-2">
+                                {(result.length > 0 ? result : tagsUser)?.map(
+                                    (user, i) => (
+                                        <MentionsItem
+                                            key={i}
+                                            user={user}
+                                            handle={(e) => {
+                                                e.stopPropagation();
+                                                handleMentions(user);
+                                            }}
+                                            isMentions={isMentions(user?.id)}
+                                        />
+                                    ),
+                                )}
+                            </div>
+                            <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%] bg-white">
+                                <input
+                                    onChange={(e) =>
+                                        setSearchText(e.target.value)
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                    placeholder="Search"
+                                    className="border-none outline-none bg-transparent w-full dark:text-white dark:placeholder-gray-400"
+                                />
+                                <RiSearch2Line className="dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
+                                {loading && (
+                                    <PiSpinnerBold className="dark:text-white absolute right-1 top-1/2 -translate-y-1/2 spinner" />
+                                )}
+                            </div>
+                        </>
+                    )} */}
                 </div>
 
                 <div className={`flex justify-center items-center gap-5`}>
@@ -320,6 +450,24 @@ export default function RecordModal({ handle }) {
                 handle={handleAllow}
                 buttonOKText="Allow"
                 buttonOKColor="bg-dark2Primary"
+            />
+            <ModalDelete
+                title="Add Link"
+                subTitle="Would you like to paste link from clipboard to add it?"
+                isOpen={isOpenLink}
+                setIsOpen={setIsOpenLink}
+                handle={handlePasteUrl}
+                buttonOKText="Paste"
+            />
+            <ModalDelete
+                title="Are you sure you want to delete this photo?"
+                subTitle=""
+                isOpen={isOpenDeletePhoto}
+                setIsOpen={setIsOpenDeletePhoto}
+                handle={() => {
+                    setFile(null);
+                    // dispatch(deletePhoto(item?.id));
+                }}
             />
         </div>
     );
