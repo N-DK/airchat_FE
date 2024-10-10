@@ -1,8 +1,8 @@
 import React from 'react';
 
-const LoadingSpinner = ({ position = '' }) => (
+const LoadingSpinner = ({ position }) => (
     <div
-        className={`"flex ${
+        className={`flex ${
             position ? position : 'justify-center items-center'
         } h-full `}
     >

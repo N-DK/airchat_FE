@@ -39,7 +39,9 @@ const MentionsItem = ({ user, handle, isMentions }) => {
         <div
             onClick={handle}
             className={`flex items-center p-2 py-1 rounded-lg  mr-2 ${
-                isMentions ? 'dark:bg-blue-500' : 'dark:bg-darkPrimary'
+                isMentions
+                    ? 'dark:bg-blue-500 bg-slate-400'
+                    : 'dark:bg-darkPrimary bg-white'
             }`}
         >
             <figure className="mr-1 w-5 h-5 flex items-center justify-center">
@@ -353,7 +355,7 @@ const ListPostProfile = ({ list, userInfo }) => {
                                 handleUploadAvatar(data.id);
                             }}
                         >
-                            <LuImagePlus className="dark:text-white mr-2" />
+                            <LuImagePlus className="dark:text-white text-white mr-2" />
                         </button>
                         <button
                             onClick={(e) => {
@@ -362,7 +364,7 @@ const ListPostProfile = ({ list, userInfo }) => {
                             }}
                         >
                             <IoMdLink
-                                className="dark:text-white mr-2"
+                                className="dark:text-white text-white mr-2"
                                 size={20}
                             />
                         </button>
@@ -372,7 +374,7 @@ const ListPostProfile = ({ list, userInfo }) => {
                                 handleToggleSearch(data.id);
                             }}
                         >
-                            <GoMention className="dark:text-white mr-2" />
+                            <GoMention className="dark:text-white text-white mr-2" />
                         </button>
                     </div>
                     {isShowSearch && (
@@ -392,7 +394,7 @@ const ListPostProfile = ({ list, userInfo }) => {
                                     ),
                                 )}
                             </div>
-                            <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%]">
+                            <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%] bg-white">
                                 <input
                                     onChange={(e) =>
                                         setSearchText(e.target.value)
