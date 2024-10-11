@@ -61,7 +61,7 @@ function PostItem({ item, contentsChattingRef, setList }) {
     }, [data?.id]);
 
     const convertObjectURL = (selectedFile) => {
-        return URL.createObjectURL(selectedFile);
+        return selectedFile ? URL.createObjectURL(selectedFile) : null;
     };
 
     const handleTouchEnd = useCallback(() => {
