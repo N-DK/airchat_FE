@@ -287,7 +287,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
                 const parentRect = object.parent.getBoundingClientRect();
 
                 const scrollTop =
-                    object.parent.scrollTop + (rect.top - parentRect.top); // - 100
+                    object.parent.scrollTop + (rect.bottom - parentRect.top); // - 100
 
                 object.parent.scrollTo({
                     top: scrollTop,

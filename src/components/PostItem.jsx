@@ -395,6 +395,7 @@ function PostItem({ item, contentsChattingRef, setList }) {
                             position="left"
                             message={detailsPostReply[replyIndexCurrent]}
                             setDetailsPostReply={setDetailsPostReply}
+                            contentsChattingRef={contentsChattingRef}
                         />
                     )}
                 </div>

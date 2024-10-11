@@ -14,7 +14,12 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
 
-function MessageItem({ position = 'right', message, setDetailsPostReply }) {
+function MessageItem({
+    position = 'right',
+    message,
+    setDetailsPostReply,
+    contentsChattingRef,
+}) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -162,6 +167,7 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
                     element: document.getElementById(
                         `post-item-reply-${data?.id}`,
                     ),
+                    parent: contentsChattingRef?.current,
                 }),
             );
         }
