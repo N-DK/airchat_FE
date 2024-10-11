@@ -290,7 +290,7 @@ export default function Details() {
                                 key={index}
                                 onClick={() => setIndexCommentPresent(index)}
                                 src={`https://talkie.transtechvietnam.com/${img.avatar}`}
-                                className={`absolute top-0 h-[45px] w-[45px] object-cover rounded-full border-[3px] p-[3px] ${
+                                className={`absolute top-0 h-[45px] w-[45px] object-cover  border-[3px]  ${
                                     indexCommentPresent === index
                                         ? 'border-bluePrimary'
                                         : ''
