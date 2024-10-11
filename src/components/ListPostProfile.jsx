@@ -6,8 +6,11 @@ import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { heart } from '../redux/actions/PostActions';
 import ListPostItems from './ListPostItems';
 import PostContent from './PostContent';
+import { useDispatch } from 'react-redux';
 
 const ListPostProfile = ({ list, userInfo }) => {
+    const dispatch = useDispatch();
+
     const renderPostActions = (item) => {
         const [isHeart, setIsHeart] = useState(!!item.heart);
         const [likeCount, setLikeCount] = useState(item?.number_heart || 0);
@@ -47,6 +50,11 @@ const ListPostProfile = ({ list, userInfo }) => {
                 <HiMiniArrowUpTray className="text-white" />
             </div>
         );
+    };
+
+    const handleAction = (action, id, callback) => {
+        dispatch(action(id));
+        callback();
     };
 
     return (

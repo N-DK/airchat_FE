@@ -4,6 +4,7 @@ import React, {
     useEffect,
     useRef,
     useCallback,
+    useContext,
 } from 'react';
 import moment from 'moment';
 import { Avatar } from 'antd';
@@ -22,6 +23,8 @@ import { FaBookmark } from 'react-icons/fa6';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
+import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+import { AppContext } from '../AppContext';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -43,6 +46,10 @@ function PostItem({ item, contentsChattingRef, setList }) {
     const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
 
+    const { isRecord, toggleIsRecord } = useContext(AppContext);
+
+    const { success: newPost } = useSelector((state) => state.postSubmit);
+
     const divRef = useRef(null);
     const pressTimer = useRef();
 
@@ -52,6 +59,10 @@ function PostItem({ item, contentsChattingRef, setList }) {
             setContextMenuVisible(true);
         }, 500);
     }, [data?.id]);
+
+    const convertObjectURL = (selectedFile) => {
+        return URL.createObjectURL(selectedFile);
+    };
 
     const handleTouchEnd = useCallback(() => {
         clearTimeout(pressTimer.current);
@@ -67,6 +78,31 @@ function PostItem({ item, contentsChattingRef, setList }) {
             setDetailsPostReply(item?.reply || []);
         }
     }, [item]);
+
+    useEffect(() => {
+        if (newPost?.reply_post && newPost?.reply_post === item?.id) {
+            setList((prev) => {
+                const newPosts = prev.map((post) => {
+                    if (post.id === newPost.reply_post) {
+                        return {
+                            ...post,
+                            reply: [
+                                ...post.reply,
+                                {
+                                    ...newPost,
+                                    img: convertObjectURL(newPost?.img),
+                                },
+                            ],
+                        };
+                    }
+                    return post;
+                });
+                return newPosts;
+            });
+            if (isRecord) toggleIsRecord();
+            dispatch({ type: POST_SUBMIT_RESET });
+        }
+    }, [newPost]);
 
     const postDetailsUrl = useMemo(() => {
         const baseUrl = `/posts/details/${data?.id}`;

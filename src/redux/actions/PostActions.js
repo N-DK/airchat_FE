@@ -40,7 +40,7 @@ import {
 } from '../constants/PostConstants';
 
 export const submitPost =
-    (content, audio, reply_post, file, url) => async (dispatch, getState) => {
+    (content, audio, reply_post, photo, url) => async (dispatch, getState) => {
         try {
             dispatch({
                 type: POST_SUBMIT_REQUEST,
@@ -53,9 +53,6 @@ export const submitPost =
             formData.append('audio', audio);
             if (reply_post) {
                 formData.append('reply_post', reply_post);
-            }
-            if (file) {
-                formData.append('image', file);
             }
             if (url) {
                 formData.append('url', url);
@@ -71,12 +68,20 @@ export const submitPost =
                 formData,
                 config,
             );
-            setTimeout(() => {
-                dispatch({
-                    type: POST_SUBMIT_SUCCESS,
-                    payload: data.results,
-                });
-            }, 1000);
+            if (photo) {
+                const id_post = data?.id;
+                uploadImage(photo, id_post)(dispatch, getState);
+            }
+            // setTimeout(() => {
+
+            // }, 1000);
+            dispatch({
+                type: POST_SUBMIT_SUCCESS,
+                payload: {
+                    ...data?.detail[0],
+                    img: photo,
+                },
+            });
         } catch (error) {
             const message =
                 error.response && error.response.data.message

@@ -240,7 +240,7 @@ export default function RecordModal({ handle }) {
     }, [audio]);
 
     const convertObjectURL = (selectedFile) => {
-        return URL.createObjectURL(selectedFile);
+        return selectedFile ? URL.createObjectURL(selectedFile) : null;
     };
 
     const formatTime = (lengthInSeconds) => {

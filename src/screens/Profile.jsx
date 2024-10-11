@@ -201,7 +201,7 @@ export default function Profile() {
     }, [isSuccessFollow, dispatch, stranger_id]);
 
     useEffect(() => {
-        if (!loadingSubmit && successSubmit) {
+        if (!loadingSubmit && successSubmit?.id) {
             dispatch(listPostProfile(showActions, 100, 0));
             if (isRecord) toggleIsRecord();
             dispatch({ type: POST_SUBMIT_RESET });

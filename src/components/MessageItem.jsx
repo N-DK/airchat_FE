@@ -190,7 +190,7 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
                 >
                     <Avatar
                         className="w-full h-full"
-                        src={`https://talkie.transtechvietnam.com/${data?.img}`}
+                        src={`https://talkie.transtechvietnam.com/${data?.avatar}`}
                         alt={data?.name}
                     />
                 </Link>
@@ -241,7 +241,11 @@ function MessageItem({ position = 'right', message, setDetailsPostReply }) {
                         {data?.img && (
                             <figure className="max-w-full relative my-2">
                                 <Avatar
-                                    src={`https://talkie.transtechvietnam.com/${data?.img}`}
+                                    src={`${
+                                        data?.img.includes('blob')
+                                            ? data?.img
+                                            : `https://talkie.transtechvietnam.com/${data?.img}`
+                                    } `}
                                     className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
