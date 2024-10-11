@@ -125,8 +125,13 @@ function PostItem({ item, contentsChattingRef, setList }) {
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                threshold: 0.45,
-                rootMargin: '-100px 0px -610px 0px',
+                // threshold: 0.45,
+                // rootMargin: '-100px 0px -610px 0px',
+                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.1,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
         );
 

@@ -242,7 +242,7 @@ export default function Chatting() {
 
             <div
                 ref={contentsChattingRef}
-                className="absolute top-0 left-0 pb-[540px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
+                className="absolute top-0 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
             >
                 <div className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 pt-[164px] md:pt-[170px] px-3 md:px-6 gap-3 md:gap-6">
                     <Avatar
