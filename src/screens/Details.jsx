@@ -14,6 +14,7 @@ import { TbUpload } from 'react-icons/tb';
 import { RiAddLine } from 'react-icons/ri';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
+import { debounce } from 'lodash';
 
 import { AppContext } from '../AppContext';
 import {
@@ -21,6 +22,7 @@ import {
     detailsPost,
     getReplyAll,
     heart,
+    setPostActive,
 } from '../redux/actions/PostActions';
 import FooterChat from '../components/FooterChat';
 import RecordModal from '../components/RecordModal';
@@ -31,6 +33,42 @@ import { sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from '../components/CustomContextMenu';
 import { FaBookmark } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
+import { setObjectActive } from '../redux/actions/SurfActions';
+import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+
+const MessageRecursive = ({
+    detailsPostReply,
+    setDetailsPostReply,
+    contentsChattingRef,
+    index,
+}) => {
+    const message = detailsPostReply[index];
+
+    return (
+        <div className="pb-5 pt-3 px-3">
+            <MessageItem
+                position="left"
+                message={message}
+                setDetailsPostReply={setDetailsPostReply}
+                contentsChattingRef={contentsChattingRef}
+            />
+
+            {message.reply?.length > 0 && (
+                <div className="pl-5">
+                    {message.reply.map((_, subIndex) => (
+                        <MessageRecursive
+                            key={subIndex}
+                            detailsPostReply={message.reply}
+                            setDetailsPostReply={setDetailsPostReply}
+                            contentsChattingRef={contentsChattingRef}
+                            index={subIndex}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default function Details() {
     const { id } = useParams();
@@ -54,26 +92,57 @@ export default function Details() {
     const [initialLoad, setInitialLoad] = useState(true);
 
     const contentsChattingRef = useRef(null);
+    const divRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
     const postRefs = useRef([]);
 
     const { replyAlls: post, loading } = useSelector(
         (state) => state.postReplyAll,
     );
     const { userInfo } = useSelector((state) => state.userProfile);
+    const { success: newPost } = useSelector((state) => state.postSubmit);
 
     // const userId = new URLSearchParams(location.search).get('userId') || null;
 
     useEffect(() => {
         if (post) {
             setData(post);
-            setDetailsPostReply(post?.reply || []);
         }
     }, [post]);
+
+    useEffect(() => {
+        setDetailsPostReply(data?.reply || []);
+    }, [data?.reply]);
 
     useEffect(() => {
         // if (!post) dispatch(detailsPost(id, userId));
         dispatch(getReplyAll(id));
     }, [dispatch, id]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                threshold: 0.1,
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.2,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
+            },
+        );
+
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
+
+        return () => {
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (data) {
@@ -86,8 +155,54 @@ export default function Details() {
     }, [data]);
 
     useEffect(() => {
+        if (isVisible) {
+            dispatch(setPostActive(data));
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Audio(
+                              `https://talkie.transtechvietnam.com/${data?.audio}`,
+                          )
+                        : null,
+                    element: document.getElementById(
+                        `post-item-reply-${data?.id}`,
+                    ),
+                    parent: contentsChattingRef?.current,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef]);
+
+    useEffect(() => {
         if (data && !isHeart) setInitialLoad(false);
     }, [isHeart, data]);
+
+    useEffect(() => {
+        if (newPost?.reply_post && newPost?.reply_post === data?.id) {
+            setData((post) => {
+                if (post.id === newPost.reply_post) {
+                    return {
+                        ...post,
+                        reply: [
+                            {
+                                ...newPost,
+                                img: convertObjectURL(newPost?.img),
+                            },
+                            ...post.reply,
+                        ],
+                    };
+                }
+                return post;
+            });
+            if (isRecord) toggleIsRecord();
+            dispatch({ type: POST_SUBMIT_RESET });
+        }
+    }, [newPost]);
+
+    const convertObjectURL = (selectedFile) => {
+        return selectedFile ? URL.createObjectURL(selectedFile) : null;
+    };
 
     const handleTouchStart = (e) => {
         pressTimer.current = setTimeout(() => {
@@ -163,7 +278,7 @@ export default function Details() {
 
     const renderHeader = () => (
         <div
-            className={`z-20 px-6 md:px-10 bg-white dark:bg-darkPrimary pb-[10px] ${
+            className={`z-50 px-6 md:px-10 bg-white dark:bg-darkPrimary pb-[10px] ${
                 isSwiping ? 'translate-y-[-150px] opacity-0' : 'opacity-100'
             } transition-all duration-500`}
         >
@@ -186,7 +301,8 @@ export default function Details() {
 
     const renderPostContent = () => (
         <div
-            ref={(el) => (postRefs.current[0] = el)}
+            // ref={(el) => (postRefs.current[0] = el)}
+            ref={divRef}
             className="flex mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
         >
             <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
@@ -199,13 +315,13 @@ export default function Details() {
                     onClick={handleFollow}
                     className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
                         (data?.dafollow === null || data?.dafollow <= 0) &&
-                        userInfo?.id !== item?.user_id
+                        userInfo?.id !== data?.user_id
                             ? 'border border-white'
                             : ''
                     }`}
                 >
                     {(data?.dafollow === null || data?.dafollow <= 0) &&
-                        userInfo?.id !== item?.user_id && (
+                        userInfo?.id !== data?.user_id && (
                             <RiAddLine
                                 size="1.1rem"
                                 className="p-[2px] text-white"
@@ -216,7 +332,11 @@ export default function Details() {
             </div>
 
             <div className="w-full">
-                <div className="relative bg-white dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3">
+                <div
+                    className={`relative bg-white dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 transition-all duration-300  ${
+                        isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
+                    }`}
+                >
                     <div
                         id={`post-item-reply-${data?.id}`}
                         onTouchStart={handleTouchStart}
@@ -306,7 +426,7 @@ export default function Details() {
                 </div>
 
                 {data?.reply?.length > 0 && (
-                    <div className="relative mt-9 pb-12">
+                    <div className="relative mt-9 pb-12 overflow-auto scrollbar-none">
                         {data?.reply?.map((img, index) => (
                             <Avatar
                                 key={index}
@@ -343,7 +463,7 @@ export default function Details() {
                     ) : (
                         <>
                             {renderPostContent()}
-                            {detailsPostReply?.length > 0 && (
+                            {/* {detailsPostReply?.length > 0 && (
                                 <div className="pb-5 pt-3 px-3">
                                     <MessageItem
                                         position="left"
@@ -355,8 +475,19 @@ export default function Details() {
                                         setDetailsPostReply={
                                             setDetailsPostReply
                                         }
+                                        contentsChattingRef={
+                                            contentsChattingRef
+                                        }
                                     />
                                 </div>
+                            )} */}
+                            {detailsPostReply?.length > 0 && (
+                                <MessageRecursive
+                                    detailsPostReply={detailsPostReply}
+                                    setDetailsPostReply={setDetailsPostReply}
+                                    contentsChattingRef={contentsChattingRef}
+                                    index={indexCommentPresent}
+                                />
                             )}
                         </>
                     )}

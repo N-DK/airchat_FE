@@ -163,6 +163,8 @@ function PostItem({ item, contentsChattingRef, setList }) {
                     parent: contentsChattingRef?.current,
                 }),
             );
+        } else {
+            dispatch(setPostActive(null));
         }
     }, [isVisible, contentsChattingRef]);
 

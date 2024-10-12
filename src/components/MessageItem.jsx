@@ -4,11 +4,11 @@ import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Avatar } from 'antd';
 import { FaBookmark, FaChartLine } from 'react-icons/fa6';
-import { useDispatch } from 'react-redux';
-import { bookMark, heart } from '../redux/actions/PostActions';
+import { useDispatch, useSelector } from 'react-redux';
+import { bookMark, heart, setPostActive } from '../redux/actions/PostActions';
 import { Link, useNavigate } from 'react-router-dom';
 import LoaderSkeletonPosts from './LoaderSkeletonPosts';
-import { addViewPost, sharePost } from '../redux/actions/UserActions';
+import { addViewPost, profile, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
@@ -35,6 +35,7 @@ function MessageItem({
     const messageRef = useRef(null);
     const [targetElement, setTargetElement] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
+    const { userInfo } = useSelector((state) => state.userProfile);
 
     useEffect(() => {
         if (message) setData(message);
@@ -87,6 +88,10 @@ function MessageItem({
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);
     }, [isHeart]);
+
+    useEffect(() => {
+        if (!userInfo) dispatch(profile());
+    }, [dispatch]);
 
     const handleTouchStart = (e) => {
         pressTimer.current = setTimeout(() => {
@@ -159,6 +164,9 @@ function MessageItem({
 
     useEffect(() => {
         if (isVisible) {
+            if (window.location.pathname.includes('/posts/details')) {
+                dispatch(setPostActive(data));
+            }
             dispatch(
                 setObjectActive({
                     post: data,
@@ -174,7 +182,7 @@ function MessageItem({
                 }),
             );
         }
-    }, [isVisible]);
+    }, [isVisible, contentsChattingRef]);
 
     if (!message) {
         return (
@@ -192,7 +200,11 @@ function MessageItem({
                 } `}
             >
                 <Link
-                    to={`/profile/${data.user_id}`}
+                    to={`/profile${
+                        userInfo?.id === data?.user_id
+                            ? ''
+                            : `/${data?.user_id}`
+                    }`}
                     className={`w-10 h-10 mr-2 ${
                         position === 'left' ? 'mr-0 ml-2' : ''
                     }`}

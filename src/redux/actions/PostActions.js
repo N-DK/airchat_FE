@@ -43,7 +43,8 @@ import {
 } from '../constants/PostConstants';
 
 export const submitPost =
-    (content, audio, reply_post, photo, url) => async (dispatch, getState) => {
+    (content, audio, reply_post, photo, url, video) =>
+    async (dispatch, getState) => {
         try {
             dispatch({
                 type: POST_SUBMIT_REQUEST,
@@ -53,7 +54,12 @@ export const submitPost =
             } = getState();
             const formData = new FormData();
             formData.append('content', content);
-            formData.append('audio', audio);
+            if (video) {
+                formData.append('video', video);
+            }
+            if (audio) {
+                formData.append('audio', audio);
+            }
             if (reply_post) {
                 formData.append('reply_post', reply_post);
             }

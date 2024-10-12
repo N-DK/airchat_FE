@@ -21,7 +21,13 @@ import {
     setObjectAudioCurrent,
 } from '../redux/actions/SurfActions';
 
-export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
+export default function FooterChat({
+    isSwiping,
+    title,
+    isPlay,
+    handleSend,
+    setIsTurnOnCamera,
+}) {
     const navigate = useNavigate();
     const {
         toggleIsRecord,
@@ -67,6 +73,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     const [touchStartX, setTouchStartX] = useState(null);
     const [isStartRecord, setIsStartRecord] = useState(false);
     const [audio, setAudio] = useState(null);
+    const [video, setVideo] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
@@ -89,6 +96,8 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     };
 
     const handleTouchStart = useCallback((e) => {
+        // if(recordOption === video) thì bật camera
+
         setTouchStartX(e.touches[0].clientX);
         pressTimer.current = setTimeout(() => {
             setIsStartRecord(true);
@@ -112,6 +121,7 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
             setIsStartRecord(false);
             setContextMenuVisible(false);
             setTouchStartX(null);
+            setIsTurnOnCamera(false);
         },
         [isStartRecord],
     );
@@ -120,7 +130,6 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
         if (recognitionRef.current) {
             recognitionRef.current.start();
         }
-        // Bắt đầu ghi âm âm thanh
         navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
             mediaRecorderRef.current = new MediaRecorder(stream);
 
@@ -136,15 +145,14 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = () => {
                     const base64data = reader.result;
-                    // console.log(base64data);
-                    // const audioUrl = URL.createObjectURL(audioBlob);
-                    setAudio(base64data); // Cập nhật state với URL của blob
+
+                    setAudio(base64data);
                 };
 
-                audioChunksRef.current = []; // Reset chunks để ghi âm mới
+                audioChunksRef.current = [];
             };
 
-            mediaRecorderRef.current.start(); // Bắt đầu ghi âm
+            mediaRecorderRef.current.start();
         });
     };
 
@@ -176,6 +184,9 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
     useEffect(() => {
         if (isStartRecord) {
             console.log('IS START RECORD');
+            if (recordOption == 'video') {
+                setIsTurnOnCamera(true);
+            }
             startRecording();
         }
     }, [isStartRecord]);
@@ -228,9 +239,6 @@ export default function FooterChat({ isSwiping, title, isPlay, handleSend }) {
 
             recognition.onend = () => {
                 setNewMessage(newTranscript);
-                // if (newTranscript ) {
-                // }
-                // if (handleSend) handleSend(newTranscript, audio);
             };
 
             recognitionRef.current = recognition;

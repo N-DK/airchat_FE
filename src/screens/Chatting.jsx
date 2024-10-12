@@ -30,6 +30,7 @@ import {
 } from '../redux/actions/MessageAction';
 import { CHANNEL_ADD_RESET } from '../redux/constants/ChannelConstants';
 import PrivacyModal from '../components/ModalPolicy';
+import Webcam from 'react-webcam';
 
 const INITIAL_LIMIT = 100;
 const INITIAL_OFFSET = 0;
@@ -55,7 +56,7 @@ export default function Chatting() {
     const [filteredPostList, setFilteredPostList] = useState([]);
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
-
+    const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { search } = useLocation();
@@ -245,18 +246,40 @@ export default function Chatting() {
                 className="absolute top-0 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
             >
                 <div className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 pt-[164px] md:pt-[170px] px-3 md:px-6 gap-3 md:gap-6">
-                    <Avatar
-                        src={
-                            userInfo?.image && userInfo?.image !== '0'
-                                ? `https://talkie.transtechvietnam.com/${userInfo.image}`
-                                : DEFAULT_PROFILE
-                        }
-                        className="h-10 md:h-12 min-w-10 md:min-w-12 rounded-full object-cover"
-                        alt="icon"
-                    />
+                    <figure>
+                        <div
+                            className={`h-10 md:h-12 w-10 md:w-12 ${
+                                isTurnOnCamera ? 'scale-[1.5]' : 'scale-[1]'
+                            } rounded-full overflow-hidden transition-all  duration-300`}
+                        >
+                            {isTurnOnCamera ? (
+                                <Webcam
+                                    videoConstraints={{
+                                        facingMode: 'user',
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                    }}
+                                />
+                            ) : (
+                                <Avatar
+                                    src={
+                                        userInfo?.image &&
+                                        userInfo?.image !== '0'
+                                            ? `https://talkie.transtechvietnam.com/${userInfo.image}`
+                                            : DEFAULT_PROFILE
+                                    }
+                                    className="w-full h-full object-cover"
+                                    alt="icon"
+                                />
+                            )}
+                        </div>
+                    </figure>
                     <div
                         onClick={toggleIsRecord}
-                        className="bg-white dark:bg-dark2Primary shadow-xl rounded-2xl w-full p-3 md:p-5"
+                        className="bg-white flex-1 dark:bg-dark2Primary shadow-xl rounded-2xl w-full p-3 md:p-5"
                     >
                         <h5 className="text-black dark:text-white">
                             {userInfo?.name}
@@ -295,7 +318,12 @@ export default function Chatting() {
                 }`}
             />
 
-            <FooterChat title="chatting" isSwiping={isSwiping} isPlay={true} />
+            <FooterChat
+                title="chatting"
+                isSwiping={isSwiping}
+                isPlay={true}
+                setIsTurnOnCamera={setIsTurnOnCamera}
+            />
             <NotifyPinChannel message={notifyMessage} show={showNotify} />
         </div>
     );
