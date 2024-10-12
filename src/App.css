@@ -1,9 +1,11 @@
 /* App.css */
 
 /* Tắt icon mắt mặc định cho Chrome, Edge và Safari */
-input[type='password']::-webkit-textfield-decoration-container {
+/* input[type='password']::-webkit-textfield-decoration-container {
     display: none;
-}
+} */
+
+/* ẩn scroll bar */
 
 /* Thay đổi vị trí của thông báo */
 .ant-message {

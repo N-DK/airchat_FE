@@ -9,19 +9,19 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import { Avatar } from 'antd';
-import {
-    FaChevronLeft,
-    FaRegHeart,
-    FaChartLine,
-    FaHeart,
-} from 'react-icons/fa';
+import { FaChevronLeft, FaChartLine } from 'react-icons/fa';
 import { TbUpload } from 'react-icons/tb';
 import { RiAddLine } from 'react-icons/ri';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 
 import { AppContext } from '../AppContext';
-import { bookMark, detailsPost, heart } from '../redux/actions/PostActions';
+import {
+    bookMark,
+    detailsPost,
+    getReplyAll,
+    heart,
+} from '../redux/actions/PostActions';
 import FooterChat from '../components/FooterChat';
 import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
@@ -56,7 +56,9 @@ export default function Details() {
     const contentsChattingRef = useRef(null);
     const postRefs = useRef([]);
 
-    const { post, loading } = useSelector((state) => state.postDetails);
+    const { replyAlls: post, loading } = useSelector(
+        (state) => state.postReplyAll,
+    );
 
     const userId = new URLSearchParams(location.search).get('userId') || null;
 
@@ -68,8 +70,9 @@ export default function Details() {
     }, [post]);
 
     useEffect(() => {
-        dispatch(detailsPost(id, userId));
-    }, [dispatch, id, userId]);
+        // if (!post) dispatch(detailsPost(id, userId));
+        dispatch(getReplyAll(id));
+    }, [dispatch, id]);
 
     useEffect(() => {
         if (data) {
@@ -179,7 +182,7 @@ export default function Details() {
     const renderPostContent = () => (
         <div
             ref={(el) => (postRefs.current[0] = el)}
-            className="flex mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-slatePrimary dark:border-b-dark2Primary"
+            className="flex mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
         >
             <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
                 <Avatar

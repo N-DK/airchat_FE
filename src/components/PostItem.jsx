@@ -87,7 +87,7 @@ function PostItem({ item, contentsChattingRef, setList }) {
                         return {
                             ...post,
                             reply: [
-                                ...post.reply,
+                                // ...post.reply,
                                 {
                                     ...newPost,
                                     img: convertObjectURL(newPost?.img),
@@ -106,9 +106,7 @@ function PostItem({ item, contentsChattingRef, setList }) {
 
     const postDetailsUrl = useMemo(() => {
         const baseUrl = `/posts/details/${data?.id}`;
-        return data?.reply?.length > 0
-            ? `${baseUrl}?userId=${data?.reply[0].user_id}`
-            : baseUrl;
+        return baseUrl;
     }, [data?.id, data?.reply]);
 
     useEffect(() => {

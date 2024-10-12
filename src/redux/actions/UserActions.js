@@ -1264,7 +1264,9 @@ export const getListNotification =
                 },
             };
             const { data } = await axios.post(
-                `https://talkie.transtechvietnam.com/list-notification-${key}`,
+                `https://talkie.transtechvietnam.com/${
+                    key ? `list-notification-${key}` : 'list-notification'
+                }`,
                 { limit, offset },
                 config,
             );

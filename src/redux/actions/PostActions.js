@@ -37,6 +37,9 @@ import {
     POST_UPDATE_REQUEST,
     POST_UPDATE_SUCCESS,
     POST_UPDATE_FAIL,
+    POST_REPLY_ALL_REQUEST,
+    POST_REPLY_ALL_SUCCESS,
+    POST_REPLY_ALL_FAIL,
 } from '../constants/PostConstants';
 
 export const submitPost =
@@ -192,6 +195,40 @@ export const barMenu = () => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: MENU_BAR_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getReplyAll = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_REPLY_ALL_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/all-reply-post',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: POST_REPLY_ALL_SUCCESS,
+            payload: data?.data?.[0],
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_REPLY_ALL_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

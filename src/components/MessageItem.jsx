@@ -154,10 +154,8 @@ function MessageItem({
     const postDetailsUrl = useMemo(() => {
         if (!data?.id) return '';
         const baseUrl = `/posts/details/${data.id}`;
-        return data?.reply?.length > 0
-            ? `${baseUrl}?userId=${data.reply[0].user_id}`
-            : baseUrl;
-    }, [data.id, data.reply]);
+        return baseUrl;
+    }, [data?.id, data?.reply]);
 
     useEffect(() => {
         if (isVisible) {

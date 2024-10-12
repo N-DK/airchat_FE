@@ -40,6 +40,9 @@ import {
     POST_UPDATE_REQUEST,
     POST_UPDATE_SUCCESS,
     POST_UPDATE_FAIL,
+    POST_REPLY_ALL_REQUEST,
+    POST_REPLY_ALL_SUCCESS,
+    POST_REPLY_ALL_FAIL,
 } from '../constants/PostConstants';
 
 export const postSubmitReducer = (state = {}, action) => {
@@ -236,6 +239,22 @@ export const postUpdateReducer = (state = {}, action) => {
                 success: action.payload,
             };
         case POST_UPDATE_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const postReplyAllReducer = (state = {}, action) => {
+    switch (action.type) {
+        case POST_REPLY_ALL_REQUEST:
+            return { loading: true };
+        case POST_REPLY_ALL_SUCCESS:
+            return {
+                loading: false,
+                replyAlls: action.payload,
+            };
+        case POST_REPLY_ALL_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

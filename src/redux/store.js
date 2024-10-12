@@ -51,6 +51,7 @@ import {
     postDeletePhotoReducer,
     setPostActiveReducer,
     postUpdateReducer,
+    postReplyAllReducer,
 } from './reducers/PostReducers';
 import {
     channelListReducer,
@@ -129,6 +130,7 @@ const reducer = combineReducers({
     userSettingNotification: userSettingNotificationReducer,
     userChangePassword: userChangePasswordReducer,
     listNotification: listNotificationReducer,
+    postReplyAll: postReplyAllReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')
