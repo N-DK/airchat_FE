@@ -69,6 +69,7 @@ import {
 import {
     setObjectActiveReducer,
     setObjectAudioCurrentReducer,
+    setObjectVideoCurrentReducer,
 } from './reducers/SurfReducers';
 
 const reducer = combineReducers({
@@ -131,6 +132,7 @@ const reducer = combineReducers({
     userChangePassword: userChangePasswordReducer,
     listNotification: listNotificationReducer,
     postReplyAll: postReplyAllReducer,
+    setObjectVideoCurrent: setObjectVideoCurrentReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

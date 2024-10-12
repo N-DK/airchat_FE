@@ -51,6 +51,7 @@ function PostItem({ item, contentsChattingRef, setList }) {
     const { success: newPost } = useSelector((state) => state.postSubmit);
 
     const divRef = useRef(null);
+    const videoRef = useRef(null);
     const pressTimer = useRef();
 
     const handleTouchStart = useCallback(() => {
@@ -161,12 +162,13 @@ function PostItem({ item, contentsChattingRef, setList }) {
                         : null,
                     element: document.getElementById(`post-item-${data?.id}`),
                     parent: contentsChattingRef?.current,
+                    video: videoRef.current,
                 }),
             );
         } else {
             dispatch(setPostActive(null));
         }
-    }, [isVisible, contentsChattingRef]);
+    }, [isVisible, contentsChattingRef, videoRef]);
 
     const handleLike = useCallback(() => {
         dispatch(heart(data?.id));
@@ -317,6 +319,14 @@ function PostItem({ item, contentsChattingRef, setList }) {
                                     className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
+                        )}
+                        {data?.video && (
+                            <video
+                                ref={videoRef}
+                                controls
+                                className="w-full mt-2 rounded-xl"
+                                src={`https://talkie.transtechvietnam.com/${data.video}`}
+                            />
                         )}
                         {data?.url && (
                             <div>

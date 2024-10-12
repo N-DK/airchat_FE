@@ -93,6 +93,8 @@ export default function Details() {
 
     const contentsChattingRef = useRef(null);
     const divRef = useRef(null);
+    const videoRef = useRef(null);
+
     const [isVisible, setIsVisible] = useState(false);
     const postRefs = useRef([]);
 
@@ -169,10 +171,12 @@ export default function Details() {
                         `post-item-reply-${data?.id}`,
                     ),
                     parent: contentsChattingRef?.current,
+                    video: videoRef.current,
+                    bonus: 70,
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef]);
+    }, [isVisible, contentsChattingRef, videoRef]);
 
     useEffect(() => {
         if (data && !isHeart) setInitialLoad(false);
@@ -372,6 +376,14 @@ export default function Details() {
                                     className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
+                        )}
+                        {data?.video && (
+                            <video
+                                ref={videoRef}
+                                controls
+                                className="w-full mt-2 rounded-xl"
+                                src={`https://talkie.transtechvietnam.com/${data.video}`}
+                            />
                         )}
                         {data?.url && (
                             <div>

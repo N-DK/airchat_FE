@@ -33,6 +33,8 @@ function MessageItem({
     const [data, setData] = useState(message);
     const pressTimer = useRef();
     const messageRef = useRef(null);
+    const videoRef = useRef(null);
+
     const [targetElement, setTargetElement] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
     const { userInfo } = useSelector((state) => state.userProfile);
@@ -179,10 +181,11 @@ function MessageItem({
                         `post-item-reply-${data?.id}`,
                     ),
                     parent: contentsChattingRef?.current,
+                    video: videoRef.current,
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef]);
+    }, [isVisible, contentsChattingRef, videoRef]);
 
     if (!message) {
         return (
@@ -270,6 +273,14 @@ function MessageItem({
                                     className="min-h-40 h-full w-full object-cover rounded-xl"
                                 />
                             </figure>
+                        )}
+                        {data?.video && (
+                            <video
+                                ref={videoRef}
+                                controls
+                                className="w-full mt-2 rounded-xl"
+                                src={`https://talkie.transtechvietnam.com/${data.video}`}
+                            />
                         )}
                         {data?.url && (
                             <div>

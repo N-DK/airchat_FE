@@ -283,6 +283,13 @@ function PostContent({ item }) {
                         )}
                     </figure>
                 )}
+                {data?.video && (
+                    <video
+                        controls
+                        className="w-full mt-2 rounded-xl"
+                        src={`https://talkie.transtechvietnam.com/${data.video}`}
+                    />
+                )}
                 {(data?.url || url) && (
                     <div>
                         <LinkPreviewComponent
