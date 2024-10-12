@@ -214,7 +214,7 @@ export const getReplyAll = (post_id) => async (dispatch, getState) => {
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(

@@ -59,8 +59,9 @@ export default function Details() {
     const { replyAlls: post, loading } = useSelector(
         (state) => state.postReplyAll,
     );
+    const { userInfo } = useSelector((state) => state.userProfile);
 
-    const userId = new URLSearchParams(location.search).get('userId') || null;
+    // const userId = new URLSearchParams(location.search).get('userId') || null;
 
     useEffect(() => {
         if (post) {
@@ -131,6 +132,10 @@ export default function Details() {
         setIsShare((prev) => !prev);
     };
 
+    const handleFollow = useCallback(() => {
+        dispatch(follow(data?.user_id));
+    }, [dispatch, data?.user_id]);
+
     const handleBookMark = () => {
         dispatch(bookMark(data?.id));
         setIsBookMark((prev) => {
@@ -190,8 +195,22 @@ export default function Details() {
                     className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
                     alt="icon"
                 />
-                <div className="absolute bottom-0 right-[-3px] z-10 bg-blue-500 border border-white rounded-full">
-                    <RiAddLine size="1.1rem" className="p-[2px] text-white" />
+                <div
+                    onClick={handleFollow}
+                    className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
+                        (data?.dafollow === null || data?.dafollow <= 0) &&
+                        userInfo?.id !== item?.user_id
+                            ? 'border border-white'
+                            : ''
+                    }`}
+                >
+                    {(data?.dafollow === null || data?.dafollow <= 0) &&
+                        userInfo?.id !== item?.user_id && (
+                            <RiAddLine
+                                size="1.1rem"
+                                className="p-[2px] text-white"
+                            />
+                        )}
                 </div>
                 <div className="absolute top-0 left-0 bg-red-300 h-10 md:h-12 w-10 md:w-12 rounded-full"></div>
             </div>

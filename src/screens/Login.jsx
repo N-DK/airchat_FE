@@ -85,7 +85,7 @@ export default function Login() {
                         </button>
                         <input
                             className=" text-black dark:text-white bg-inherit w-full border-none outline-none text-[17px] font-medium"
-                            placeholder="Enter your pass word"
+                            placeholder="Enter your password"
                             ref={inputRef}
                             type="password"
                             value={password}

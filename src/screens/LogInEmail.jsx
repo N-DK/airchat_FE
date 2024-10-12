@@ -32,10 +32,12 @@ export default function LogInEmail() {
         if (account) {
             if (account.login) {
                 navigate('/login');
-                dispatch({
-                    type: SAVE_USER_EMAIL_TEMPORARY,
-                    payload: email,
-                });
+                if (email) {
+                    dispatch({
+                        type: SAVE_USER_EMAIL_TEMPORARY,
+                        payload: email,
+                    });
+                }
             } else {
                 dispatch(checkUserEmail(email));
             }
