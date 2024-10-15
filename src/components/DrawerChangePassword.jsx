@@ -32,7 +32,7 @@ const InputPassword = ({ label, value, setValue }) => {
                     type={showPassword ? 'text' : 'password'}
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
-                    className="w-full h-12 px-4  rounded-lg dark:bg-darkPrimary dark:text-white outline-none"
+                    className="w-full h-12 px-4  rounded-lg dark:bg-darkPrimary bg-grayPrimary dark:text-white outline-none"
                     autoComplete="new-password"
                     style={{
                         WebkitTextSecurity: showPassword ? 'none' : 'disc', // Ẩn mật khẩu

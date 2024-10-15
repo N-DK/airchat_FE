@@ -73,66 +73,75 @@ const ListChannel = React.memo(({ data }) =>
     ),
 );
 
-const Latest = React.memo(({ data, setActiveKey }) => (
-    <>
-        {data?.channel?.length === 0 &&
-            data?.people?.length === 0 &&
-            data?.top?.length === 0 && <EmptySearch />}
-        <div className="">
-            {/* Chats */}
-            {data?.channel?.length > 0 && (
-                <div className="px-2 mb-2">
-                    <div className="flex items-center justify-between dark:text-white mb-4">
-                        <h6 className="">Channels</h6>
-                        <button
-                            onClick={() => setActiveKey('4')}
-                            className="text-base"
-                        >
-                            See more
-                        </button>
+const Latest = React.memo(({ data, setActiveKey }) => {
+    return (
+        <>
+            {(data?.channel?.length === 0 || !data?.channel) &&
+                (data?.people?.length === 0 || !data?.people) &&
+                (data?.top?._data?.length === 0 || !data?.top?._data) && (
+                    <EmptySearch />
+                )}
+            <div className="">
+                {/* Chats */}
+                {data?.channel?.length > 0 && (
+                    <div className="px-2 mb-2">
+                        <div className="flex items-center justify-between dark:text-white mb-4">
+                            <h6 className="">Channels</h6>
+                            <button
+                                onClick={() => setActiveKey('4')}
+                                className="text-base"
+                            >
+                                See more
+                            </button>
+                        </div>
+                        <div className="flex">
+                            {data?.channel?.map((item, index) => (
+                                <ChannelCircle key={index} data={item} />
+                            ))}
+                        </div>
                     </div>
-                    <div className="flex">
-                        {data?.channel?.map((item, index) => (
-                            <ChannelCircle key={index} data={item} />
-                        ))}
+                )}
+                {/* People */}
+                {data?.people?.length > 0 && (
+                    <div className="px-2 mb-2">
+                        <div className="mb-4 flex items-center justify-between dark:text-white">
+                            <h6 className="">People</h6>
+                            <button
+                                onClick={() => setActiveKey('3')}
+                                className="text-base"
+                            >
+                                See more
+                            </button>
+                        </div>
+                        <div className="flex overflow-x-auto scrollbar-none">
+                            {data?.people?.map((item, index) => (
+                                <PeopleCircle
+                                    key={index}
+                                    data={item}
+                                    isAddRecentSearch={true}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
-            {/* People */}
-            {data?.people?.length > 0 && (
-                <div className="px-2 mb-2">
-                    <div className="mb-4 flex items-center justify-between dark:text-white">
-                        <h6 className="">People</h6>
-                        <button
-                            onClick={() => setActiveKey('3')}
-                            className="text-base"
-                        >
-                            See more
-                        </button>
-                    </div>
-                    <div className="flex overflow-x-auto scrollbar-none">
-                        {data?.people?.map((item, index) => (
-                            <PeopleCircle
-                                key={index}
-                                data={item}
-                                isAddRecentSearch={true}
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
-            {/* Recent posts */}
-            {data?.top?.length > 0 && (
-                <div>
-                    <h6 className="mb-4 px-2 dark:text-white">Recent posts</h6>
+                )}
+                {/* Recent posts */}
+                {data?.top?.length > 0 && (
                     <div>
-                        <ListPostItems postsList={data?.top} />
+                        <h6 className="mb-4 px-2 dark:text-white">
+                            Recent posts
+                        </h6>
+                        <div>
+                            <ListPostItems
+                                postsList={data?.top}
+                                isTurnOnCamera={data?.top?.isTurnOnCamera}
+                            />
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
-    </>
-));
+                )}
+            </div>
+        </>
+    );
+});
 
 const TabContent = React.memo(
     ({ component: Component, data, setActiveKey }) => (
@@ -154,9 +163,14 @@ const tabData = [
         key: '2',
         title: 'Top',
         component: ({ data }) => {
+            console.log(data);
+
             const topPosts = data?.top;
-            return topPosts?.length > 0 ? (
-                <ListPostItems postsList={topPosts} />
+            return topPosts?._data?.length > 0 ? (
+                <ListPostItems
+                    postsList={topPosts?._data}
+                    isTurnOnCamera={topPosts?.isTurnOnCamera}
+                />
             ) : (
                 <EmptySearch />
             );
@@ -166,7 +180,7 @@ const tabData = [
     { key: '4', title: 'Channels', component: ListChannel },
 ];
 
-function Search({ data }) {
+function Search({ data, isTurnOnCamera }) {
     const [activeKey, setActiveKey] = useState('1');
     const [searchData, setSearchData] = useState(data);
     const { loading } = useSelector((state) => state.userSearch);
@@ -213,7 +227,10 @@ function Search({ data }) {
     );
 
     useEffect(() => {
-        setSearchData(data);
+        setSearchData({
+            ...data,
+            top: { isTurnOnCamera, _data: data?.top },
+        });
     }, [data]);
 
     return (

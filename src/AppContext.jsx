@@ -19,6 +19,7 @@ export const AppProvider = ({ children }) => {
     const [showDrawerNotification, setShowDrawerNotification] = useState(false);
     const [showDrawerChangePassword, setShowDrawerChangePassword] =
         useState(false);
+    const [newMessageFromFooter, setNewMessageFromFooter] = useState('');
 
     const toggleIsAddChannel = () => setIsAddChannel((prev) => !prev);
     const toggleIsEditChannel = () => setIsEditChannel((prev) => !prev);
@@ -71,6 +72,8 @@ export const AppProvider = ({ children }) => {
                 toggleShowDrawerNotification,
                 showDrawerChangePassword,
                 toggleShowDrawerChangePassword,
+                newMessageFromFooter,
+                setNewMessageFromFooter,
             }}
         >
             {children}

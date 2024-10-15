@@ -5,7 +5,7 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import { Avatar } from 'antd';
@@ -35,6 +35,8 @@ import { FaBookmark } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+
+const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 const MessageRecursive = ({
     detailsPostReply,
@@ -75,7 +77,7 @@ export default function Details() {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    const { isRecord, toggleIsRecord } = useContext(AppContext);
+    const { isRecord, toggleIsRecord, isRunAuto } = useContext(AppContext);
 
     const [isSwiping, setIsSwiping] = useState(false);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
@@ -309,12 +311,28 @@ export default function Details() {
             ref={divRef}
             className="flex mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
         >
-            <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
-                <Avatar
-                    src={`https://talkie.transtechvietnam.com/${data?.avatar}`}
-                    className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                    alt="icon"
-                />
+            <div
+                className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
+                    isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
+                } `}
+            >
+                <Link to={`/profile/${data?.user_id}`}>
+                    {data?.video && isVisible && isRunAuto ? (
+                        <div className="w-full h-full">
+                            <video
+                                ref={videoRef}
+                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                src={`https://talkie.transtechvietnam.com/${data.video}`}
+                            />
+                        </div>
+                    ) : (
+                        <Avatar
+                            src={`${BASE_URL}${data?.avatar}`}
+                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                            alt="icon"
+                        />
+                    )}
+                </Link>
                 <div
                     onClick={handleFollow}
                     className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
@@ -332,10 +350,18 @@ export default function Details() {
                             />
                         )}
                 </div>
-                <div className="absolute top-0 left-0 bg-red-300 h-10 md:h-12 w-10 md:w-12 rounded-full"></div>
+                <div
+                    className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
+                        isVisible && isRunAuto && data?.video
+                            ? 'h-16 w-16'
+                            : 'w-10 h-10'
+                    }  md:w-12 rounded-full ${
+                        isVisible && isRunAuto ? 'animate-ping' : ''
+                    }`}
+                ></div>
             </div>
 
-            <div className="w-full">
+            <div className="flex-1">
                 <div
                     className={`relative bg-white dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 transition-all duration-300  ${
                         isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
@@ -377,14 +403,14 @@ export default function Details() {
                                 />
                             </figure>
                         )}
-                        {data?.video && (
+                        {/* {data?.video && (
                             <video
                                 ref={videoRef}
                                 controls
                                 className="w-full mt-2 rounded-xl"
                                 src={`https://talkie.transtechvietnam.com/${data.video}`}
                             />
-                        )}
+                        )} */}
                         {data?.url && (
                             <div>
                                 <LinkPreviewComponent
@@ -461,12 +487,12 @@ export default function Details() {
 
     return (
         <>
-            <div className="relative flex flex-col justify-between h-screen overflow-hidden">
+            <div className="relative flex flex-col justify-between h-screen overflow-hidden dark:bg-dark2Primary">
                 {renderHeader()}
 
                 <div
                     ref={contentsChattingRef}
-                    className="absolute top-0 left-0 pb-[540px] max-h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
+                    className="absolute top-0 left-0 pb-[580px] max-h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
                 >
                     {loading ? (
                         <div className="mt-[120px]">

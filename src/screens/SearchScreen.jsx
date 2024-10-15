@@ -23,9 +23,12 @@ export default function SearchScreen() {
     const [searchText, setSearchText] = useState('');
     const [recentSearch, setRecentSearch] = useState([]);
     const debouncedSearch = useDebounce(searchText, 500);
+    const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
 
     const { loading, channels } = useSelector((state) => state.channelList);
     const { search: searchResult } = useSelector((state) => state.userSearch);
+    const { post } = useSelector((state) => state.setPostActive);
+
     const { isSuccess: isSuccessFollow } = useSelector(
         (state) => state.userFollow,
     );
@@ -140,7 +143,7 @@ export default function SearchScreen() {
             </div>
 
             {searchText ? (
-                <Search data={searchResult} />
+                <Search data={searchResult} isTurnOnCamera={isTurnOnCamera} />
             ) : (
                 <div className="mx-5 h-full overflow-auto scrollbar-none pb-[200px]">
                     {recentSearch?.length > 0 && (
@@ -176,7 +179,12 @@ export default function SearchScreen() {
                 </div>
             )}
 
-            <FooterChat title="search" isSwiping={false} isPlay={false} />
+            <FooterChat
+                title="search"
+                isSwiping={false}
+                isPlay={true}
+                setIsTurnOnCamera={post ? setIsTurnOnCamera : null}
+            />
         </div>
     );
 }

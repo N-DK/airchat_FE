@@ -8,7 +8,7 @@ import ListPostItems from './ListPostItems';
 import PostContent from './PostContent';
 import { useDispatch } from 'react-redux';
 
-const ListPostProfile = ({ list, userInfo }) => {
+const ListPostProfile = ({ list, userInfo, isTurnOnCamera }) => {
     const dispatch = useDispatch();
 
     const renderPostActions = (item) => {
@@ -85,6 +85,7 @@ const ListPostProfile = ({ list, userInfo }) => {
                 ))}
             <ListPostItems
                 postsList={list?.filter((item) => item.user_id !== userInfo.id)}
+                isTurnOnCamera={isTurnOnCamera}
             />
         </>
     );

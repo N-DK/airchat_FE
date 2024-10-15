@@ -42,6 +42,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import ModalDelete from '../components/ModalDelete';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import DrawerFollower from '../components/DrawerFollower';
+import Webcam from 'react-webcam';
 
 const ACTIONS = [
     {
@@ -69,6 +70,8 @@ export default function Profile() {
     const [userInfo, setUserInfo] = useState(null);
     const [listPostUserProfile, setListPostUserProfile] = useState([]);
     const [typeDrawer, setTypeDrawer] = useState(null);
+    const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
+    const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -120,6 +123,8 @@ export default function Profile() {
     const { isSuccess: isSuccessMute } = userMute;
     const { success: isSuccessBookmark } = userBookMark;
     const { isSuccess: isSuccessShare } = userSharePost;
+    const { post } = useSelector((state) => state.setPostActive);
+
     const modalHandle = () => {
         if (isEditProfile) toggleIsEditProfile();
         if (isRecord) toggleIsRecord();
@@ -295,11 +300,15 @@ export default function Profile() {
 
         if (listPostUserProfile?.length > 0) {
             return stranger_id ? (
-                <ListPostItems postsList={listPostStranger} />
+                <ListPostItems
+                    postsList={listPostStranger}
+                    isTurnOnCamera={isTurnOnCameraReply}
+                />
             ) : (
                 <ListPostProfile
                     list={listPostUserProfile}
                     userInfo={userInfo}
+                    isTurnOnCamera={isTurnOnCameraReply}
                 />
             );
         }
@@ -377,7 +386,7 @@ export default function Profile() {
     return userInfo || (stranger_id && userInfoStranger) ? (
         <>
             <div className="relative flex flex-col justify-between h-screen overflow-hidden bg-slatePrimary dark:bg-darkPrimary">
-                <div className="overflow-auto scrollbar-none pb-[100px]">
+                <div className="overflow-auto scrollbar-none pb-[410px]">
                     <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
                         <button onClick={() => navigate(-1)}>
                             <FaAngleLeft className="text-lg md:text-[22px]" />
@@ -486,13 +495,39 @@ export default function Profile() {
                                 onClick={toggleIsRecord}
                                 className="bg-slatePrimary dark:bg-darkPrimary flex items-center py-4 md:py-5 px-3 md:px-6 gap-3 md:gap-6 border-b-[6px] border-gray-200 dark:border-dark2Primary"
                             >
-                                <Avatar
-                                    src={`https://talkie.transtechvietnam.com/${
-                                        userInfo?.image || ''
-                                    }`}
-                                    className="h-10 md:h-12 min-w-10 md:min-w-12 rounded-full object-cover"
-                                    alt="avatar"
-                                />
+                                <figure>
+                                    <div
+                                        className={`h-10 md:h-12 w-10 md:w-12 ${
+                                            isTurnOnCamera
+                                                ? 'scale-[1.5]'
+                                                : 'scale-[1]'
+                                        } rounded-full overflow-hidden transition-all  duration-300`}
+                                    >
+                                        {isTurnOnCamera ? (
+                                            <Webcam
+                                                videoConstraints={{
+                                                    facingMode: 'user',
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                }}
+                                            />
+                                        ) : (
+                                            <Avatar
+                                                src={
+                                                    userInfo?.image &&
+                                                    userInfo?.image !== '0'
+                                                        ? `https://talkie.transtechvietnam.com/${userInfo.image}`
+                                                        : DEFAULT_PROFILE
+                                                }
+                                                className="w-full h-full object-cover"
+                                                alt="icon"
+                                            />
+                                        )}
+                                    </div>
+                                </figure>
                                 <div className="bg-white dark:bg-dark2Primary shadow-xl rounded-2xl w-full p-3 md:p-5">
                                     <h5 className="text-black dark:text-white">
                                         {userInfo?.name}
@@ -528,7 +563,14 @@ export default function Profile() {
                     }`}
                 />
 
-                <FooterChat title="chatting" isSwiping={false} isPlay={true} />
+                <FooterChat
+                    title="chatting"
+                    isSwiping={false}
+                    isPlay={true}
+                    setIsTurnOnCamera={
+                        post ? setIsTurnOnCameraReply : setIsTurnOnCamera
+                    }
+                />
             </div>
         </>
     ) : (

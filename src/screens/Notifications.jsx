@@ -8,7 +8,6 @@ import { FaRegUser, FaUser } from 'react-icons/fa6';
 import talkieLogo from '../assets/talkie-logo.png';
 import { Avatar } from 'antd';
 import moment from 'moment';
-import { FaUserAlt } from 'react-icons/fa';
 import { getListNotification } from '../redux/actions/UserActions';
 
 const NotificationItem = ({ item }) => {
@@ -17,23 +16,23 @@ const NotificationItem = ({ item }) => {
         if (item?.post_id === 0) {
             navigate(`/profile/${item?.stranger_id}`);
         } else {
-            navigate(`/post/${item?.post_id}`);
+            navigate(`/posts/details/${item?.post_id}`);
         }
     };
 
     return (
         <div
             onClick={handleNavigate}
-            className="p-3 px-4 border-b border-gray-200 w-full"
+            className="p-3 px-4 border-b border-gray-200 w-full dark:border-darkPrimary"
         >
             <div className="flex items-start">
-                <i className="mr-4 mt-1">
+                <i className="mr-4 mt-1 dark:text-white">
                     <FaUser size={20} />
                 </i>
                 <div>
                     <figure className="mb-1">
                         <Avatar
-                            src={`https://talkie.transtechvietnam.com/${item?.image}`}
+                            src={`https://talkie.transtechvietnam.com/${item?.stranger_avartar}`}
                             alt=""
                         />
                     </figure>
@@ -146,8 +145,8 @@ export default function Notifications() {
                     ))}
                 </div>
             </div>
-            <div className="relative flex flex-col justify-between h-screen overflow-auto scrollbar-none dark:bg-dark2Primary">
-                <div className="absolute w-full left-0 top-[150px] pb-[200px] min-h-full overflow-hidden flex justify-center bg-slatePrimary">
+            <div className="relative flex flex-col justify-between h-screen overflow-auto scrollbar-none ">
+                <div className="absolute w-full left-0 top-[150px] pb-[200px] min-h-full overflow-hidden flex justify-center dark:bg-dark2Primary bg-slatePrimary">
                     <div className="w-full">
                         {showActions === 1 && (
                             <div className="w-full">

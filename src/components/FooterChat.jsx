@@ -39,6 +39,7 @@ export default function FooterChat({
         recordOption,
         toggleRecordOption,
         isFullScreen,
+        setNewMessageFromFooter,
     } = useContext(AppContext);
     const iconsMenu = [
         {
@@ -123,7 +124,7 @@ export default function FooterChat({
             clearTimeout(pressTimer.current);
             setIsStartRecord(false);
             setContextMenuVisible(false);
-            setTouchStartX(null);
+            // setTouchStartX(null);
             if (setIsTurnOnCamera) setIsTurnOnCamera(false);
         },
         [isStartRecord],
@@ -210,7 +211,7 @@ export default function FooterChat({
     useEffect(() => {
         if (isStartRecord) {
             console.log('IS START RECORD');
-            if (recordOption == 'video' && setIsTurnOnCamera) {
+            if ((recordOption == 'video' || post) && setIsTurnOnCamera) {
                 setIsTurnOnCamera(true);
             }
             startRecording();
@@ -223,7 +224,7 @@ export default function FooterChat({
     }, [window.location.href, dispatch]);
 
     useEffect(() => {
-        if ((audio || video) && newMessage) {
+        if ((audio || video) && newMessage && touchStartX >= 120) {
             if (handleSend) {
                 handleSend(newMessage, audio);
             } else {
@@ -254,8 +255,9 @@ export default function FooterChat({
             }
             setAudio(null);
             setNewMessage('');
+            setNewMessageFromFooter('');
         }
-    }, [audio, newMessage]);
+    }, [audio, newMessage, touchStartX]);
 
     useEffect(() => {
         audioCurrent?.pause();
@@ -283,6 +285,7 @@ export default function FooterChat({
             };
 
             recognition.onend = () => {
+                setNewMessageFromFooter(newTranscript);
                 setNewMessage(newTranscript);
             };
 

@@ -22,6 +22,8 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { HiOutlineDotsHorizontal } from 'react-icons/hi';
 import EditChannel from '../components/EditChannel';
 import { profile } from '../redux/actions/UserActions';
+import Webcam from 'react-webcam';
+import { DEFAULT_PROFILE } from '../constants/image.constant';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
 
@@ -48,10 +50,14 @@ export default function PostsChannel() {
     const [isPinChannel, setIsPinChannel] = useState(false);
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
+    const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
+    const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
 
     const contentsChattingRef = useRef(null);
 
     const { userInfo } = useSelector((state) => state.userProfile);
+    const { post } = useSelector((state) => state.setPostActive);
+
     const { loading, posts, owner } = useSelector(
         (state) => state.channelPosts,
     );
@@ -193,12 +199,37 @@ export default function PostsChannel() {
             ref={contentsChattingRef}
             className="flex flex-col absolute top-0 pt-32 left-0 pb-[300px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
         >
-            <div className="flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6 border-b-[6px] border-gray-200 dark:border-dark2Primary">
-                <Avatar
-                    src={`${DOMAIN}${userInfo?.image}`}
-                    className="h-10 w-10 rounded-full object-cover"
-                    alt="icon"
-                />
+            <div className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6">
+                <figure>
+                    <div
+                        className={`h-10 md:h-12 w-10 md:w-12 ${
+                            isTurnOnCamera ? 'scale-[1.5]' : 'scale-[1]'
+                        } rounded-full overflow-hidden transition-all  duration-300`}
+                    >
+                        {isTurnOnCamera ? (
+                            <Webcam
+                                videoConstraints={{
+                                    facingMode: 'user',
+                                }}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                }}
+                            />
+                        ) : (
+                            <Avatar
+                                src={
+                                    userInfo?.image && userInfo?.image !== '0'
+                                        ? `https://talkie.transtechvietnam.com/${userInfo.image}`
+                                        : DEFAULT_PROFILE
+                                }
+                                className="w-full h-full object-cover"
+                                alt="icon"
+                            />
+                        )}
+                    </div>
+                </figure>
                 <div
                     onClick={toggleIsRecord}
                     className="bg-white flex-1 dark:bg-dark2Primary shadow-xl rounded-2xl w-full p-3 md:p-5"
@@ -207,7 +238,7 @@ export default function PostsChannel() {
                         {userInfo?.name}
                     </h5>
                     <button className="text-gray-400">
-                        New post to followers...
+                        What's on your mind?
                     </button>
                 </div>
             </div>
@@ -215,7 +246,10 @@ export default function PostsChannel() {
             {loading ? (
                 <LoaderSkeletonPosts />
             ) : (
-                <ListPostItems postsList={postsList} />
+                <ListPostItems
+                    postsList={postsList}
+                    isTurnOnCamera={isTurnOnCameraReply}
+                />
             )}
         </div>
     );
@@ -234,7 +268,14 @@ export default function PostsChannel() {
                         : 'opacity-0 pointer-events-none'
                 }`}
             />
-            <FooterChat title="home" isSwiping={isSwiping} isPlay={true} />
+            <FooterChat
+                title="home"
+                isSwiping={isSwiping}
+                isPlay={true}
+                setIsTurnOnCamera={
+                    post ? setIsTurnOnCameraReply : setIsTurnOnCamera
+                }
+            />
             <NotifyPinChannel message={notifyMessage} show={showNotify} />
         </div>
     );

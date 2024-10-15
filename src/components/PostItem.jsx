@@ -25,10 +25,11 @@ import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import { AppContext } from '../AppContext';
+import Webcam from 'react-webcam';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
-function PostItem({ item, contentsChattingRef, setList }) {
+function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
     const navigate = useNavigate();
     const { pingStates } = usePingStates();
     const dispatch = useDispatch();
@@ -46,9 +47,16 @@ function PostItem({ item, contentsChattingRef, setList }) {
     const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
 
-    const { isRecord, toggleIsRecord } = useContext(AppContext);
+    const {
+        isRecord,
+        toggleIsRecord,
+        isRunAuto,
+        recordOption,
+        newMessageFromFooter,
+    } = useContext(AppContext);
 
     const { success: newPost } = useSelector((state) => state.postSubmit);
+    const { post } = useSelector((state) => state.setPostActive);
 
     const divRef = useRef(null);
     const videoRef = useRef(null);
@@ -234,25 +242,39 @@ function PostItem({ item, contentsChattingRef, setList }) {
 
     return (
         <div className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
-            <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
+            <div
+                className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
+                    isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
+                } `}
+            >
                 <Link to={`/profile/${data?.user_id}`}>
-                    <Avatar
-                        src={`${BASE_URL}${data?.avatar}`}
-                        className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                        alt="icon"
-                    />
+                    {data?.video && isVisible && isRunAuto ? (
+                        <div className="w-full h-full">
+                            <video
+                                ref={videoRef}
+                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                src={`https://talkie.transtechvietnam.com/${data.video}`}
+                            />
+                        </div>
+                    ) : (
+                        <Avatar
+                            src={`${BASE_URL}${data?.avatar}`}
+                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                            alt="icon"
+                        />
+                    )}
                 </Link>
                 <div
                     onClick={handleFollow}
                     className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
                         (data?.dafollow === null || data?.dafollow <= 0) &&
-                        userInfo?.id !== item?.user_id
+                        userInfo?.id !== data?.user_id
                             ? 'border border-white'
                             : ''
                     }`}
                 >
                     {(data?.dafollow === null || data?.dafollow <= 0) &&
-                        userInfo?.id !== item?.user_id && (
+                        userInfo?.id !== data?.user_id && (
                             <RiAddLine
                                 size="1.1rem"
                                 className="p-[2px] text-white"
@@ -260,13 +282,17 @@ function PostItem({ item, contentsChattingRef, setList }) {
                         )}
                 </div>
                 <div
-                    className={`absolute top-0 left-0 bg-red-300 h-10 md:h-12 w-10 md:w-12 rounded-full ${
-                        pingStates[data?.id] ? 'animate-ping' : ''
+                    className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
+                        isVisible && isRunAuto && data?.video
+                            ? 'h-16 w-16'
+                            : 'w-10 h-10'
+                    }  md:w-12 rounded-full ${
+                        isVisible && isRunAuto ? 'animate-ping' : ''
                     }`}
                 ></div>
             </div>
 
-            <div className="w-full">
+            <div className="flex-1">
                 <div
                     ref={divRef}
                     className={`relative transition-all bg-white dark:bg-dark2Primary duration-300 rounded-2xl w-full px-4 pb-5 pt-3 ${
@@ -320,14 +346,14 @@ function PostItem({ item, contentsChattingRef, setList }) {
                                 />
                             </figure>
                         )}
-                        {data?.video && (
+                        {/* {data?.video && (
                             <video
                                 ref={videoRef}
                                 controls
                                 className="w-full mt-2 rounded-xl"
                                 src={`https://talkie.transtechvietnam.com/${data.video}`}
                             />
-                        )}
+                        )} */}
                         {data?.url && (
                             <div>
                                 <LinkPreviewComponent
@@ -405,16 +431,107 @@ function PostItem({ item, contentsChattingRef, setList }) {
                                 />
                             ),
                     )} */}
-                    {detailsPostReply.length > 0 && (
-                        <MessageItem
-                            position="left"
-                            message={detailsPostReply[replyIndexCurrent]}
-                            setDetailsPostReply={setDetailsPostReply}
-                            contentsChattingRef={contentsChattingRef}
-                        />
+                    {isTurnOnCamera && post?.id === data.id ? (
+                        <div className="flex items-start justify-end mt-6">
+                            <div
+                                className={`transition-all duration-300 flex-1 relative rounded-xl p-3 pb-4 bg-white dark:bg-dark2Primary `}
+                            >
+                                <div>
+                                    <div
+                                        className={`flex items-center gap-[5px] justify-end`}
+                                    >
+                                        <h5 className="md:text-xl text-black dark:text-white">
+                                            {userInfo?.name}
+                                        </h5>
+                                        <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
+                                            now
+                                        </span>
+                                    </div>
+                                    <p
+                                        className={`text-right dark:text-white min-h-[24px]`}
+                                    >
+                                        {newMessageFromFooter}
+                                    </p>
+                                </div>
+                                <div
+                                    className={`absolute items-center bottom-[-22px] left-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                                >
+                                    <div
+                                        className={`flex items-center text-gray-400`}
+                                    >
+                                        <button
+                                            className={`btn heart flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
+                                        ></button>
+                                        <span className="ml-2 text-sm font-medium">
+                                            0
+                                        </span>
+                                    </div>
+
+                                    <div
+                                        className={`flex items-center text-gray-400`}
+                                    >
+                                        <PiArrowsClockwiseBold />
+                                        <span className="ml-2 text-sm font-medium">
+                                            0
+                                        </span>
+                                    </div>
+
+                                    <div
+                                        className={`flex items-center text-gray-400`}
+                                    >
+                                        <FaChartLine />
+                                        <span className="ml-2 text-sm font-medium">
+                                            0
+                                        </span>
+                                    </div>
+                                    <HiMiniArrowUpTray />
+                                </div>
+                            </div>
+                            <figure
+                                className={`${
+                                    recordOption === 'video'
+                                        ? 'w-16 h-16'
+                                        : 'w-10 h-10'
+                                } overflow-hidden rounded-full ml-2`}
+                            >
+                                {recordOption === 'video' ? (
+                                    <Webcam
+                                        videoConstraints={{
+                                            facingMode: 'user',
+                                        }}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                        }}
+                                    />
+                                ) : (
+                                    <Avatar
+                                        src={
+                                            userInfo?.image &&
+                                            userInfo?.image !== '0'
+                                                ? `${BASE_URL}${userInfo?.image}`
+                                                : DEFAULT_PROFILE
+                                        }
+                                        className="w-full h-full object-cover"
+                                        alt="icon"
+                                    />
+                                )}
+                            </figure>
+                        </div>
+                    ) : (
+                        detailsPostReply.length > 0 && (
+                            <MessageItem
+                                position="left"
+                                message={detailsPostReply[replyIndexCurrent]}
+                                setDetailsPostReply={setDetailsPostReply}
+                                contentsChattingRef={contentsChattingRef}
+                            />
+                        )
                     )}
                 </div>
             </div>
+
             <CustomContextMenu
                 isVisible={contextMenuVisible}
                 onClose={closeContextMenu}

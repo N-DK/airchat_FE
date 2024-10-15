@@ -143,7 +143,7 @@ export default function EditProfile() {
             }`}
         >
             <div className="bg-white dark:bg-dark2Primary h-full">
-                <div className="px-5 md:px-10 flex justify-between items-center py-3 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300">
+                <div className="px-5 md:px-10 flex justify-between pt-12 pb-4 items-center py-3 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300">
                     <button
                         className="text-black dark:text-white"
                         onClick={() => toggleIsEditProfile()}
@@ -246,6 +246,7 @@ export default function EditProfile() {
                             className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
                             type="password"
                             value={'********'}
+                            readOnly
                         />
                     </div>
                     <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">

@@ -1,4 +1,11 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, {
+    useMemo,
+    useRef,
+    useState,
+    useEffect,
+    useContext,
+    useCallback,
+} from 'react';
 import moment from 'moment';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
@@ -8,11 +15,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { bookMark, heart, setPostActive } from '../redux/actions/PostActions';
 import { Link, useNavigate } from 'react-router-dom';
 import LoaderSkeletonPosts from './LoaderSkeletonPosts';
-import { addViewPost, profile, sharePost } from '../redux/actions/UserActions';
+import {
+    addViewPost,
+    follow,
+    profile,
+    sharePost,
+} from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
+import { AppContext } from '../AppContext';
+
+const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 function MessageItem({
     position = 'right',
@@ -38,6 +53,8 @@ function MessageItem({
     const [targetElement, setTargetElement] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
     const { userInfo } = useSelector((state) => state.userProfile);
+
+    const { isRunAuto } = useContext(AppContext);
 
     useEffect(() => {
         if (message) setData(message);
@@ -149,6 +166,10 @@ function MessageItem({
         }
     };
 
+    const handleFollow = useCallback(() => {
+        dispatch(follow(data?.user_id));
+    }, [dispatch, data?.user_id]);
+
     const handleOnClickPost = () => {
         if (data?.id) {
             dispatch(addViewPost(data.id));
@@ -202,22 +223,55 @@ function MessageItem({
                     position === 'left' ? 'flex-row-reverse' : ''
                 } `}
             >
-                <Link
-                    to={`/profile${
-                        userInfo?.id === data?.user_id
-                            ? ''
-                            : `/${data?.user_id}`
-                    }`}
-                    className={`w-10 h-10 mr-2 ${
-                        position === 'left' ? 'mr-0 ml-2' : ''
-                    }`}
+                <div
+                    className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
+                        isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
+                    } ${position === 'left' ? 'mr-0 ml-2' : 'mr-2'}`}
                 >
-                    <Avatar
-                        className="w-full h-full"
-                        src={`https://talkie.transtechvietnam.com/${data?.avatar}`}
-                        alt={data?.name}
-                    />
-                </Link>
+                    <Link to={`/profile/${data?.user_id}`}>
+                        {data?.video && isVisible && isRunAuto ? (
+                            <div className="w-full h-full">
+                                <video
+                                    ref={videoRef}
+                                    className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                    src={`https://talkie.transtechvietnam.com/${data?.video}`}
+                                />
+                            </div>
+                        ) : (
+                            <Avatar
+                                src={`${BASE_URL}${data?.avatar}`}
+                                className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                alt="icon"
+                            />
+                        )}
+                    </Link>
+                    <div
+                        onClick={handleFollow}
+                        className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
+                            (data?.dafollow === null || data?.dafollow <= 0) &&
+                            userInfo?.id !== data?.user_id
+                                ? 'border border-white'
+                                : ''
+                        }`}
+                    >
+                        {(data?.dafollow === null || data?.dafollow <= 0) &&
+                            userInfo?.id !== data?.user_id && (
+                                <RiAddLine
+                                    size="1.1rem"
+                                    className="p-[2px] text-white"
+                                />
+                            )}
+                    </div>
+                    <div
+                        className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
+                            isVisible && isRunAuto && data?.video
+                                ? 'h-16 w-16'
+                                : 'w-10 h-10'
+                        }  md:w-12 rounded-full ${
+                            isVisible && isRunAuto ? 'animate-ping' : ''
+                        }`}
+                    ></div>
+                </div>
                 <div
                     className={`transition-all duration-300 flex-1 relative rounded-xl p-3 pb-4 bg-white dark:bg-dark2Primary ${
                         isVisible ? 'shadow-2xl scale-[1.02]' : ' shadow-md'
@@ -274,14 +328,14 @@ function MessageItem({
                                 />
                             </figure>
                         )}
-                        {data?.video && (
+                        {/* {data?.video && (
                             <video
                                 ref={videoRef}
                                 controls
                                 className="w-full mt-2 rounded-xl"
                                 src={`https://talkie.transtechvietnam.com/${data.video}`}
                             />
-                        )}
+                        )} */}
                         {data?.url && (
                             <div>
                                 <LinkPreviewComponent

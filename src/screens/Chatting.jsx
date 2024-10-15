@@ -57,11 +57,13 @@ export default function Chatting() {
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
+    const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { search } = useLocation();
     const redirect = search.split('=')[1] || 'for-you';
 
+    const { post } = useSelector((state) => state.setPostActive);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { isSuccess: isSuccessFollow } = useSelector(
         (state) => state.userFollow,
@@ -295,6 +297,7 @@ export default function Chatting() {
                         <ListPostItems
                             postsList={postListData}
                             contentsChattingRef={contentsChattingRef}
+                            isTurnOnCamera={isTurnOnCameraReply}
                         />
                     )}
                     {loading && (
@@ -322,7 +325,9 @@ export default function Chatting() {
                 title="chatting"
                 isSwiping={isSwiping}
                 isPlay={true}
-                setIsTurnOnCamera={setIsTurnOnCamera}
+                setIsTurnOnCamera={
+                    post ? setIsTurnOnCameraReply : setIsTurnOnCamera
+                }
             />
             <NotifyPinChannel message={notifyMessage} show={showNotify} />
         </div>
