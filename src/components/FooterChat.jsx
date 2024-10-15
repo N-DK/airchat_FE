@@ -267,7 +267,7 @@ export default function FooterChat({
             setNewMessage('');
             setNewMessageFromFooter('');
         }
-    }, [audio, newMessage, touchStartX]);
+    }, [audio, newMessage, touchStartX, video]);
 
     useEffect(() => {
         audioCurrent?.pause();
@@ -292,10 +292,10 @@ export default function FooterChat({
                     }
                 }
                 newTranscript = finalTranscript || interimTranscript;
+                setNewMessageFromFooter(newTranscript);
             };
 
             recognition.onend = () => {
-                setNewMessageFromFooter(newTranscript);
                 setNewMessage(newTranscript);
             };
 

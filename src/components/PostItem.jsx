@@ -93,21 +93,40 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
             setList((prev) => {
                 const newPosts = prev.map((post) => {
                     if (post.id === newPost.reply_post) {
-                        return {
-                            ...post,
-                            reply: [
-                                // ...post.reply,
-                                {
+                        const updatedReplies = post.reply.map((reply) => {
+                            // Nếu user_id của reply trùng với user_id của newPost thì ghi đè
+                            if (reply.user_id === newPost.user_id) {
+                                return {
                                     ...newPost,
                                     img: convertObjectURL(newPost?.img),
-                                },
-                            ],
+                                };
+                            }
+                            return reply;
+                        });
+
+                        // Kiểm tra xem đã có reply với user_id trùng chưa
+                        const hasExistingReply = updatedReplies.some(
+                            (reply) => reply.user_id === newPost.user_id,
+                        );
+
+                        // Nếu chưa có thì thêm mới
+                        if (!hasExistingReply) {
+                            updatedReplies.push({
+                                ...newPost,
+                                img: convertObjectURL(newPost?.img),
+                            });
+                        }
+
+                        return {
+                            ...post,
+                            reply: updatedReplies,
                         };
                     }
                     return post;
                 });
                 return newPosts;
             });
+
             if (isRecord) toggleIsRecord();
             dispatch({ type: POST_SUBMIT_RESET });
         }
