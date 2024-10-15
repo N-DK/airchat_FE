@@ -75,6 +75,7 @@ export default function FooterChat({
     const [isStartRecord, setIsStartRecord] = useState(false);
     const [audio, setAudio] = useState(null);
     const [video, setVideo] = useState(null);
+    const [stream, setStream] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
@@ -127,7 +128,7 @@ export default function FooterChat({
             // setTouchStartX(null);
             if (setIsTurnOnCamera) setIsTurnOnCamera(false);
         },
-        [isStartRecord],
+        [isStartRecord, recognitionRef, mediaRecorderRef, stream],
     );
 
     const startRecording = () => {
@@ -145,6 +146,10 @@ export default function FooterChat({
         navigator.mediaDevices
             .getUserMedia(mediaConstraints)
             .then((stream) => {
+                if (stream) {
+                    setStream(stream); // Lưu trữ stream vào state
+                }
+
                 mediaRecorderRef.current = new MediaRecorder(stream); // Khởi tạo MediaRecorder với stream
 
                 // Lưu trữ các đoạn âm thanh/video khi có dữ liệu
@@ -184,13 +189,18 @@ export default function FooterChat({
     };
 
     const stopRecording = () => {
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+        }
+
         if (recognitionRef.current) {
             recognitionRef.current.stop();
         }
 
         if (mediaRecorderRef.current) {
-            mediaRecorderRef.current.stop(); // Dừng ghi âm âm thanh
+            mediaRecorderRef.current.stop();
         }
+        // console.log('stream', stream);
     };
 
     const closeContextMenu = useCallback(
