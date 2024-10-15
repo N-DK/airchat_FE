@@ -20,7 +20,8 @@ import useDebounce from '../hooks/useDebounce';
 import { searchUser } from '../redux/actions/MessageAction';
 import { SEARCH_USER_SUCCESS } from '../redux/constants/MessageConstants';
 import { Avatar } from 'antd';
-import { IoCloseCircleOutline } from 'react-icons/io5';
+import { IoCloseCircleOutline, IoVideocam } from 'react-icons/io5';
+import Webcam from 'react-webcam';
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -280,80 +281,94 @@ export default function RecordModal({ handle }) {
                     </div>
                     <RiCloseFill onClick={() => toggleIsRecord()} size="2rem" />
                 </div>
-
-                <div className="bg-bluePrimary rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
-                    <textarea
-                        value={recordContents}
-                        onChange={(e) => setRecordContents(e.target.value)}
-                        readOnly={!recordContents}
-                        className="w-full bg-inherit text-white placeholder-white outline-none"
-                        placeholder="Tap the microphone to record..."
-                        style={{ minHeight: '32px' }}
-                        cols="30"
-                        rows="3"
-                    ></textarea>
-                    {file && (
-                        <figure
-                            // onTouchStart={(e) => {
-                            //     e.stopPropagation();
-                            //     handleTouchStart(item);
-                            // }}
-                            // onTouchEnd={handleTouchEnd}
-                            // id={`delete-photo-${data.id}`}
-                            className="relative"
-                        >
-                            <Avatar
-                                src={convertObjectURL(file)}
-                                className=" w-full h-full object-cover rounded-xl"
-                            />
-                            <button
-                                className="absolute top-3 right-3 p-1 dark:text-red-600 text-red-600"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setFile(null);
-                                }}
+                {permission && recordOption === 'video' && (
+                    <div className="w-20 h-20 overflow-hidden rounded-full">
+                        <Webcam
+                            videoConstraints={{
+                                facingMode: 'user',
+                            }}
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                            }}
+                        />
+                    </div>
+                )}
+                <div className="flex">
+                    <div className="bg-bluePrimary flex-1 rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
+                        <textarea
+                            value={recordContents}
+                            onChange={(e) => setRecordContents(e.target.value)}
+                            readOnly={!recordContents}
+                            className="w-full bg-inherit text-white placeholder-white outline-none"
+                            placeholder="Tap the microphone to record..."
+                            style={{ minHeight: '32px' }}
+                            cols="30"
+                            rows="3"
+                        ></textarea>
+                        {file && (
+                            <figure
+                                // onTouchStart={(e) => {
+                                //     e.stopPropagation();
+                                //     handleTouchStart(item);
+                                // }}
+                                // onTouchEnd={handleTouchEnd}
+                                // id={`delete-photo-${data.id}`}
+                                className="relative"
                             >
-                                <IoCloseCircleOutline size={20} />
-                            </button>
-                            {/* {(loadingUpload || loadingDeletePhoto) && (
+                                <Avatar
+                                    src={convertObjectURL(file)}
+                                    className=" w-full h-full object-cover rounded-xl"
+                                />
+                                <button
+                                    className="absolute top-3 right-3 p-1 dark:text-red-600 text-red-600"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setFile(null);
+                                    }}
+                                >
+                                    <IoCloseCircleOutline size={20} />
+                                </button>
+                                {/* {(loadingUpload || loadingDeletePhoto) && (
                                 <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
                                     <LoadingSpinner />
                                 </div>
                             )} */}
-                        </figure>
-                    )}
-                    {url && (
-                        <div>
-                            <LinkPreviewComponent
-                                setUrl={setUrl}
-                                url={url}
-                                // post_id={data.id}
-                                // setData={setData}
-                                // dataUrl={data.url}
-                            />
-                        </div>
-                    )}
-                    <div className="flex items-center mt-2">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleUploadAvatar();
-                            }}
-                        >
-                            <LuImagePlus className="dark:text-white text-white mr-2" />
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsOpenLink(true);
-                            }}
-                        >
-                            <IoMdLink
-                                className="dark:text-white text-white mr-2"
-                                size={20}
-                            />
-                        </button>
-                        {/* <button
+                            </figure>
+                        )}
+                        {url && (
+                            <div>
+                                <LinkPreviewComponent
+                                    setUrl={setUrl}
+                                    url={url}
+                                    // post_id={data.id}
+                                    // setData={setData}
+                                    // dataUrl={data.url}
+                                />
+                            </div>
+                        )}
+                        <div className="flex items-center mt-2">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUploadAvatar();
+                                }}
+                            >
+                                <LuImagePlus className="dark:text-white text-white mr-2" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsOpenLink(true);
+                                }}
+                            >
+                                <IoMdLink
+                                    className="dark:text-white text-white mr-2"
+                                    size={20}
+                                />
+                            </button>
+                            {/* <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 // handleToggleSearch(data.id);
@@ -361,8 +376,8 @@ export default function RecordModal({ handle }) {
                         >
                             <GoMention className="dark:text-white text-white mr-2" />
                         </button> */}
-                    </div>
-                    {/* {isShowSearch && (
+                        </div>
+                        {/* {isShowSearch && (
                         <>
                             <div className="w-[80%] flex flex-wrap gap-1 mt-2">
                                 {(result.length > 0 ? result : tagsUser)?.map(
@@ -395,6 +410,7 @@ export default function RecordModal({ handle }) {
                             </div>
                         </>
                     )} */}
+                    </div>
                 </div>
 
                 <div className={`flex justify-center items-center gap-5`}>
@@ -436,8 +452,10 @@ export default function RecordModal({ handle }) {
                             <div className="absolute rounded-full p-5 border-[4px] border-bluePrimary">
                                 <HiPause size="1.8rem" />
                             </div>
-                        ) : (
+                        ) : recordOption === 'audio' ? (
                             <IoMdMic size="1.8rem" />
+                        ) : (
+                            <IoVideocam size="1.7rem" />
                         )}
                     </button>
                 </div>
