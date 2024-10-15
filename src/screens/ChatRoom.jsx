@@ -63,6 +63,10 @@ const ChatRoom = () => {
         (message) => {
             console.log('new message', message);
 
+            sendMessage(socket, EMIT_EVENT.MESSAGE_READ, {
+                messageId: [message?.messageID],
+            });
+
             setMessages((prevMessages) => [
                 ...prevMessages,
                 {
@@ -214,7 +218,7 @@ const ChatRoom = () => {
 
             setTimeout(() => {
                 setLoadingSurf(false);
-            }, 400);
+            }, 500);
         }
     }, [refContainer, messages]);
 

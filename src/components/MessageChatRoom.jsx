@@ -89,8 +89,11 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                threshold: 0.3,
-                rootMargin: '-100px 0px -650px 0px',
+                threshold: [0.25],
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.2,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
         );
 
@@ -125,7 +128,7 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
             message: `${
                 position === 'right' ? 'text-left' : 'text-right'
             } bg-white dark:bg-darkPrimary rounded-lg p-3 transition-all duration-300 ${
-                isVisible ? 'shadow-xl scale-[1.01]' : 'shadow-sm'
+                isVisible ? 'shadow-xl scale-[1.1]' : 'shadow-sm'
             } break-words`,
             actions: `absolute items-center bottom-[-22px] ${position}-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`,
         };
