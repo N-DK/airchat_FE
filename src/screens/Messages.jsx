@@ -17,8 +17,12 @@ import moment from 'moment';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import DrawerNewDirect from '../components/DrawerNewDirect';
 import { AppContext } from '../AppContext';
-import { EMIT_EVENT } from '../constants/sockets.constant';
-import { sendMessage } from '../services/socket.service';
+import { EMIT_EVENT, LISTEN_EVENT } from '../constants/sockets.constant';
+import {
+    listenEvent,
+    removeListener,
+    sendMessage,
+} from '../services/socket.service';
 import { profile } from '../redux/actions/UserActions';
 
 const MessageItem = React.memo(({ message, handle, isOther }) => {
@@ -84,6 +88,7 @@ export default function Messages() {
         useContext(AppContext);
     const { socket, isConnected } = useSelector((state) => state.socket);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filteredMessages, setFilteredMessages] = useState([]);
 
     const handleReadMessage = useCallback(
         (message) => {
@@ -118,19 +123,89 @@ export default function Messages() {
         dispatch(listMessageRecent());
     }, [dispatch]);
 
+    const handleNewMessage = useCallback(
+        (data) => {
+            if (data) {
+                const oldMessageRecent = filteredMessages.find(
+                    (message) =>
+                        message.friend_id_1 === data.sender_id ||
+                        message.friend_id_2 === data.sender_id,
+                );
+
+                const newMessageRecent = {
+                    ...oldMessageRecent,
+                    message: data.message,
+                    friend_id_1: data.sender_id,
+                    receiver_id:
+                        data.sender_id === oldMessageRecent.friend_id_1
+                            ? oldMessageRecent.friend_id_2
+                            : oldMessageRecent.friend_id_1,
+                    receiver_avatar:
+                        data.sender_id === oldMessageRecent.friend_id_1
+                            ? oldMessageRecent.receiver_avatar
+                            : oldMessageRecent.sender_avatar,
+                    message_id: data.messageID,
+                    created_at: Date.now() / 1000,
+                    status: 0,
+                };
+                const newFilteredMessages = filteredMessages.filter(
+                    (message) =>
+                        message.friend_id_1 !== data.sender_id &&
+                        message.friend_id_2 !== data.sender_id,
+                );
+                setFilteredMessages([newMessageRecent, ...newFilteredMessages]);
+            }
+        },
+        [filteredMessages, setFilteredMessages],
+    );
+
+    useEffect(() => {
+        const setupSocketListeners = () => {
+            if (isConnected && socket?.connected && socket) {
+                listenEvent(
+                    socket,
+                    LISTEN_EVENT.NEW_PRIVATE_MESSAGE,
+                    handleNewMessage,
+                );
+            }
+        };
+
+        const cleanupSocketListeners = () => {
+            if (socket?.connected && socket) {
+                removeListener(
+                    socket,
+                    LISTEN_EVENT.NEW_PRIVATE_MESSAGE,
+                    handleNewMessage,
+                );
+            }
+        };
+
+        if (isConnected && socket && socket?.connected) {
+            setupSocketListeners();
+        }
+
+        return cleanupSocketListeners;
+    }, [socket, isConnected, handleNewMessage]);
+
     useEffect(() => {
         if (!userInfo) dispatch(profile());
         dispatch(connectSocket());
         return () => dispatch(disconnectSocket());
     }, [dispatch]);
 
-    const filteredMessages = messages_recent?.filter(
-        (message) =>
-            message?.sender_name
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()) &&
-            message?.friend_id_2 !== message?.friend_id_1,
-    );
+    useEffect(() => {
+        if (messages_recent) {
+            setFilteredMessages(
+                messages_recent?.filter(
+                    (message) =>
+                        message?.sender_name
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) &&
+                        message?.friend_id_2 !== message?.friend_id_1,
+                ),
+            );
+        }
+    }, [messages_recent]);
 
     return (
         <div className="relative flex flex-col justify-between h-screen bg-white dark:bg-dark2Primary overflow-hidden">
