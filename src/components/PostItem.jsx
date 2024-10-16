@@ -436,7 +436,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                         <Avatar
                             onClick={() => setReplyIndexCurrent(index)}
                             key={index}
-                            src={`${BASE_URL}${reply.avatar}`}
+                            src={`${BASE_URL}${reply?.avatar}`}
                             className={`${
                                 replyIndexCurrent === index
                                     ? 'border-2 border-blue-400'

@@ -66,7 +66,7 @@ function MessageItem({
             if (setDetailsPostReply) {
                 setDetailsPostReply((prev) =>
                     prev.map((item) => {
-                        return item.id === data.id ? data : item;
+                        return item?.id === data?.id ? data : item;
                     }),
                 );
             }

@@ -171,6 +171,31 @@ export default function Profile() {
         [dispatch],
     );
 
+    const groupPostById = (list) => {
+        if (!list) return [];
+
+        const groupedPosts = new Map();
+
+        list.forEach((item) => {
+            if (!groupedPosts.has(item.id)) {
+                groupedPosts.set(item.id, { ...item, reply: [] });
+            }
+
+            const post = groupedPosts.get(item.id);
+
+            // Đảm bảo item.reply là mảng, và duyệt qua từng phần tử trong item.reply
+            item.reply?.forEach((replyItem) => {
+                if (
+                    !post.reply.some((r) => r?.user_id === replyItem?.user_id)
+                ) {
+                    post.reply.push(replyItem);
+                }
+            });
+        });
+
+        return Array.from(groupedPosts.values());
+    };
+
     useEffect(() => {
         if (showDrawerFollow) toggleShowDrawerFollow();
     }, [window.location.pathname]);
@@ -226,7 +251,11 @@ export default function Profile() {
     }, [loadingProfile, loadingStranger, stranger_id]);
 
     useEffect(() => {
-        setListPostUserProfile(stranger_id ? listPostStranger : listPost);
+        setListPostUserProfile(
+            stranger_id
+                ? groupPostById(listPostStranger)
+                : groupPostById(listPost),
+        );
     }, [stranger_id, listPostStranger, listPost]);
 
     useEffect(() => {
