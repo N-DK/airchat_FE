@@ -101,8 +101,6 @@ export default function FooterChat({
     };
 
     const handleTouchStart = useCallback((e) => {
-        // if(recordOption === video) thì bật camera
-
         setTouchStartX(e.touches[0].clientX);
         pressTimer.current = setTimeout(() => {
             setIsStartRecord(true);
@@ -122,10 +120,12 @@ export default function FooterChat({
     const handleTouchEnd = useCallback(
         (e) => {
             stopRecording();
+            if (recognitionRef.current) {
+                recognitionRef.current.stop();
+            }
             clearTimeout(pressTimer.current);
             setIsStartRecord(false);
             setContextMenuVisible(false);
-            // setTouchStartX(null);
             if (setIsTurnOnCamera) setIsTurnOnCamera(false);
         },
         [isStartRecord, recognitionRef, mediaRecorderRef, stream],
@@ -193,14 +193,9 @@ export default function FooterChat({
             stream.getTracks().forEach((track) => track.stop());
         }
 
-        if (recognitionRef.current) {
-            recognitionRef.current.stop();
-        }
-
         if (mediaRecorderRef.current) {
             mediaRecorderRef.current.stop();
         }
-        // console.log('stream', stream);
     };
 
     const closeContextMenu = useCallback(
@@ -209,7 +204,7 @@ export default function FooterChat({
     );
 
     const base64ToBlob = (base64, mimeType) => {
-        const byteString = atob(base64.split(',')[1]); // Loại bỏ phần tiền tố 'data:audio/wav;base64,' nếu có
+        const byteString = atob(base64.split(',')[1]);
         const ab = new ArrayBuffer(byteString.length);
         const ia = new Uint8Array(ab);
         for (let i = 0; i < byteString.length; i++) {
@@ -275,7 +270,9 @@ export default function FooterChat({
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window) {
-            const recognition = new window.webkitSpeechRecognition();
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
             recognition.lang = 'vi-VN'; // 'vi-VN, en-US'
@@ -297,13 +294,14 @@ export default function FooterChat({
 
             recognition.onend = () => {
                 setNewMessage(newTranscript);
+                setNewMessageFromFooter('');
             };
 
             recognitionRef.current = recognition;
         } else {
             console.log('Web Speech API is not supported in this browser.');
         }
-    }, [touchStartX, messageApi, handleSend]);
+    }, []);
 
     useEffect(() => {
         if (!isRunAuto || isFullScreen) {

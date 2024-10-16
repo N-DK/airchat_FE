@@ -227,7 +227,7 @@ const CustomContextMenu = ({
                 {contextHolder}
                 <div
                     onClick={onClose}
-                    className="fixed top-0 left-0 w-full h-full backdrop-blur-xl bg-black/30 z-50"
+                    className="fixed top-0 left-0 w-full h-full backdrop-blur-xl bg-black/30 z-[99999999]"
                 >
                     <div
                         style={{

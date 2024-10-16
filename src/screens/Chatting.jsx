@@ -84,6 +84,7 @@ export default function Chatting() {
         isRunAuto,
         isRunSpeed,
         isFullScreen,
+        newMessageFromFooter,
     } = useContext(AppContext);
 
     const { pingStates, setPingStates, checkPingStates, currentItemIndex } =
@@ -287,7 +288,7 @@ export default function Chatting() {
                             {userInfo?.name}
                         </h5>
                         <button className="text-gray-400">
-                            What's on your mind?
+                            {newMessageFromFooter || "What's on your mind?"}
                         </button>
                     </div>
                 </div>

@@ -125,14 +125,14 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                     </div>
                 )}
                 {/* Recent posts */}
-                {data?.top?.length > 0 && (
+                {data?.top?._data?.length > 0 && (
                     <div>
                         <h6 className="mb-4 px-2 dark:text-white">
                             Recent posts
                         </h6>
                         <div>
                             <ListPostItems
-                                postsList={data?.top}
+                                postsList={data?.top?._data}
                                 isTurnOnCamera={data?.top?.isTurnOnCamera}
                             />
                         </div>
@@ -163,8 +163,6 @@ const tabData = [
         key: '2',
         title: 'Top',
         component: ({ data }) => {
-            console.log(data);
-
             const topPosts = data?.top;
             return topPosts?._data?.length > 0 ? (
                 <ListPostItems
@@ -184,6 +182,11 @@ function Search({ data, isTurnOnCamera }) {
     const [activeKey, setActiveKey] = useState('1');
     const [searchData, setSearchData] = useState(data);
     const { loading } = useSelector((state) => state.userSearch);
+    const { userInfo } = useSelector((state) => state.userProfile);
+    const dispatch = useDispatch();
+    useEffect(() => {
+        if (!userInfo) dispatch(profile());
+    }, []);
 
     const changeTab = useCallback(
         (direction) => {
@@ -231,7 +234,7 @@ function Search({ data, isTurnOnCamera }) {
             ...data,
             top: { isTurnOnCamera, _data: data?.top },
         });
-    }, [data]);
+    }, [data, isTurnOnCamera]);
 
     return (
         <div

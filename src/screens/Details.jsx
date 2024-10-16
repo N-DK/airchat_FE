@@ -492,7 +492,7 @@ export default function Details() {
 
                 <div
                     ref={contentsChattingRef}
-                    className="absolute top-0 left-0 pb-[580px] max-h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
+                    className="absolute top-0 left-0 pb-[630px] max-h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
                 >
                     {loading ? (
                         <div className="mt-[120px]">

@@ -17,7 +17,12 @@ import { usePingStates } from '../hooks/usePingStates';
 import { useDispatch, useSelector } from 'react-redux';
 import { bookMark, heart, setPostActive } from '../redux/actions/PostActions';
 import MessageItem from './MessageItem';
-import { addViewPost, follow, sharePost } from '../redux/actions/UserActions';
+import {
+    addViewPost,
+    follow,
+    profile,
+    sharePost,
+} from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
 import { FaBookmark } from 'react-icons/fa6';
 import { setObjectActive } from '../redux/actions/SurfActions';
@@ -26,6 +31,7 @@ import LinkPreviewComponent from './LinkPreviewComponent';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import { AppContext } from '../AppContext';
 import Webcam from 'react-webcam';
+import { DEFAULT_PROFILE } from '../constants/image.constant';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 

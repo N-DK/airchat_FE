@@ -26,6 +26,7 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import { AppContext } from '../AppContext';
+import { RiAddLine } from 'react-icons/ri';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 

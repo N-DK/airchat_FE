@@ -42,8 +42,13 @@ export default function PostsChannel() {
     const navigate = useNavigate();
     const { state } = useLocation();
     const dispatch = useDispatch();
-    const { isRecord, toggleIsRecord } = useContext(AppContext);
-    const { isEditChannel, toggleIsEditChannel } = useContext(AppContext);
+    const {
+        isRecord,
+        toggleIsRecord,
+        newMessageFromFooter,
+        toggleIsEditChannel,
+    } = useContext(AppContext);
+    // const { isEditChannel,  } = useContext(AppContext);
 
     const [isSwiping, setIsSwiping] = useState(false);
     const [postsList, setPostList] = useState([]);
@@ -238,7 +243,7 @@ export default function PostsChannel() {
                         {userInfo?.name}
                     </h5>
                     <button className="text-gray-400">
-                        What's on your mind?
+                        {newMessageFromFooter || "What's on your mind?"}
                     </button>
                 </div>
             </div>
