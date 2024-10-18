@@ -37,7 +37,6 @@ const ChatRoom = () => {
     const { socket, isConnected } = useSelector((state) => state.socket);
     // const [minHeight, setMinHeight] = useState('100%');
     const [messages, setMessages] = useState(initMessages);
-    const [loadingSurf, setLoadingSurf] = useState(true);
     const refContainer = useRef(null);
 
     useEffect(() => {
@@ -207,43 +206,21 @@ const ChatRoom = () => {
     useEffect(() => {
         if (id) {
             dispatch(detailMessage(id));
-            setLoadingSurf(true);
         }
     }, [id, dispatch]);
 
     useEffect(() => {
-        if (refContainer.current && messages?.length > 0 && loadingSurf) {
+        if (refContainer.current && messages?.length > 0) {
             refContainer.current.scrollTop =
                 refContainer.current.scrollHeight - 1000;
-
-            setTimeout(() => {
-                setLoadingSurf(false);
-            }, 500);
         }
     }, [refContainer, messages]);
-
-    // useEffect(() => {
-    //     if (messages?.length > 0) {
-    //         const newHeight =
-    //             messages.length <= 5
-    //                 ? `${100 + messages.length * 14}%`
-    //                 : `${100 + messages.length * 12.2}%`;
-    //         setMinHeight(newHeight);
-    //     } else {
-    //         setMinHeight('100%');
-    //     }
-    // }, [messages]);
 
     const renderMessages = useMemo(() => {
         if (loadingMessage) return <LoadingSpinner />;
         if (messages?.length > 0) {
             return (
-                <div>
-                    {loadingSurf && (
-                        <div className="fixed w-full top-[90px] left-0 z-30 bg-white pt-[10px] dark:bg-dark2Primary bottom-0">
-                            <LoadingSpinner position="justify-center items-start" />
-                        </div>
-                    )}
+                <div className="appear-animation">
                     {messages.map((message, index) => (
                         <MessageChatRoom
                             key={index}
@@ -254,34 +231,35 @@ const ChatRoom = () => {
                             }
                             message={message}
                             setMessages={setMessages}
+                            refContainer={refContainer}
                         />
                     ))}
                 </div>
             );
-        }
-
-        return (
-            <div className="rounded-lg dark:bg-darkPrimary bg-white flex items-center justify-end h-[70px] py-3">
-                <div className="flex items-center px-3">
-                    <div className="mr-2">
-                        <p className="dark:text-white text-end text-lg">
-                            {userInfo?.name}
-                        </p>
-                        <p className="text-gray-500 dark:text-gray-400">
-                            Record to chat
-                        </p>
+        } else if (!loadingMessage && messages?.length === 0) {
+            return (
+                <div className="rounded-lg dark:bg-darkPrimary bg-white flex items-center justify-end h-[70px] py-3">
+                    <div className="flex items-center px-3">
+                        <div className="mr-2">
+                            <p className="dark:text-white text-end text-lg">
+                                {userInfo?.name}
+                            </p>
+                            <p className="text-gray-500 dark:text-gray-400">
+                                Record to chat
+                            </p>
+                        </div>
+                        <figure>
+                            <Avatar
+                                size={38}
+                                src={`https://talkie.transtechvietnam.com/${userInfo?.image}`}
+                                alt=""
+                            />
+                        </figure>
                     </div>
-                    <figure>
-                        <Avatar
-                            size={38}
-                            src={`https://talkie.transtechvietnam.com/${userInfo?.image}`}
-                            alt=""
-                        />
-                    </figure>
                 </div>
-            </div>
-        );
-    }, [loadingMessage, messages, userInfo, initMessages, loadingSurf]);
+            );
+        }
+    }, [loadingMessage, messages, userInfo, initMessages]);
 
     return (
         <div className="relative flex flex-col justify-between h-screen  overflow-hidden">

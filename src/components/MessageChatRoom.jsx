@@ -19,7 +19,12 @@ import ModalDelete from './ModalDelete';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 
-const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
+const MessageChatRoom = ({
+    position = 'right',
+    message,
+    setMessages,
+    refContainer,
+}) => {
     // console.log(message);
     const dispatch = useDispatch();
     const [isVisible, setIsVisible] = useState(false);
@@ -139,27 +144,35 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
             dispatch(
                 setObjectActive({
                     post: message,
-                    audio: message?.audio
-                        ? message?.audio.startsWith('blob:')
-                            ? new Audio(message?.audio)
-                            : new Audio(
-                                  message?.audio.startsWith('http')
-                                      ? message?.audio
-                                      : `https://talkie.transtechvietnam.com${message?.audio}`,
-                              )
-                        : null,
+                    audio: (() => {
+                        let audioSrc = null;
+
+                        if (message?.audio && message?.audio != 0) {
+                            if (message.audio.startsWith('blob:')) {
+                                audioSrc = message.audio;
+                            } else if (message.audio.startsWith('http')) {
+                                audioSrc = message.audio;
+                            } else {
+                                audioSrc = `https://talkie.transtechvietnam.com${message.audio}`;
+                            }
+                            return new Audio(audioSrc); // Trả về đối tượng Audio
+                        }
+
+                        return null; // Trả về null nếu không có audio
+                    })(),
                     element: document.getElementById(`message-${message?.id}`),
+                    parent: refContainer?.current,
                 }),
             );
         }
-    }, [isVisible]);
+    }, [isVisible, refContainer?.current]);
 
     return (
         <>
             <div
                 id={`message-${message?.id}`}
                 ref={messageRef}
-                className="mb-10"
+                className="mb-10 appear-animation"
             >
                 <div className={messageClasses.container}>
                     <div className={messageClasses.avatar}>
