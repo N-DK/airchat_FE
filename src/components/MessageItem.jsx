@@ -229,7 +229,13 @@ function MessageItem({
                         isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
                     } ${position === 'left' ? 'mr-0 ml-2' : 'mr-2'}`}
                 >
-                    <Link to={`/profile/${data?.user_id}`}>
+                    <Link
+                        to={
+                            data?.user_id === userInfo?.id
+                                ? '/profile'
+                                : `/profile/${data?.user_id}`
+                        }
+                    >
                         {data?.video && isVisible && isRunAuto ? (
                             <div className="w-full h-full">
                                 <video

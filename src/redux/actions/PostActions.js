@@ -409,6 +409,40 @@ export const reportPost = (post_id) => async (dispatch, getState) => {
     }
 };
 
+export const unReportPost = (post_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: POST_REPORT_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/unreport-post',
+            { post_id },
+            config,
+        );
+        dispatch({
+            type: POST_REPORT_SUCCESS,
+            payload: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: POST_REPORT_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
 export const uploadImage = (photo, id_post) => async (dispatch, getState) => {
     try {
         dispatch({

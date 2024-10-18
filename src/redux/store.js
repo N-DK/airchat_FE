@@ -52,6 +52,7 @@ import {
     setPostActiveReducer,
     postUpdateReducer,
     postReplyAllReducer,
+    unReportPostReducer,
 } from './reducers/PostReducers';
 import {
     channelListReducer,
@@ -133,6 +134,7 @@ const reducer = combineReducers({
     listNotification: listNotificationReducer,
     postReplyAll: postReplyAllReducer,
     setObjectVideoCurrent: setObjectVideoCurrentReducer,
+    unReportPost: unReportPostReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

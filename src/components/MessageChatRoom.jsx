@@ -91,9 +91,9 @@ const MessageChatRoom = ({ position = 'right', message, setMessages }) => {
             {
                 threshold: [0.25],
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.2,
+                    window.innerHeight * 0.15,
                     100,
-                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
+                )}px 0px -${Math.max(window.innerHeight * 0.77, 400)}px 0px`,
             },
         );
 

@@ -30,15 +30,15 @@ const CustomContextMenu = ({
     isBookMark,
 }) => {
     const dispatch = useDispatch();
-    const [messageApi, contextHolder] = message.useMessage();
+    // const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
-    const showMessage = (message) => {
-        messageApi.open({
-            type: 'success',
-            content: message,
-            duration: 1,
-        });
-    };
+    // const showMessage = (message) => {
+    //     messageApi.open({
+    //         type: 'success',
+    //         content: message,
+    //         duration: 1,
+    //     });
+    // };
     const { success: reportSuccess } = useSelector((state) => state.reportPost);
 
     const [interactionState, setInteractionState] = useState({
@@ -98,7 +98,7 @@ const CustomContextMenu = ({
         (e) => {
             e.stopPropagation();
             navigator.clipboard.writeText(data?.content);
-            showMessage('Copied to clipboard');
+            // showMessage('Copied to clipboard');
         },
         [data],
     );
@@ -128,13 +128,23 @@ const CustomContextMenu = ({
         (e) => {
             e.stopPropagation();
             dispatch(reportPost(data?.id));
+            setData((prev) => {
+                if (prev.id === data.id) {
+                    return {
+                        ...prev,
+                        report: !prev.report,
+                    };
+                }
+                return prev;
+            });
         },
         [dispatch, data],
     );
 
     useEffect(() => {
         if (reportSuccess) {
-            showMessage('Reported post');
+            // showMessage('Reported post');
+            onClose();
         }
     }, [reportSuccess]);
 
@@ -224,7 +234,7 @@ const CustomContextMenu = ({
 
         return (
             <>
-                {contextHolder}
+                {/* {contextHolder} */}
                 <div
                     onClick={onClose}
                     className="fixed top-0 left-0 w-full h-full backdrop-blur-xl bg-black/30 z-[99999999]"

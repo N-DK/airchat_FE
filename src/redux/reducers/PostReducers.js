@@ -195,6 +195,22 @@ export const reportPostReducer = (state = {}, action) => {
     }
 };
 
+export const unReportPostReducer = (state = {}, action) => {
+    switch (action.type) {
+        case POST_REPORT_REQUEST:
+            return { loading: true };
+        case POST_REPORT_SUCCESS:
+            return {
+                loading: false,
+                success: action.payload,
+            };
+        case POST_REPORT_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
 export const postUploadImageReducer = (state = {}, action) => {
     switch (action.type) {
         case POST_UPLOAD_IMAGE_REQUEST:

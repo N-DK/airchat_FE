@@ -266,7 +266,8 @@ export default function FooterChat({
 
     useEffect(() => {
         audioCurrent?.pause();
-    }, [useLocation(), audioCurrent]);
+        videoCurrent?.pause();
+    }, [useLocation(), audioCurrent, videoCurrent]);
 
     useEffect(() => {
         if ('webkitSpeechRecognition' in window) {
