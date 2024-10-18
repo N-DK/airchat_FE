@@ -12,7 +12,12 @@ import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Avatar } from 'antd';
 import { FaBookmark, FaChartLine } from 'react-icons/fa6';
 import { useDispatch, useSelector } from 'react-redux';
-import { bookMark, heart, setPostActive } from '../redux/actions/PostActions';
+import {
+    bookMark,
+    heart,
+    setPostActive,
+    unReportPost,
+} from '../redux/actions/PostActions';
 import { Link, useNavigate } from 'react-router-dom';
 import LoaderSkeletonPosts from './LoaderSkeletonPosts';
 import {
@@ -27,6 +32,7 @@ import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import { AppContext } from '../AppContext';
 import { RiAddLine } from 'react-icons/ri';
+import { IoEyeOffSharp } from 'react-icons/io5';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -178,6 +184,14 @@ function MessageItem({
         }
     };
 
+    const handleUndo = useCallback(() => {
+        dispatch(unReportPost(data?.id));
+        setData((prev) => ({
+            ...prev,
+            report: !prev.report,
+        }));
+    }, [data]);
+
     const closeContextMenu = () => setContextMenuVisible(false);
 
     const postDetailsUrl = useMemo(() => {
@@ -219,123 +233,185 @@ function MessageItem({
 
     return (
         <div ref={messageRef} className="w-full py-6">
-            <div
-                className={`w-full flex items-start ${
-                    position === 'left' ? 'flex-row-reverse' : ''
-                } `}
-            >
-                <div
-                    className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
-                        isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
-                    } ${position === 'left' ? 'mr-0 ml-2' : 'mr-2'}`}
-                >
-                    <Link
-                        to={
-                            data?.user_id === userInfo?.id
-                                ? '/profile'
-                                : `/profile/${data?.user_id}`
-                        }
-                    >
-                        {data?.video && isVisible && isRunAuto ? (
-                            <div className="w-full h-full">
-                                <video
-                                    ref={videoRef}
-                                    className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
-                                    src={`https://talkie.transtechvietnam.com/${data?.video}`}
-                                />
-                            </div>
-                        ) : (
-                            <Avatar
-                                src={`${BASE_URL}${data?.avatar}`}
-                                className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                                alt="icon"
-                            />
-                        )}
-                    </Link>
-                    <div
-                        onClick={handleFollow}
-                        className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
-                            (data?.dafollow === null || data?.dafollow <= 0) &&
-                            userInfo?.id !== data?.user_id
-                                ? 'border border-white'
-                                : ''
-                        }`}
-                    >
-                        {(data?.dafollow === null || data?.dafollow <= 0) &&
-                            userInfo?.id !== data?.user_id && (
-                                <RiAddLine
-                                    size="1.1rem"
-                                    className="p-[2px] text-white"
-                                />
-                            )}
-                    </div>
-                    <div
-                        className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
-                            isVisible && isRunAuto && data?.video
-                                ? 'h-16 w-16'
-                                : 'w-10 h-10'
-                        }  md:w-12 rounded-full ${
-                            isVisible && isRunAuto ? 'animate-ping' : ''
-                        }`}
-                    ></div>
-                </div>
-                <div
-                    className={`transition-all duration-300 flex-1 relative rounded-xl p-3 pb-4 bg-white dark:bg-dark2Primary ${
-                        isVisible ? 'shadow-2xl scale-[1.02]' : ' shadow-md'
-                    }`}
-                >
-                    <div
-                        id={`post-item-reply-${data.id}`}
-                        onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
-                        onClick={() =>
-                            !contextMenuVisible && handleOnClickPost()
-                        }
-                    >
-                        <div
-                            className={`flex items-center gap-[5px] ${
-                                position === 'left' ? ' justify-end' : ''
-                            }`}
-                        >
-                            <h5 className="md:text-xl text-black dark:text-white">
-                                {data.name}
-                            </h5>
-                            <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
-                                {moment.unix(data.create_at).fromNow(true)}
-                            </span>
-                        </div>
-                        <p
-                            className={`${
-                                position === 'left' ? 'text-right' : ''
-                            } dark:text-white`}
-                        >
-                            {data.content}
+            <>
+                {data?.report ? (
+                    <div className="w-full">
+                        <p className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                            <IoEyeOffSharp className="mr-2 text-bluePrimary" />
+                            Hidden
                         </p>
-                        {data?.tag_user_detail && (
-                            <div className="flex flex-wrap">
-                                {data?.tag_user_detail?.map((tag, i) => (
-                                    <span
-                                        className={`font-semibold dark:text-white mr-2`}
-                                        key={i}
-                                    >
-                                        {tag?.name}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        {data?.img && (
-                            <figure className="max-w-full relative my-2">
+                        <div className="flex items-center dark:text-white mt-1 pb-2 border-b dark:border-dark2Primary">
+                            <p className="flex-1">
+                                Hiding posts helps TALKIE personalize your Feed.
+                            </p>
+                            <button
+                                onClick={handleUndo}
+                                className="w-20 ml-1 py-2 px-3 rounded-lg bg-gray-300 dark:bg-dark2Primary"
+                            >
+                                Undo
+                            </button>
+                        </div>
+                        <div className="flex items-center mt-2">
+                            <Link
+                                to={
+                                    data?.user_id === userInfo?.id
+                                        ? '/profile'
+                                        : `/profile/${data?.user_id}`
+                                }
+                            >
                                 <Avatar
-                                    src={`${
-                                        data?.img.includes('blob')
-                                            ? data?.img
-                                            : `https://talkie.transtechvietnam.com/${data?.img}`
-                                    } `}
-                                    className="min-h-40 h-full w-full object-cover rounded-xl"
+                                    src={`${BASE_URL}${data?.avatar}`}
+                                    alt="avatar"
+                                    className="mr-2"
                                 />
-                            </figure>
-                        )}
-                        {/* {data?.video && (
+                            </Link>
+                            <p className="dark:text-white">
+                                Snooze{' '}
+                                <span className="font-medium">
+                                    {data?.name}
+                                </span>{' '}
+                                for 30 days
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <div
+                            className={`w-full flex items-start ${
+                                position === 'left' ? 'flex-row-reverse' : ''
+                            } `}
+                        >
+                            <div
+                                className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
+                                    isVisible && isRunAuto && data?.video
+                                        ? 'h-16 w-16'
+                                        : ''
+                                } ${
+                                    position === 'left' ? 'mr-0 ml-2' : 'mr-2'
+                                }`}
+                            >
+                                <Link
+                                    to={
+                                        data?.user_id === userInfo?.id
+                                            ? '/profile'
+                                            : `/profile/${data?.user_id}`
+                                    }
+                                >
+                                    {data?.video && isVisible && isRunAuto ? (
+                                        <div className="w-full h-full">
+                                            <video
+                                                ref={videoRef}
+                                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                                src={`https://talkie.transtechvietnam.com/${data?.video}`}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <Avatar
+                                            src={`${BASE_URL}${data?.avatar}`}
+                                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                            alt="icon"
+                                        />
+                                    )}
+                                </Link>
+                                <div
+                                    onClick={handleFollow}
+                                    className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
+                                        (data?.dafollow === null ||
+                                            data?.dafollow <= 0) &&
+                                        userInfo?.id !== data?.user_id
+                                            ? 'border border-white'
+                                            : ''
+                                    }`}
+                                >
+                                    {(data?.dafollow === null ||
+                                        data?.dafollow <= 0) &&
+                                        userInfo?.id !== data?.user_id && (
+                                            <RiAddLine
+                                                size="1.1rem"
+                                                className="p-[2px] text-white"
+                                            />
+                                        )}
+                                </div>
+                                <div
+                                    className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
+                                        isVisible && isRunAuto && data?.video
+                                            ? 'h-16 w-16'
+                                            : 'w-10 h-10'
+                                    }  md:w-12 rounded-full ${
+                                        isVisible && isRunAuto
+                                            ? 'animate-ping'
+                                            : ''
+                                    }`}
+                                ></div>
+                            </div>
+                            <div
+                                className={`transition-all duration-300 flex-1 relative rounded-xl p-3 pb-4 bg-white dark:bg-dark2Primary ${
+                                    isVisible
+                                        ? 'shadow-2xl scale-[1.02]'
+                                        : ' shadow-md'
+                                }`}
+                            >
+                                <div
+                                    id={`post-item-reply-${data.id}`}
+                                    onTouchStart={handleTouchStart}
+                                    onTouchEnd={handleTouchEnd}
+                                    onClick={() =>
+                                        !contextMenuVisible &&
+                                        handleOnClickPost()
+                                    }
+                                >
+                                    <div
+                                        className={`flex items-center gap-[5px] ${
+                                            position === 'left'
+                                                ? ' justify-end'
+                                                : ''
+                                        }`}
+                                    >
+                                        <h5 className="md:text-xl text-black dark:text-white">
+                                            {data.name}
+                                        </h5>
+                                        <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
+                                            {moment
+                                                .unix(data.create_at)
+                                                .fromNow(true)}
+                                        </span>
+                                    </div>
+                                    <p
+                                        className={`${
+                                            position === 'left'
+                                                ? 'text-right'
+                                                : ''
+                                        } dark:text-white`}
+                                    >
+                                        {data.content}
+                                    </p>
+                                    {data?.tag_user_detail && (
+                                        <div className="flex flex-wrap">
+                                            {data?.tag_user_detail?.map(
+                                                (tag, i) => (
+                                                    <span
+                                                        className={`font-semibold dark:text-white mr-2`}
+                                                        key={i}
+                                                    >
+                                                        {tag?.name}
+                                                    </span>
+                                                ),
+                                            )}
+                                        </div>
+                                    )}
+                                    {data?.img && (
+                                        <figure className="max-w-full relative my-2">
+                                            <Avatar
+                                                src={`${
+                                                    data?.img.includes('blob')
+                                                        ? data?.img
+                                                        : `https://talkie.transtechvietnam.com/${data?.img}`
+                                                } `}
+                                                className="min-h-40 h-full w-full object-cover rounded-xl"
+                                            />
+                                        </figure>
+                                    )}
+                                    {/* {data?.video && (
                             <video
                                 ref={videoRef}
                                 controls
@@ -343,77 +419,84 @@ function MessageItem({
                                 src={`https://talkie.transtechvietnam.com/${data.video}`}
                             />
                         )} */}
-                        {data?.url && (
-                            <div>
-                                <LinkPreviewComponent
-                                    url={data.url}
-                                    post_id={data.id}
-                                    // setData={setData}
-                                    dataUrl={data.url}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    <div
-                        className={`absolute items-center bottom-[-22px] ${position}-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
-                    >
-                        <div className={`flex items-center text-gray-400`}>
-                            <button
-                                onClick={handleHeart}
-                                className={`btn heart ${
-                                    isHeart
-                                        ? initialLoad
-                                            ? 'initial-active'
-                                            : 'active'
-                                        : ''
-                                } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
-                            ></button>
-                            <span className="ml-2 text-sm font-medium">
-                                {likeCount}
-                            </span>
-                        </div>
+                                    {data?.url && (
+                                        <div>
+                                            <LinkPreviewComponent
+                                                url={data.url}
+                                                post_id={data.id}
+                                                // setData={setData}
+                                                dataUrl={data.url}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                                <div
+                                    className={`absolute items-center bottom-[-22px] ${position}-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                                >
+                                    <div
+                                        className={`flex items-center text-gray-400`}
+                                    >
+                                        <button
+                                            onClick={handleHeart}
+                                            className={`btn heart ${
+                                                isHeart
+                                                    ? initialLoad
+                                                        ? 'initial-active'
+                                                        : 'active'
+                                                    : ''
+                                            } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
+                                        ></button>
+                                        <span className="ml-2 text-sm font-medium">
+                                            {likeCount}
+                                        </span>
+                                    </div>
 
-                        <div
-                            onClick={handleSharePost}
-                            className={`flex items-center text-gray-400`}
-                        >
-                            <PiArrowsClockwiseBold
-                                color={isShare ? 'green' : ''}
-                            />
-                            <span className="ml-2 text-sm font-medium">
-                                {shareCount}
-                            </span>
-                        </div>
-                        {isBookMark && (
-                            <div
-                                onClick={handleBookMark}
-                                className={`flex items-center text-gray-400`}
-                            >
-                                <FaBookmark className="text-purple-700 text-[0.9rem]" />
+                                    <div
+                                        onClick={handleSharePost}
+                                        className={`flex items-center text-gray-400`}
+                                    >
+                                        <PiArrowsClockwiseBold
+                                            color={isShare ? 'green' : ''}
+                                        />
+                                        <span className="ml-2 text-sm font-medium">
+                                            {shareCount}
+                                        </span>
+                                    </div>
+                                    {isBookMark && (
+                                        <div
+                                            onClick={handleBookMark}
+                                            className={`flex items-center text-gray-400`}
+                                        >
+                                            <FaBookmark className="text-purple-700 text-[0.9rem]" />
+                                        </div>
+                                    )}
+                                    <div
+                                        className={`flex items-center text-gray-400`}
+                                    >
+                                        <FaChartLine />
+                                        <span className="ml-2 text-sm font-medium">
+                                            {data.number_view}
+                                        </span>
+                                    </div>
+                                    <HiMiniArrowUpTray />
+                                </div>
                             </div>
-                        )}
-                        <div className={`flex items-center text-gray-400`}>
-                            <FaChartLine />
-                            <span className="ml-2 text-sm font-medium">
-                                {data.number_view}
-                            </span>
                         </div>
-                        <HiMiniArrowUpTray />
-                    </div>
-                </div>
-            </div>
-            <CustomContextMenu
-                isVisible={contextMenuVisible}
-                onClose={closeContextMenu}
-                targetElement={targetElement}
-                data={data}
-                setData={setData}
-                isHeart={isHeart}
-                isShare={isShare}
-                isBookMark={isBookMark}
-                likeCount={likeCount}
-                shareCount={shareCount}
-            />
+                        <CustomContextMenu
+                            isVisible={contextMenuVisible}
+                            onClose={closeContextMenu}
+                            targetElement={targetElement}
+                            data={data}
+                            setData={setData}
+                            isHeart={isHeart}
+                            isShare={isShare}
+                            isBookMark={isBookMark}
+                            likeCount={likeCount}
+                            shareCount={shareCount}
+                        />
+                    </>
+                )}
+            </>
         </div>
     );
 }

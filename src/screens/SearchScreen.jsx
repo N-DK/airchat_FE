@@ -182,7 +182,7 @@ export default function SearchScreen() {
             <FooterChat
                 title="search"
                 isSwiping={false}
-                isPlay={true}
+                isPlay={debouncedSearch !== '' && searchResult?.top?.length > 0}
                 setIsTurnOnCamera={post ? setIsTurnOnCamera : null}
             />
         </div>

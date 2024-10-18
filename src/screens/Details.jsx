@@ -23,6 +23,7 @@ import {
     getReplyAll,
     heart,
     setPostActive,
+    unReportPost,
 } from '../redux/actions/PostActions';
 import FooterChat from '../components/FooterChat';
 import RecordModal from '../components/RecordModal';
@@ -35,6 +36,7 @@ import { FaBookmark } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+import { IoEyeOffSharp } from 'react-icons/io5';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -268,6 +270,14 @@ export default function Details() {
         });
     };
 
+    const handleUndo = useCallback(() => {
+        dispatch(unReportPost(data?.id));
+        setData((prev) => ({
+            ...prev,
+            report: !prev.report,
+        }));
+    }, [data]);
+
     const closeContextMenu = () => setContextMenuVisible(false);
 
     const ActionButton = useCallback(
@@ -409,14 +419,6 @@ export default function Details() {
                                 />
                             </figure>
                         )}
-                        {/* {data?.video && (
-                            <video
-                                ref={videoRef}
-                                controls
-                                className="w-full mt-2 rounded-xl"
-                                src={`https://talkie.transtechvietnam.com/${data.video}`}
-                            />
-                        )} */}
                         {data?.url && (
                             <div>
                                 <LinkPreviewComponent
@@ -495,7 +497,6 @@ export default function Details() {
         <>
             <div className="relative flex flex-col justify-between h-screen overflow-hidden dark:bg-dark2Primary">
                 {renderHeader()}
-
                 <div
                     ref={contentsChattingRef}
                     className="absolute top-0 left-0 pb-[630px] max-h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
@@ -506,39 +507,68 @@ export default function Details() {
                         </div>
                     ) : (
                         <>
-                            {renderPostContent()}
-                            {/* {detailsPostReply?.length > 0 && (
-                                <div className="pb-5 pt-3 px-3">
-                                    <MessageItem
-                                        position="left"
-                                        message={
-                                            detailsPostReply[
-                                                indexCommentPresent
-                                            ]
-                                        }
-                                        setDetailsPostReply={
-                                            setDetailsPostReply
-                                        }
-                                        contentsChattingRef={
-                                            contentsChattingRef
-                                        }
-                                    />
+                            {data?.report ? (
+                                <div className="w-full mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
+                                    <p className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                                        <IoEyeOffSharp className="mr-2 text-bluePrimary" />
+                                        Hidden
+                                    </p>
+                                    <div className="flex items-center dark:text-white mt-1 pb-2 border-b dark:border-dark2Primary">
+                                        <p className="flex-1">
+                                            Hiding posts helps TALKIE
+                                            personalize your Feed.
+                                        </p>
+                                        <button
+                                            onClick={handleUndo}
+                                            className="w-20 ml-1 py-2 px-3 rounded-lg bg-gray-300 dark:bg-dark2Primary"
+                                        >
+                                            Undo
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center mt-2">
+                                        <Link
+                                            to={
+                                                data?.user_id === userInfo?.id
+                                                    ? '/profile'
+                                                    : `/profile/${data?.user_id}`
+                                            }
+                                        >
+                                            <Avatar
+                                                src={`${BASE_URL}${data?.avatar}`}
+                                                alt="avatar"
+                                                className="mr-2"
+                                            />
+                                        </Link>
+                                        <p className="dark:text-white">
+                                            Snooze{' '}
+                                            <span className="font-medium">
+                                                {data?.name}
+                                            </span>{' '}
+                                            for 30 days
+                                        </p>
+                                    </div>
                                 </div>
-                            )} */}
-                            {detailsPostReply?.length > 0 && (
-                                <MessageRecursive
-                                    detailsPostReply={detailsPostReply}
-                                    setDetailsPostReply={setDetailsPostReply}
-                                    contentsChattingRef={contentsChattingRef}
-                                    index={indexCommentPresent}
-                                />
+                            ) : (
+                                <>
+                                    {renderPostContent()}
+                                    {detailsPostReply?.length > 0 && (
+                                        <MessageRecursive
+                                            detailsPostReply={detailsPostReply}
+                                            setDetailsPostReply={
+                                                setDetailsPostReply
+                                            }
+                                            contentsChattingRef={
+                                                contentsChattingRef
+                                            }
+                                            index={indexCommentPresent}
+                                        />
+                                    )}
+                                </>
                             )}
                         </>
                     )}
                 </div>
-
                 <RecordModal />
-
                 <div
                     onClick={toggleIsRecord}
                     className={`z-40 absolute h-screen w-screen bg-black bg-opacity-10 transition-all duration-500 ${
@@ -547,7 +577,6 @@ export default function Details() {
                             : 'opacity-0 pointer-events-none'
                     }`}
                 ></div>
-
                 <FooterChat title="home" isSwiping={isSwiping} isPlay={true} />
             </div>
             <CustomContextMenu
