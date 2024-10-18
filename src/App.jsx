@@ -113,7 +113,7 @@ function App() {
                     </Routes>
                 </BrowserRouter>
             </div>
-            <PrivacyModal />
+            {/* <PrivacyModal /> */}
         </>
     );
 }

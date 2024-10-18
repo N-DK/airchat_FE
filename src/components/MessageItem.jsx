@@ -211,6 +211,11 @@ function MessageItem({
 
     useEffect(() => {
         if (isVisible) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
             if (window.location.pathname.includes('/posts/details')) {
                 dispatch(setPostActive(data));
             }

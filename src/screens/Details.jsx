@@ -150,7 +150,7 @@ export default function Details() {
                 observer.unobserve(divRef.current);
             }
         };
-    }, []);
+    }, [data?.report]);
 
     useEffect(() => {
         if (data) {
@@ -170,6 +170,11 @@ export default function Details() {
 
     useEffect(() => {
         if (isVisible) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
             dispatch(setPostActive(data));
             dispatch(
                 setObjectActive({
@@ -330,7 +335,6 @@ export default function Details() {
 
     const renderPostContent = () => (
         <div
-            // ref={(el) => (postRefs.current[0] = el)}
             ref={divRef}
             className="flex appear-animation duration-300 mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
         >

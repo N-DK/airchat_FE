@@ -217,7 +217,7 @@ export default function Chatting() {
                 setFilteredPostList(
                     filteredPosts
                         .filter(Boolean)
-                        .filter((item) => item?.report),
+                        .filter((item) => !item?.report),
                 );
             } catch (error) {
                 dispatch({ type: USER_PROFILE_SUCCESS, payload: null });
