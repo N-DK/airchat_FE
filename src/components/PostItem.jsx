@@ -62,6 +62,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
     const [initialLoad, setInitialLoad] = useState(true);
     const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
+    const [rect, setRect] = useState(null);
 
     const {
         isRecord,
@@ -81,9 +82,10 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
     const handleTouchStart = useCallback(() => {
         pressTimer.current = setTimeout(() => {
             setTargetElement(document.getElementById(`post-item-${data?.id}`));
+            setRect(targetElement?.getBoundingClientRect());
             setContextMenuVisible(true);
         }, 500);
-    }, [data?.id]);
+    }, [data?.id, targetElement]);
 
     const convertObjectURL = (selectedFile) => {
         return selectedFile ? URL.createObjectURL(selectedFile) : null;
@@ -204,6 +206,10 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);
     }, [isHeart]);
+
+    useEffect(() => {
+        setRect(targetElement?.getBoundingClientRect());
+    }, [targetElement]);
 
     useEffect(() => {
         if (isVisible) {
@@ -651,6 +657,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                         </div>
 
                         <CustomContextMenu
+                            rect={rect}
                             isVisible={contextMenuVisible}
                             onClose={closeContextMenu}
                             targetElement={targetElement}

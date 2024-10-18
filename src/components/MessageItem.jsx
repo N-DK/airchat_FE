@@ -53,6 +53,7 @@ function MessageItem({
     const [isBookMark, setIsBookMark] = useState(false);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [data, setData] = useState(message);
+    const [rect, setRect] = useState(null);
     const pressTimer = useRef();
     const messageRef = useRef(null);
     const videoRef = useRef(null);
@@ -124,6 +125,7 @@ function MessageItem({
             setTargetElement(
                 document.getElementById(`post-item-reply-${data.id}`),
             );
+            setRect(targetElement?.getBoundingClientRect());
             setContextMenuVisible(true);
         }, 500);
     };
@@ -222,6 +224,10 @@ function MessageItem({
             );
         }
     }, [isVisible, contentsChattingRef, videoRef]);
+
+    useEffect(() => {
+        setRect(targetElement?.getBoundingClientRect());
+    }, [targetElement]);
 
     if (!message) {
         return (
@@ -483,6 +489,7 @@ function MessageItem({
                             </div>
                         </div>
                         <CustomContextMenu
+                            rect={rect}
                             isVisible={contextMenuVisible}
                             onClose={closeContextMenu}
                             targetElement={targetElement}

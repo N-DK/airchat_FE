@@ -28,6 +28,7 @@ const CustomContextMenu = ({
     isHeart,
     isShare,
     isBookMark,
+    rect,
 }) => {
     const dispatch = useDispatch();
     // const [messageApi, contextHolder] = message.useMessage();
@@ -155,8 +156,7 @@ const CustomContextMenu = ({
     }, [interactionState.isHeart]);
 
     useEffect(() => {
-        if (targetElement) {
-            const rect = targetElement.getBoundingClientRect();
+        if (rect) {
             setElementPosition({
                 top: rect.top - 200 < 0 ? rect.top : rect.top - 200,
                 left: rect.left,
@@ -164,7 +164,7 @@ const CustomContextMenu = ({
                 height: rect.height,
             });
         }
-    }, [targetElement]);
+    }, [rect]);
 
     useEffect(() => {
         setInteractionState(() => ({

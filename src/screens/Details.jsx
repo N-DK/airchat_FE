@@ -94,6 +94,7 @@ export default function Details() {
     const [targetElement, setTargetElement] = useState(null);
     const pressTimer = useRef();
     const [initialLoad, setInitialLoad] = useState(true);
+    const [rect, setRect] = useState(null);
 
     const contentsChattingRef = useRef(null);
     const divRef = useRef(null);
@@ -208,6 +209,10 @@ export default function Details() {
         }
     }, [newPost]);
 
+    useEffect(() => {
+        setRect(targetElement?.getBoundingClientRect());
+    }, [targetElement]);
+
     const convertObjectURL = (selectedFile) => {
         return selectedFile ? URL.createObjectURL(selectedFile) : null;
     };
@@ -217,6 +222,7 @@ export default function Details() {
             setTargetElement(
                 document.getElementById(`post-item-reply-${data?.id}`),
             );
+            setRect(targetElement?.getBoundingClientRect());
             setContextMenuVisible(true);
         }, 500);
     };
@@ -590,6 +596,7 @@ export default function Details() {
                 setData={setData}
                 likeCount={likeCount}
                 shareCount={shareCount}
+                rect={rect}
             />
         </>
     );
