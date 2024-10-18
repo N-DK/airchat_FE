@@ -162,6 +162,7 @@ const MessageChatRoom = ({
                     })(),
                     element: document.getElementById(`message-${message?.id}`),
                     parent: refContainer?.current,
+                    bonus: -70,
                 }),
             );
         }
