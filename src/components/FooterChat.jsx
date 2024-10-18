@@ -454,6 +454,7 @@ export default function FooterChat({
                                                     src={`https://talkie.transtechvietnam.com/${post.avatar}`}
                                                     className="border-blue-500 border-[5px]"
                                                 />
+                                                <p className="absolute top-0 left-0 opacity-0 z-10 w-full h-full rounded-full"></p>
                                                 <FaReply className="absolute bottom-1 shadow-2xl -left-0" />
                                             </div>
                                         ) : (

@@ -5,6 +5,10 @@
     display: none;
 } */
 
+body {
+    user-select: none;
+}
+
 /* ẩn scroll bar */
 
 /* Thay đổi vị trí của thông báo */
