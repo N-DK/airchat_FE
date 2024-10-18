@@ -24,13 +24,14 @@ import {
     sendMessage,
 } from '../services/socket.service';
 import { profile } from '../redux/actions/UserActions';
+import LoaderSkeletonMessageItem from '../components/LoaderSkeletonMessageItem';
 
 const MessageItem = React.memo(({ message, handle, isOther }) => {
     const isUnread = !message?.status;
     return (
         <div
             onClick={handle}
-            className="flex items-center py-3 w-full relative"
+            className="flex items-center py-3 w-full relative appear-animation duration-300"
         >
             <Avatar
                 src={`https://talkie.transtechvietnam.com/${
@@ -263,8 +264,8 @@ export default function Messages() {
                     </div>
                 </div>
                 {loading_messages_recent ? (
-                    <div className="flex items-center justify-center fixed w-full left-0 mt-4">
-                        <LoaderSkeletonPosts />
+                    <div className="flex flex-col items-center justify-center fixed w-full left-0 mt-4 px-5">
+                        <LoaderSkeletonMessageItem />
                     </div>
                 ) : filteredMessages?.length > 0 ? (
                     filteredMessages.map((message, index) => (

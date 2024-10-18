@@ -61,6 +61,7 @@ function MessageItem({
     const [targetElement, setTargetElement] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
     const { userInfo } = useSelector((state) => state.userProfile);
+    const { success: reportSuccess } = useSelector((state) => state.reportPost);
 
     const { isRunAuto } = useContext(AppContext);
 
@@ -119,6 +120,12 @@ function MessageItem({
     useEffect(() => {
         if (!userInfo) dispatch(profile());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (reportSuccess) {
+            closeContextMenu();
+        }
+    }, [reportSuccess]);
 
     const handleTouchStart = (e) => {
         pressTimer.current = setTimeout(() => {
@@ -283,7 +290,7 @@ function MessageItem({
                 ) : (
                     <>
                         <div
-                            className={`w-full flex items-start ${
+                            className={`w-full flex items-start appear-animation duration-300 ${
                                 position === 'left' ? 'flex-row-reverse' : ''
                             } `}
                         >

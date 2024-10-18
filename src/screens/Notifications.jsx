@@ -9,6 +9,7 @@ import talkieLogo from '../assets/talkie-logo.png';
 import { Avatar } from 'antd';
 import moment from 'moment';
 import { getListNotification } from '../redux/actions/UserActions';
+import LoaderSkeletonNotificationItem from '../components/LoaderSkeletonNotificationItem';
 
 const NotificationItem = ({ item }) => {
     const navigate = useNavigate();
@@ -23,7 +24,7 @@ const NotificationItem = ({ item }) => {
     return (
         <div
             onClick={handleNavigate}
-            className="p-3 px-4 border-b border-gray-200 w-full dark:border-darkPrimary"
+            className="p-3 px-4 border-b border-gray-200 w-full dark:border-darkPrimary appear-animation duration-200"
         >
             <div className="flex items-start">
                 <i className="mr-4 mt-1 dark:text-white">
@@ -51,7 +52,7 @@ const NotificationItem = ({ item }) => {
 export default function Notifications() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { notification, key } = useSelector(
+    const { notification, key, loading } = useSelector(
         (state) => state.listNotification,
     );
     const [listMentions, setListMentions] = useState([]);
@@ -147,71 +148,93 @@ export default function Notifications() {
             </div>
             <div className="relative flex flex-col justify-between h-screen overflow-auto scrollbar-none ">
                 <div className="absolute w-full left-0 top-[150px] pb-[200px] min-h-full overflow-hidden flex justify-center dark:bg-dark2Primary bg-slatePrimary">
-                    <div className="w-full">
-                        {showActions === 1 && (
-                            <div className="w-full">
-                                {listAll.length === 0 ? (
-                                    <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
-                                        <h5>
-                                            {actions[showActions - 1].contents}
-                                        </h5>
-                                        <span className="text-[15px] text-center">
-                                            {
-                                                actions[showActions - 1]
-                                                    .descriptions
-                                            }
-                                        </span>
-                                    </div>
-                                ) : (
-                                    listAll.map((item, i) => (
-                                        <NotificationItem key={i} item={item} />
-                                    ))
-                                )}
-                            </div>
-                        )}
-                        {showActions === 2 && (
-                            <div className="w-full">
-                                {listMentions.length === 0 ? (
-                                    <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
-                                        <h5>
-                                            {actions[showActions - 1].contents}
-                                        </h5>
-                                        <span className="text-[15px] text-center">
-                                            {
-                                                actions[showActions - 1]
-                                                    .descriptions
-                                            }
-                                        </span>
-                                    </div>
-                                ) : (
-                                    listMentions.map((item, i) => (
-                                        <NotificationItem key={i} item={item} />
-                                    ))
-                                )}
-                            </div>
-                        )}
-                        {showActions === 3 && (
-                            <div className="w-full">
-                                {listFollowing.length === 0 ? (
-                                    <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
-                                        <h5>
-                                            {actions[showActions - 1].contents}
-                                        </h5>
-                                        <span className="text-[15px] text-center">
-                                            {
-                                                actions[showActions - 1]
-                                                    .descriptions
-                                            }
-                                        </span>
-                                    </div>
-                                ) : (
-                                    listFollowing.map((item, i) => (
-                                        <NotificationItem key={i} item={item} />
-                                    ))
-                                )}
-                            </div>
-                        )}
-                    </div>
+                    {loading ? (
+                        <LoaderSkeletonNotificationItem />
+                    ) : (
+                        <div className="w-full">
+                            {showActions === 1 && (
+                                <div className="w-full">
+                                    {listAll.length === 0 ? (
+                                        <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
+                                            <h5>
+                                                {
+                                                    actions[showActions - 1]
+                                                        .contents
+                                                }
+                                            </h5>
+                                            <span className="text-[15px] text-center">
+                                                {
+                                                    actions[showActions - 1]
+                                                        .descriptions
+                                                }
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        listAll.map((item, i) => (
+                                            <NotificationItem
+                                                key={i}
+                                                item={item}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                            {showActions === 2 && (
+                                <div className="w-full">
+                                    {listMentions.length === 0 ? (
+                                        <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
+                                            <h5>
+                                                {
+                                                    actions[showActions - 1]
+                                                        .contents
+                                                }
+                                            </h5>
+                                            <span className="text-[15px] text-center">
+                                                {
+                                                    actions[showActions - 1]
+                                                        .descriptions
+                                                }
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        listMentions.map((item, i) => (
+                                            <NotificationItem
+                                                key={i}
+                                                item={item}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                            {showActions === 3 && (
+                                <div className="w-full">
+                                    {listFollowing.length === 0 ? (
+                                        <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
+                                            <h5>
+                                                {
+                                                    actions[showActions - 1]
+                                                        .contents
+                                                }
+                                            </h5>
+                                            <span className="text-[15px] text-center">
+                                                {
+                                                    actions[showActions - 1]
+                                                        .descriptions
+                                                }
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        listFollowing.map((item, i) => (
+                                            <NotificationItem
+                                                key={i}
+                                                item={item}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 

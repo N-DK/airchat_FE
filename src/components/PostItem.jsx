@@ -56,6 +56,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
     const { success: unReportPostSuccess } = useSelector(
         (state) => state.unReportPost,
     );
+    const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [targetElement, setTargetElement] = useState(null);
     const [data, setData] = useState(item);
@@ -112,6 +113,12 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
         if (unReportPostSuccess) {
         }
     }, [unReportPostSuccess]);
+
+    useEffect(() => {
+        if (reportSuccess) {
+            closeContextMenu();
+        }
+    }, [reportSuccess]);
 
     useEffect(() => {
         if (item) {
@@ -340,7 +347,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                 ) : (
                     <>
                         <div
-                            className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
+                            className={`appear-animation duration-300 relative h-10 md:h-12 min-w-10 md:min-w-12 ${
                                 isVisible && isRunAuto && data?.video
                                     ? 'h-16 w-16'
                                     : ''

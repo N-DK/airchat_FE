@@ -40,7 +40,6 @@ const CustomContextMenu = ({
     //         duration: 1,
     //     });
     // };
-    const { success: reportSuccess } = useSelector((state) => state.reportPost);
 
     const [interactionState, setInteractionState] = useState({
         isHeart: isHeart,
@@ -142,12 +141,14 @@ const CustomContextMenu = ({
         [dispatch, data],
     );
 
-    useEffect(() => {
-        if (reportSuccess) {
-            // showMessage('Reported post');
-            onClose();
-        }
-    }, [reportSuccess]);
+    // useEffect(() => {
+    //     if (reportSuccess) {
+    //         // showMessage('Reported post');
+    //         console.log('Reported post');
+
+    //         onClose();
+    //     }
+    // }, [reportSuccess]);
 
     useEffect(() => {
         if (!interactionState.isHeart) {

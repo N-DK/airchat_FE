@@ -215,19 +215,6 @@ const MessageChatRoom = ({
                                         {message?.number_heart ?? 0}
                                     </span>
                                 </div>
-                                {/* <div
-                                    onClick={handleLike}
-                                    className="flex items-center text-gray-400"
-                                >
-                                    {statusLike ? (
-                                        <FaHeart color="red" />
-                                    ) : (
-                                        <FaRegHeart />
-                                    )}
-                                    <span className="ml-1.5 text-sm font-medium">
-                                        {message?.number_heart ?? 0}
-                                    </span>
-                                </div> */}
                                 {position === 'left' && (
                                     <div
                                         onClick={() => setIsOpen(true)}

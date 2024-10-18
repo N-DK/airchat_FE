@@ -108,6 +108,7 @@ export default function Details() {
     );
     const { userInfo } = useSelector((state) => state.userProfile);
     const { success: newPost } = useSelector((state) => state.postSubmit);
+    const { success: reportSuccess } = useSelector((state) => state.reportPost);
 
     // const userId = new URLSearchParams(location.search).get('userId') || null;
 
@@ -160,6 +161,12 @@ export default function Details() {
             setIsBookMark(!!data?.bookmark);
         }
     }, [data]);
+
+    useEffect(() => {
+        if (reportSuccess) {
+            closeContextMenu();
+        }
+    }, [reportSuccess]);
 
     useEffect(() => {
         if (isVisible) {
@@ -325,10 +332,10 @@ export default function Details() {
         <div
             // ref={(el) => (postRefs.current[0] = el)}
             ref={divRef}
-            className="flex mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
+            className="flex appear-animation duration-300 mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
         >
             <div
-                className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
+                className={`relative h-10 md:h-12 min-w-10 md:min-w-12  ${
                     isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
                 } `}
             >
