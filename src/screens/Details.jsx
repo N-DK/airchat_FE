@@ -130,12 +130,14 @@ export default function Details() {
     useEffect(() => {
         const observer = new IntersectionObserver(
             debounce(([entry]) => {
+                console.log(entry);
+
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
                 threshold: 0.1,
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.2,
+                    window.innerHeight * 0.15,
                     100,
                 )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
@@ -149,8 +151,9 @@ export default function Details() {
             if (divRef?.current) {
                 observer.unobserve(divRef.current);
             }
+            observer.disconnect();
         };
-    }, [data?.report]);
+    }, [data]);
 
     useEffect(() => {
         if (data) {
