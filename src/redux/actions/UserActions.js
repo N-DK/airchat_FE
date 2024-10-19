@@ -103,6 +103,7 @@ import {
     USER_LIST_NOTIFICATION_REQUEST,
     USER_LIST_NOTIFICATION_SUCCESS,
     USER_LIST_NOTIFICATION_FAIL,
+    USER_CODE_RESET,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -147,6 +148,9 @@ export const logout = () => (dispatch) => {
     localStorage.removeItem('userInfo');
     dispatch({
         type: USER_LOGOUT,
+    });
+    dispatch({
+        type: USER_CODE_RESET,
     });
     dispatch({
         type: CHECK_ACCOUNT_RESET,
@@ -293,15 +297,15 @@ export const checkUserCode = (email, otp) => async (dispatch) => {
             },
         );
 
-        await axios.post(
-            'https://talkie.transtechvietnam.com/update-user',
-            { password: '000000' },
-            {
-                headers: {
-                    'x-cypher-token': data.token,
-                },
-            },
-        );
+        // await axios.post(
+        //     'https://talkie.transtechvietnam.com/update-user',
+        //     { password: '000000' },
+        //     {
+        //         headers: {
+        //             'x-cypher-token': data.token,
+        //         },
+        //     },
+        // );
 
         dispatch({
             type: USER_CODE_SUCCESS,

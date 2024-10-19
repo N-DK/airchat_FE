@@ -10,6 +10,7 @@ export default function AboutYou() {
     const inputRef = useRef(null);
     const [fullName, setFullName] = useState('');
     const [userName, setUserName] = useState('');
+    const [password, setPassword] = useState('');
     const [isContinue, setIsContinue] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -17,10 +18,13 @@ export default function AboutYou() {
     const { userInfo } = userLogin;
     const userUpdateProfile = useSelector((state) => state.userUpdateProfile);
     const { loading, isSuccess } = userUpdateProfile;
+    const [error, setError] = useState(null);
 
     const navigateSelectAvatarHandle = () => {
         if (isContinue) {
-            dispatch(updateUser({ name: fullName, username: userName }));
+            dispatch(
+                updateUser({ name: fullName, username: userName, password }),
+            );
         }
     };
 
@@ -31,6 +35,42 @@ export default function AboutYou() {
         if (userName.trim() === '') {
             setUserName('');
         }
+        if (password.trim() === '') {
+            setPassword('');
+        }
+    };
+
+    const handleIsValidate = () => {
+        // username không được chứa ký tự đặt biệt và 2 đến 20 ký tự
+        // password phải có ít nhất 6 ký tự, có ít nhất 1 chữ hoa, 1 chữ thường, 1 số
+        // fullname chỉ được chứa ký tự chữ cái
+
+        if (!userName.match(/^[a-zA-Z0-9]+$/)) {
+            setError(
+                'Username only alphanumeric characters and periods are allowed',
+            );
+            return false;
+        }
+
+        if (userName.length < 2 || userName.length > 20) {
+            setError('Username must be between 2 and 20 characters');
+            return false;
+        }
+
+        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/)) {
+            setError(
+                'Password must be at least 6 characters and contain at least 1 uppercase letter, 1 lowercase letter, and 1 number',
+            );
+            return false;
+        }
+
+        if (!fullName.match(/^[a-zA-Z]+$/)) {
+            setError('Full name only alphabetic characters are allowed');
+            return false;
+        }
+
+        setError('');
+        return true;
     };
 
     useEffect(() => {
@@ -45,12 +85,20 @@ export default function AboutYou() {
     }, []);
 
     useEffect(() => {
-        if (fullName.trim() !== '' && userName.trim() !== '') {
-            setIsContinue(true);
+        if (
+            fullName.trim() !== '' &&
+            userName.trim() !== '' &&
+            password.trim() !== ''
+        ) {
+            if (handleIsValidate()) {
+                setIsContinue(true);
+            } else {
+                setIsContinue(false);
+            }
         } else {
             setIsContinue(false);
         }
-    }, [fullName, userName]);
+    }, [fullName, userName, password]);
 
     return (
         <div className="flex flex-col justify-between h-screen dark:bg-darkPrimary">
@@ -64,7 +112,7 @@ export default function AboutYou() {
                 <div className="flex justify-center mt-20">
                     <div className="flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
                         <input
-                            className="text-black dark:text-white text-center bg-inherit w-1/3 border-none outline-none text-[17px] font-medium"
+                            className="text-black w-full dark:text-white text-center bg-inherit border-none outline-none text-[17px] font-medium"
                             placeholder="Full name"
                             ref={inputRef}
                             type="text"
@@ -78,11 +126,24 @@ export default function AboutYou() {
                 <div className="flex justify-center mt-3">
                     <div className="flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
                         <input
-                            className="text-black dark:text-white text-center bg-inherit w-1/3 border-none outline-none text-[17px] font-medium"
+                            className="text-black dark:text-white text-center bg-inherit w-full border-none outline-none text-[17px] font-medium"
                             placeholder="Username"
                             type="text"
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
+                            onBlur={() => checkInput()}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex justify-center mt-3">
+                    <div className="flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
+                        <input
+                            className="text-black dark:text-white text-center bg-inherit w-full border-none outline-none text-[17px] font-medium"
+                            placeholder="Password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             onBlur={() => checkInput()}
                         />
                     </div>
@@ -94,15 +155,25 @@ export default function AboutYou() {
                             Enter your full name
                         </span>
                     </div>
-                ) : (
-                    !userName && (
-                        <div className="flex justify-center mt-3">
-                            <span className="text-gray-400">
-                                Enter your username
-                            </span>
-                        </div>
-                    )
-                )}
+                ) : !userName ? (
+                    <div className="flex justify-center mt-3">
+                        <span className="text-gray-400">
+                            Enter your username
+                        </span>
+                    </div>
+                ) : !password ? (
+                    <div className="flex justify-center mt-3">
+                        <span className="text-gray-400">
+                            Enter your password
+                        </span>
+                    </div>
+                ) : error ? (
+                    <div className="flex justify-center mt-3">
+                        <span className="text-red-500 text-center text-[14px]">
+                            {error}
+                        </span>
+                    </div>
+                ) : null}
             </div>
 
             <div className="flex flex-col items-center px-6 mb-9">

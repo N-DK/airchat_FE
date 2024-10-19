@@ -7,7 +7,7 @@ function PrivateRouter({ comp: Component }) {
     const { userInfo } = userLogin;
     const { userInfo: userInfoCode } = useSelector((state) => state.userCode);
 
-    if (!userInfo?.token && !userInfoCode) {
+    if (!userInfo?.token && !userInfoCode?.token) {
         return <Navigate to="/" />;
     }
 
