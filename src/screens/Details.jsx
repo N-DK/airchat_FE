@@ -35,8 +35,12 @@ import CustomContextMenu from '../components/CustomContextMenu';
 import { FaBookmark } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
 import { setObjectActive } from '../redux/actions/SurfActions';
-import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+import {
+    POST_REPLY_ALL_RESET,
+    POST_SUBMIT_RESET,
+} from '../redux/constants/PostConstants';
 import { IoEyeOffSharp } from 'react-icons/io5';
+import { BsEmojiFrown } from 'react-icons/bs';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -115,6 +119,7 @@ export default function Details() {
     useEffect(() => {
         if (post) {
             setData(post);
+            dispatch({ type: POST_REPLY_ALL_RESET });
         }
     }, [post]);
 
@@ -130,8 +135,6 @@ export default function Details() {
     useEffect(() => {
         const observer = new IntersectionObserver(
             debounce(([entry]) => {
-                console.log(entry);
-
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
@@ -153,7 +156,7 @@ export default function Details() {
             }
             observer.disconnect();
         };
-    }, [data]);
+    }, [data?.report]);
 
     useEffect(() => {
         if (data) {
@@ -525,7 +528,7 @@ export default function Details() {
                         <div className="mt-[120px]">
                             <LoaderSkeletonPosts />
                         </div>
-                    ) : (
+                    ) : data ? (
                         <>
                             {data?.report ? (
                                 <div className="w-full mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
@@ -586,6 +589,18 @@ export default function Details() {
                                 </>
                             )}
                         </>
+                    ) : (
+                        <div className="flex appear-animation duration-300 h-screen py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
+                            <div className="flex flex-col items-center justify-center h-full w-full">
+                                <BsEmojiFrown
+                                    size={54}
+                                    className="text-gray-500 dark:text-gray-400 mb-3"
+                                />
+                                <p className="text-center dark:text-gray-400 text-xl">
+                                    This post is no vailager
+                                </p>
+                            </div>
+                        </div>
                     )}
                 </div>
                 <RecordModal />

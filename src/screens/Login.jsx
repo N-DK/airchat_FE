@@ -2,7 +2,10 @@ import { FaAngleLeft } from 'react-icons/fa6';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { CHECK_ACCOUNT_RESET } from '../redux/constants/UserConstants';
+import {
+    CHECK_ACCOUNT_RESET,
+    USER_LOGIN_ERROR_RESET,
+} from '../redux/constants/UserConstants';
 import { login } from '../redux/actions/UserActions';
 import React from 'react';
 
@@ -10,12 +13,13 @@ export default function Login() {
     const inputRef = useRef(null);
     const [password, setPassword] = useState('');
     const [isContinue, setIsContinue] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const userEmail = useSelector((state) => state.userEmail);
     const { emailTemporary } = userEmail;
     const userLogin = useSelector((state) => state.userLogin);
-    const { userInfo, loading, error } = userLogin;
+    const { userInfo, loading, error: errorLogin } = userLogin;
 
     const navigateLoginHandle = () => {
         dispatch({
@@ -31,6 +35,13 @@ export default function Login() {
     useEffect(() => {
         inputRef.current.focus();
     }, []);
+
+    useEffect(() => {
+        if (errorLogin) {
+            setError(errorLogin);
+            dispatch({ type: USER_LOGIN_ERROR_RESET });
+        }
+    }, [errorLogin]);
 
     useEffect(() => {
         if (userInfo?.token) {

@@ -43,6 +43,7 @@ import {
     POST_REPLY_ALL_REQUEST,
     POST_REPLY_ALL_SUCCESS,
     POST_REPLY_ALL_FAIL,
+    POST_REPLY_ALL_RESET,
 } from '../constants/PostConstants';
 
 export const postSubmitReducer = (state = {}, action) => {
@@ -270,6 +271,8 @@ export const postReplyAllReducer = (state = {}, action) => {
                 loading: false,
                 replyAlls: action.payload,
             };
+        case POST_REPLY_ALL_RESET:
+            return {};
         case POST_REPLY_ALL_FAIL:
             return { loading: false, error: action.payload };
         default:

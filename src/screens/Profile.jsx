@@ -43,6 +43,7 @@ import ModalDelete from '../components/ModalDelete';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import DrawerFollower from '../components/DrawerFollower';
 import Webcam from 'react-webcam';
+import { BsEmojiFrown } from 'react-icons/bs';
 
 const ACTIONS = [
     {
@@ -412,7 +413,31 @@ export default function Profile() {
         );
     };
 
-    return userInfo || (stranger_id && userInfoStranger) ? (
+    if (!userInfoStranger && !loadingStranger && stranger_id) {
+        return (
+            <div className="h-screen flex flex-col">
+                <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
+                    <button onClick={() => navigate(-1)}>
+                        <FaAngleLeft className="text-lg md:text-[22px]" />
+                    </button>
+                </div>
+                <div className="flex-1 bg-slatePrimary dark:bg-darkPrimary pb-40">
+                    <div className="appear-animation duration-300 flex flex-col items-center justify-center h-full w-full">
+                        <BsEmojiFrown
+                            size={54}
+                            className="text-gray-500 dark:text-gray-400 mb-3"
+                        />
+                        <p className="text-center dark:text-gray-400 text-xl">
+                            The user is not exist
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // || (stranger_id && userInfoStranger)
+    return userInfo ? (
         <>
             <div className="relative flex flex-col justify-between h-screen overflow-hidden bg-slatePrimary dark:bg-darkPrimary">
                 <div className="overflow-auto scrollbar-none pb-[410px]">

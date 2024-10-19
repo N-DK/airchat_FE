@@ -105,7 +105,7 @@ export default function Notifications() {
     return (
         <div className="overflow-hidden">
             <div className=" flex flex-col  fixed z-10 w-full bg-white dark:bg-darkPrimary">
-                <div className="relative my-4 pt-12 px-6">
+                <div className="relative mb-8 pt-12 px-6">
                     <div className="relative">
                         <button
                             onClick={() => navigate('/profile')}
