@@ -14,7 +14,6 @@ import React from 'react';
 import ModalDelete from './ModalDelete';
 import SoundWave from './SoundWave';
 import { LuImagePlus } from 'react-icons/lu';
-import { GoMention } from 'react-icons/go';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import useDebounce from '../hooks/useDebounce';
 import { searchUser } from '../redux/actions/MessageAction';
@@ -22,13 +21,17 @@ import { SEARCH_USER_SUCCESS } from '../redux/constants/MessageConstants';
 import { Avatar } from 'antd';
 import { IoCloseCircleOutline, IoVideocam } from 'react-icons/io5';
 import Webcam from 'react-webcam';
+import { useLocation } from 'react-router-dom';
+import { listChannel } from '../redux/actions/ChannelActions';
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
-    // const redirect = useLocation().search.split("=")[1] || "trending";
+    const redirect =
+        useLocation().search.split('=')[1] || window.location.pathname;
     const dispatch = useDispatch();
     const postSubmit = useSelector((state) => state.postSubmit);
     const { post } = useSelector((state) => state.setPostActive);
+    const { menus } = useSelector((state) => state.menuBar);
 
     const { loading } = postSubmit;
     const [permission, setPermission] = useState(false);
@@ -44,19 +47,26 @@ export default function RecordModal({ handle }) {
     const [file, setFile] = useState(null);
     const [isOpenLink, setIsOpenLink] = useState(false);
     const [isOpenDeletePhoto, setIsOpenDeletePhoto] = useState(false);
+    const { channels } = useSelector((state) => state.channelList);
 
-    // const [isShowSearch, setIsShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [result, setResult] = useState([]);
-    // const [tagsUser, setTagsUser] = useState([]);
     const [url, setUrl] = useState('');
     const debouncedSearch = useDebounce(searchText, 500);
 
     const submitRecordHandle = () => {
         const blob = recorder.getBlob();
-        const audioFile = new File([blob], 'audio-recording.wav', {
-            type: 'audio/wav',
-        });
+        let audioFile = null;
+        let videoFile = null;
+        if (recordOption === 'audio') {
+            audioFile = new File([blob], 'audio-recording.wav', {
+                type: 'audio/wav',
+            });
+        } else {
+            videoFile = new File([blob], 'video-recording.webm', {
+                type: 'video/webm',
+            });
+        }
         if (handle) {
             const reader = new FileReader();
             reader.readAsDataURL(blob);
@@ -66,8 +76,21 @@ export default function RecordModal({ handle }) {
                 if (isRecord) toggleIsRecord();
             };
         } else {
+            const channel_id = redirect.includes('group-channel')
+                ? redirect.split('/')[1]
+                : redirect.includes('channel')
+                ? redirect.split('/')[2]
+                : null;
             dispatch(
-                submitPost(recordContents, audioFile, post?.id, file, url),
+                submitPost(
+                    recordContents,
+                    audioFile,
+                    post?.id,
+                    file,
+                    url,
+                    videoFile,
+                    channel_id,
+                ),
             );
         }
     };
@@ -165,6 +188,16 @@ export default function RecordModal({ handle }) {
     }, [debouncedSearch]);
 
     useEffect(() => {
+        // const channelId = redirect.includes('group-channel')
+        //     ? redirect.split('/')[1]
+        //     : redirect.includes('channel')
+        //     ? redirect.split('/')[2]
+        //     : null;
+        // if (menus?.findIndex((item) => item.channel_id == channelId) < 0)
+        dispatch(listChannel());
+    }, [dispatch]);
+
+    useEffect(() => {
         if (isAllow) handleClick();
     }, [isAllow]);
 
@@ -175,7 +208,7 @@ export default function RecordModal({ handle }) {
             const rec = new SpeechRecognition();
             rec.continuous = true;
             rec.interimResults = true;
-            rec.lang = 'vi-VN';
+            rec.lang = 'en-US';
             rec.onresult = (event) => {
                 let finalTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -262,6 +295,24 @@ export default function RecordModal({ handle }) {
         fileInput.click();
     };
 
+    const getChannelName = useCallback(() => {
+        const channelId = redirect.includes('group-channel')
+            ? redirect.split('/')[1]
+            : redirect.includes('channel')
+            ? redirect.split('/')[2]
+            : null;
+
+        const findChannelName = (categories) => {
+            return categories?.find((item) => item.id == channelId)?.name;
+        };
+
+        const channelName =
+            findChannelName(channels?.hosting) ||
+            findChannelName(channels?.recent) ||
+            findChannelName(channels?.trending);
+        return channelName;
+    }, [channels, redirect]);
+
     return (
         <div
             className={`absolute left-0 bottom-0 z-50 w-full h-1/2 ${
@@ -274,7 +325,7 @@ export default function RecordModal({ handle }) {
                         <div className="flex gap-2">
                             <span className="text-xl">To</span>
                             <span className="text-xl font-semibold">
-                                {post?.name}
+                                {post?.name ?? getChannelName()}
                             </span>
                         </div>
                         {/* <BsChevronExpand size="1.6rem" /> */}

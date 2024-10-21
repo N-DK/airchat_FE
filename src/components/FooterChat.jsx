@@ -68,6 +68,7 @@ export default function FooterChat({
             name: 'messages',
         },
     ];
+    const redirect = useLocation().search.split('=')[1] || 'trending';
     const pressTimer = useRef();
     const [messageApi, contextHolder] = message.useMessage();
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
@@ -246,7 +247,11 @@ export default function FooterChat({
                         type: 'video/webm',
                     });
                 }
-
+                const channel_id = redirect.includes('group-channel')
+                    ? redirect.split('/')[1]
+                    : redirect.includes('channel')
+                    ? redirect.split('/')[2]
+                    : null;
                 dispatch(
                     submitPost(
                         newMessage,
@@ -255,6 +260,7 @@ export default function FooterChat({
                         null,
                         null,
                         videoFile,
+                        channel_id,
                     ),
                 );
             }
@@ -276,7 +282,7 @@ export default function FooterChat({
             const recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'vi-VN'; // 'vi-VN, en-US'
+            recognition.lang = 'en-US'; // 'vi-VN, en-US'
             let newTranscript = '';
             recognition.onresult = (event) => {
                 let interimTranscript = '';

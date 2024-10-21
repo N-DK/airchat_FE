@@ -13,6 +13,18 @@ import { FaAngleLeft, FaSpinner } from 'react-icons/fa6';
 import Message from './Message';
 import DrawerChangePassword from './DrawerChangePassword';
 
+const NotifyText = ({ message, show }) => {
+    return (
+        <div
+            className={`bg-white z-[99999999] absolute left-1/2 w-max transform -translate-x-1/2 dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+                show ? 'translate-y-0 mt-3' : '-translate-y-full'
+            }`}
+        >
+            <h6 className="text-black dark:text-white">{message}</h6>
+        </div>
+    );
+};
+
 export default function EditProfile() {
     const {
         isEditProfile,
@@ -39,11 +51,15 @@ export default function EditProfile() {
     const [errorWebsite, setErrorWebsite] = useState('');
     const [disableSave, setDisableSave] = useState(true);
     const [sendMessage, setSendMessage] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
+    const [showNotify, setShowNotify] = useState(false);
 
     const handleSubmit = () => {
         if (inValidateUser({ name, username, bio, website }) === 'pass') {
             dispatch(updateUser({ name, username, bio, website }));
-            setSendMessage(true);
+            setNotifyMessage('Update profile successfully');
+            setShowNotify(true);
+            setTimeout(() => setShowNotify(false), 1200);
         }
     };
 
@@ -136,143 +152,150 @@ export default function EditProfile() {
     }, [loading]);
 
     return (
-        <div
-            ref={modalRef}
-            className={`absolute left-0 top-0 z-50 w-full h-screen transition-all duration-300 ${
-                isEditProfile ? 'translate-x-0' : 'translate-x-full'
-            }`}
-        >
-            <div className="bg-white dark:bg-dark2Primary h-full">
-                <div className="px-5 md:px-10 flex justify-between pt-12 pb-4 items-center py-3 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300">
-                    <button
-                        className="text-black dark:text-white"
-                        onClick={() => toggleIsEditProfile()}
-                    >
-                        <FaAngleLeft className="text-lg md:text-[22px] " />
-                    </button>
-                    <button className="text-black dark:text-white font-semibold">
-                        Edit Profile
-                    </button>
-                    <button
-                        disabled={disableSave}
-                        onClick={handleSubmit}
-                        className="font-semibold text-bluePrimary disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Save
-                    </button>
-                </div>
+        <>
+            <div
+                ref={modalRef}
+                className={`absolute left-0 top-0 z-50 w-full h-screen transition-all duration-300 ${
+                    isEditProfile ? 'translate-x-0' : 'translate-x-full'
+                }`}
+            >
+                <div className="bg-white dark:bg-dark2Primary h-full">
+                    <div className="px-5 md:px-10 flex justify-between pt-12 pb-4 items-center py-3 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300">
+                        <button
+                            className="text-black dark:text-white"
+                            onClick={() => toggleIsEditProfile()}
+                        >
+                            <FaAngleLeft className="text-lg md:text-[22px] " />
+                        </button>
+                        <button className="text-black dark:text-white font-semibold">
+                            Edit Profile
+                        </button>
+                        <button
+                            disabled={disableSave}
+                            onClick={handleSubmit}
+                            className="font-semibold text-bluePrimary disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Save
+                        </button>
+                    </div>
 
-                <div className="px-6 md:px-10 pt-6 pb-5 border-b-[1px] border-gray-300">
-                    <div onClick={handleUploadAvatar} className="relative">
-                        <Avatar
-                            src={`https://talkie.transtechvietnam.com/${
-                                userInfoProfile?.image || ''
-                            }`}
-                            className="h-[60px] md:h-[70px] w-[60px] md:w-[70px] object-cover rounded-full"
-                            alt=""
-                        />
-                        <div className="bg-black/40 rounded-full absolute top-0 left-0 h-[60px] md:h-[70px] w-[60px] md:w-[70px]"></div>
-                        <div className="text-white absolute top-0 left-0 h-[60px] md:h-[70px] w-[60px] md:w-[70px] flex justify-center items-center">
-                            {loading ? (
-                                <FaSpinner className="animate-spin" />
-                            ) : (
-                                <LuImagePlus className="" />
-                            )}
+                    <div className="px-6 md:px-10 pt-6 pb-5 border-b-[1px] border-gray-300">
+                        <div onClick={handleUploadAvatar} className="relative">
+                            <Avatar
+                                src={`https://talkie.transtechvietnam.com/${
+                                    userInfoProfile?.image || ''
+                                }`}
+                                className="h-[60px] md:h-[70px] w-[60px] md:w-[70px] object-cover rounded-full"
+                                alt=""
+                            />
+                            <div className="bg-black/40 rounded-full absolute top-0 left-0 h-[60px] md:h-[70px] w-[60px] md:w-[70px]"></div>
+                            <div className="text-white absolute top-0 left-0 h-[60px] md:h-[70px] w-[60px] md:w-[70px] flex justify-center items-center">
+                                {loading ? (
+                                    <FaSpinner className="animate-spin" />
+                                ) : (
+                                    <LuImagePlus className="" />
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div>
-                    <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
-                        <h6 className="text-black dark:text-white md:text-xl">
-                            Name
-                        </h6>
-                        <div className=" col-span-2">
+                    <div>
+                        <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
+                            <h6 className="text-black dark:text-white md:text-xl">
+                                Name
+                            </h6>
+                            <div className=" col-span-2">
+                                <input
+                                    className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
+                                    type="text"
+                                    placeholder="Enter your name"
+                                    value={name}
+                                    onChange={(e) => {
+                                        setName(e.target.value);
+                                        setErrorName('');
+                                    }}
+                                />
+                                {errorName && (
+                                    <p className="text-red-500 ">{errorName}</p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
+                            <h6 className="text-black dark:text-white md:text-xl">
+                                Username
+                            </h6>
+                            <div className="col-span-2">
+                                <input
+                                    className="bg-inherit  outline-none text-bluePrimary md:text-xl"
+                                    type="text"
+                                    placeholder="Enter your username"
+                                    value={username}
+                                    onChange={(e) => {
+                                        setUsername(e.target.value);
+                                        setErrorUsername('');
+                                    }}
+                                />
+                                {errorUsername && (
+                                    <p className="text-red-500">
+                                        {errorUsername}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
+                            <h6 className="text-black dark:text-white md:text-xl">
+                                Bio
+                            </h6>
                             <input
                                 className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
                                 type="text"
-                                placeholder="Enter your name"
-                                value={name}
-                                onChange={(e) => {
-                                    setName(e.target.value);
-                                    setErrorName('');
-                                }}
+                                placeholder="Enter your bio"
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
                             />
-                            {errorName && (
-                                <p className="text-red-500 ">{errorName}</p>
-                            )}
                         </div>
-                    </div>
-                    <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
-                        <h6 className="text-black dark:text-white md:text-xl">
-                            Username
-                        </h6>
-                        <div className="col-span-2">
+                        <div
+                            onClick={toggleShowDrawerChangePassword}
+                            className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5"
+                        >
+                            <h6 className="text-black dark:text-white md:text-xl">
+                                Password
+                            </h6>
                             <input
-                                className="bg-inherit  outline-none text-bluePrimary md:text-xl"
-                                type="text"
-                                placeholder="Enter your username"
-                                value={username}
-                                onChange={(e) => {
-                                    setUsername(e.target.value);
-                                    setErrorUsername('');
-                                }}
+                                className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
+                                type="password"
+                                value={'********'}
+                                readOnly
                             />
-                            {errorUsername && (
-                                <p className="text-red-500">{errorUsername}</p>
-                            )}
                         </div>
-                    </div>
-                    <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
-                        <h6 className="text-black dark:text-white md:text-xl">
-                            Bio
-                        </h6>
-                        <input
-                            className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
-                            type="text"
-                            placeholder="Enter your bio"
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                        />
-                    </div>
-                    <div
-                        onClick={toggleShowDrawerChangePassword}
-                        className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5"
-                    >
-                        <h6 className="text-black dark:text-white md:text-xl">
-                            Password
-                        </h6>
-                        <input
-                            className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
-                            type="password"
-                            value={'********'}
-                            readOnly
-                        />
-                    </div>
-                    <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
-                        <h6 className="text-black dark:text-white md:text-xl">
-                            Website
-                        </h6>
-                        <div className="col-span-2">
-                            <input
-                                className="bg-inherit outline-none text-bluePrimary md:text-xl"
-                                type="text"
-                                placeholder="Enter your website"
-                                value={website}
-                                onChange={(e) => {
-                                    setWebsite(e.target.value);
-                                    setErrorWebsite('');
-                                }}
-                            />
-                            {errorWebsite && (
-                                <p className="text-red-500">{errorWebsite}</p>
-                            )}
+                        <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
+                            <h6 className="text-black dark:text-white md:text-xl">
+                                Website
+                            </h6>
+                            <div className="col-span-2">
+                                <input
+                                    className="bg-inherit outline-none text-bluePrimary md:text-xl"
+                                    type="text"
+                                    placeholder="Enter your website"
+                                    value={website}
+                                    onChange={(e) => {
+                                        setWebsite(e.target.value);
+                                        setErrorWebsite('');
+                                    }}
+                                />
+                                {errorWebsite && (
+                                    <p className="text-red-500">
+                                        {errorWebsite}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <DrawerChangePassword />
             </div>
-            <DrawerChangePassword />
-            {sendMessage && <Message />}
-        </div>
+            <NotifyText message={notifyMessage} show={showNotify} />
+        </>
     );
 }

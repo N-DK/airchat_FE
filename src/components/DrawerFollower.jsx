@@ -79,7 +79,7 @@ import { ItemFollow } from './ItemFollow';
 const EmptyFollow = React.memo(() => (
     <div className="flex flex-col items-center justify-center h-full fixed z-50 w-full left-0">
         <img src="./src/assets/Untitled-2.png" alt="" />
-        <h5 className="mt-3">Nothing to show here</h5>
+        <h5 className="mt-3 dark:text-white">Nothing to show here</h5>
     </div>
 ));
 
@@ -124,10 +124,12 @@ function DrawerFollower({
                 ? getFollowerStranger
                 : getFollower;
 
-        if (isStranger && userInfo?.id) {
-            dispatch(action(userInfo.id));
-        } else if (!isStranger) {
-            dispatch(action());
+        if (showDrawerFollow) {
+            if (isStranger && userInfo?.id) {
+                dispatch(action(userInfo.id));
+            } else if (!isStranger) {
+                dispatch(action());
+            }
         }
     }, [dispatch, isStranger, typeDrawer, showDrawerFollow]); //userInfo,
 
@@ -168,7 +170,7 @@ function DrawerFollower({
             }`}
         >
             <div className="bg-white dark:bg-dark2Primary h-full">
-                <div className="relative px-5 md:px-10 flex justify-center items-center py-3 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300">
+                <div className="relative pt-12 pb-8 px-5 md:px-10 flex justify-center items-center py-3 md:py-5 text-lg md:text-[19px] border-b-[1px] border-gray-300">
                     <button
                         className="text-black dark:text-white absolute left-4"
                         onClick={toggleShowDrawerFollow}

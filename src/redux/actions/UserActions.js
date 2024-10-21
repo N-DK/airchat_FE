@@ -104,6 +104,7 @@ import {
     USER_LIST_NOTIFICATION_SUCCESS,
     USER_LIST_NOTIFICATION_FAIL,
     USER_CODE_RESET,
+    USER_PROFILE_RESET,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -149,6 +150,9 @@ export const logout = () => (dispatch) => {
     dispatch({
         type: USER_LOGOUT,
     });
+    // dispatch({
+    //     type: USER_PROFILE_RESET,
+    // });
     dispatch({
         type: USER_CODE_RESET,
     });
@@ -165,10 +169,11 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.put(
@@ -452,10 +457,11 @@ export const getProfileStranger =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
             const { data } = await axios.post(
@@ -485,10 +491,11 @@ export const follow = (stranger_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -518,10 +525,11 @@ export const listFollow = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
@@ -552,10 +560,11 @@ export const listPostProfileStranger =
 
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
             // get-profile-posts-stranger
@@ -586,10 +595,11 @@ export const block = (block_id, type) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -619,10 +629,11 @@ export const mute = (mute_id, type) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -652,10 +663,11 @@ export const listBlock = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
@@ -684,10 +696,11 @@ export const listMute = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
@@ -753,10 +766,11 @@ export const getFollower = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
@@ -786,10 +800,11 @@ export const getFollowerStranger =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
 
@@ -820,10 +835,11 @@ export const getFollowing = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
@@ -853,10 +869,11 @@ export const getFollowingStranger =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
 
@@ -887,10 +904,11 @@ export const sharePost = (post_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -920,10 +938,11 @@ export const addViewPost = (post_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -953,10 +972,11 @@ export const reportAcc = (stranger_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -987,10 +1007,11 @@ export const search = (key) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -1020,10 +1041,11 @@ export const deleteAccount = (_data) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(

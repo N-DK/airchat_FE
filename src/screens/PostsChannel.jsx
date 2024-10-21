@@ -169,7 +169,9 @@ export default function PostsChannel() {
                 </button>
                 <div className="flex items-center gap-3">
                     <Avatar
-                        src={`${DOMAIN}${state?.channelData?.photo}`}
+                        src={`${DOMAIN}${
+                            state?.channelData?.photo ?? state?.channelData?.img
+                        }`}
                         className="w-8 h-8 rounded-md object-cover"
                         alt=""
                     />
@@ -202,7 +204,7 @@ export default function PostsChannel() {
     const renderContent = () => (
         <div
             ref={contentsChattingRef}
-            className="flex flex-col absolute top-0 pt-32 left-0 pb-[300px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
+            className="flex flex-col absolute top-0 pt-32 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
         >
             <div className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6">
                 <figure>
@@ -254,6 +256,7 @@ export default function PostsChannel() {
                 <ListPostItems
                     postsList={postsList}
                     isTurnOnCamera={isTurnOnCameraReply}
+                    contentsChattingRef={contentsChattingRef}
                 />
             )}
         </div>

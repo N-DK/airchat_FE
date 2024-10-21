@@ -19,6 +19,18 @@ import { sharePost } from '../redux/actions/UserActions';
 import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
+const NotifyText = ({ message, show }) => {
+    return (
+        <div
+            className={`bg-white z-[99999999] absolute left-1/2 transform -translate-x-1/2 w-auto dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+                show ? 'translate-y-0 mt-3' : '-translate-y-full'
+            }`}
+        >
+            <h6 className="text-black dark:text-white">{message}</h6>
+        </div>
+    );
+};
+
 const CustomContextMenu = ({
     isVisible,
     onClose,
@@ -48,6 +60,8 @@ const CustomContextMenu = ({
     });
 
     const [initialLoad, setInitialLoad] = useState(true);
+    const [showNotify, setShowNotify] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
 
     const [elementPosition, setElementPosition] = useState({
         top: 0,
@@ -98,7 +112,9 @@ const CustomContextMenu = ({
         (e) => {
             e.stopPropagation();
             navigator.clipboard.writeText(data?.content);
-            // showMessage('Copied to clipboard');
+            setShowNotify(true);
+            setNotifyMessage('Copied to clipboard');
+            setTimeout(() => setShowNotify(false), 1200);
         },
         [data],
     );
@@ -307,6 +323,7 @@ const CustomContextMenu = ({
                             )}
                         </div>
                     </div>
+                    <NotifyText message={notifyMessage} show={showNotify} />
                 </div>
             </>
         );
@@ -320,6 +337,8 @@ const CustomContextMenu = ({
         onClose,
         renderButton,
         renderActionButton,
+        notifyMessage,
+        showNotify,
     ]);
 
     return memoizedContent;

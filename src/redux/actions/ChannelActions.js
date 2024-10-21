@@ -24,10 +24,11 @@ export const listChannel = () => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.get(
@@ -58,16 +59,17 @@ export const postsChannel =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
 
             const { data } = await axios.post(
                 `https://talkie.transtechvietnam.com/group-channel`,
-                { limit, offset, channel_id, trending },
+                { limit, offset, channel_id },
                 config,
             );
             dispatch({
@@ -95,10 +97,11 @@ export const addChannel =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
             const formData = new FormData();
@@ -134,10 +137,11 @@ export const pinChannel = (channel_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -160,12 +164,6 @@ export const pinChannel = (channel_id) => async (dispatch, getState) => {
     }
 };
 
-// curl --location 'localhost:9999/delete-channel' \
-// --header 'x-cypher-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwLCJwaG9uZSI6bnVsbCwiZW1haWwiOm51bGwsImlhdCI6MTcyNzY2NzQyOSwiZXhwIjoxNzMwMjU5NDI5fQ.ReqCB8T2wAOtOZCN8yfw4InFcbn_kNcYQdh2W84u5F4' \
-// --data '{
-//     "channel_id":6
-// }'
-
 export const deleteChannel = (channel_id) => async (dispatch, getState) => {
     try {
         dispatch({
@@ -173,10 +171,11 @@ export const deleteChannel = (channel_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(

@@ -108,6 +108,7 @@ import {
     USER_LIST_NOTIFICATION_SUCCESS,
     USER_LIST_NOTIFICATION_FAIL,
     USER_LOGIN_ERROR_RESET,
+    USER_PROFILE_RESET,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -253,6 +254,8 @@ export const userProfileReducer = (state = {}, action) => {
             return { loading: false, userInfo: action.payload };
         case USER_PROFILE_FAIL:
             return { loading: false, error: action.payload };
+        case USER_PROFILE_RESET:
+            return {};
         default:
             return state;
     }

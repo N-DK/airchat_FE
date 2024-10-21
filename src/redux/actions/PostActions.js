@@ -43,7 +43,7 @@ import {
 } from '../constants/PostConstants';
 
 export const submitPost =
-    (content, audio, reply_post, photo, url, video) =>
+    (content, audio, reply_post, photo, url, video, channel_id) =>
     async (dispatch, getState) => {
         try {
             dispatch({
@@ -51,6 +51,7 @@ export const submitPost =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const formData = new FormData();
             formData.append('content', content);
@@ -66,9 +67,12 @@ export const submitPost =
             if (url) {
                 formData.append('url', url);
             }
+            if (channel_id) {
+                formData.append('channel_id', channel_id);
+            }
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                     'Content-Type': 'multipart/form-data',
                 },
             };
@@ -124,7 +128,7 @@ export const listPost =
             };
             const { data } = await axios.post(
                 `https://talkie.transtechvietnam.com/${redirect}`,
-                { limit, offset, channel_id, trending },
+                { limit, offset, channel_id },
                 config,
             );
             dispatch({
@@ -150,10 +154,11 @@ export const detailsPost =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
             const { data } = await axios.post(
@@ -251,10 +256,11 @@ export const listPostProfile =
             });
             const {
                 userLogin: { userInfo },
+                userCode: { userInfo: userInfoCode },
             } = getState();
             const config = {
                 headers: {
-                    'x-cypher-token': userInfo.token,
+                    'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 },
             };
             const { data } = await axios.post(
@@ -284,10 +290,11 @@ export const bookMark = (post_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -317,10 +324,11 @@ export const heart = (post_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -350,10 +358,11 @@ export const deletePost = (post_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -383,10 +392,11 @@ export const reportPost = (post_id) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -420,7 +430,7 @@ export const unReportPost = (post_id) => async (dispatch, getState) => {
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -450,13 +460,14 @@ export const uploadImage = (photo, id_post) => async (dispatch, getState) => {
         });
         const {
             userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
         } = getState();
         const formData = new FormData();
         formData.append('photo', photo);
         formData.append('id_post', id_post);
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
                 'Content-Type': 'multipart/form-data',
             },
         };
@@ -491,7 +502,7 @@ export const deletePhoto = (id_post) => async (dispatch, getState) => {
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
@@ -525,7 +536,7 @@ export const updatePost = (id_post, __data) => async (dispatch, getState) => {
         } = getState();
         const config = {
             headers: {
-                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
             },
         };
         const { data } = await axios.post(
