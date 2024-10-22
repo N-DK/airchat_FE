@@ -5,7 +5,7 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Avatar } from 'antd';
 import { IoIosAdd } from 'react-icons/io';
@@ -18,8 +18,20 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 
 const HeaderChat = ({ title, isSwiping, handleAction }) => {
     const { menus, loading } = useSelector((state) => state.menuBar);
+    const redirect =
+        useLocation().search.split('=')[1] || window.location.pathname;
     const navigate = useNavigate();
     const { toggleIsAddChannel } = useContext(AppContext);
+    // const { channel } = useSelector((state) => state.channelPin);
+
+    useEffect(() => {
+        const channelId = redirect.includes('group-channel')
+            ? redirect.split('/')[1]
+            : null;
+        if (!menus?.some((menu) => menu.channel_id == channelId)) {
+            navigate(`/chatting`);
+        }
+    }, [menus]);
 
     const Dropdown = ({ item, i }) => {
         const btnRef = useRef();

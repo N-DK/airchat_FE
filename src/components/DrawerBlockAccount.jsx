@@ -16,6 +16,8 @@ import LoadingSpinner from './LoadingSpinner';
 import Message from './Message';
 import '../App.css';
 
+const DOMAIN = 'https://talkie.transtechvietnam.com/';
+
 const BlocAccountItem = ({
     user,
     handleAction,
@@ -117,7 +119,7 @@ const BlocAccountItem = ({
         <div className="px-4 py-3">
             <div className="flex items-center justify-between w-full">
                 <div className="flex items-center">
-                    <Avatar size={44} src={''} alt="" />
+                    <Avatar size={44} src={`${DOMAIN}${user?.image}`} alt="" />
                     <div className="flex flex-col ml-3">
                         <div className="text-black dark:text-white font-semibold">
                             {user?.name}

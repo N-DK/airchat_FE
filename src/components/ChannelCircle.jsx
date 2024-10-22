@@ -33,7 +33,7 @@ export default function ChannelCircle({ data }) {
                     />
                 </figure>
                 <p className="dark:text-white">{data?.name}</p>
-                <p className="text-sm text-gray-500">21 members</p>
+                {/* <p className="text-sm text-gray-500">21 members</p> */}
             </div>
         </div>
     );

@@ -436,6 +436,7 @@ export const updateUser = (user) => async (dispatch, getState) => {
         );
         dispatch({
             type: USER_UPDATE_PROFILE_SUCCESS,
+            payload: data?.results,
         });
         // localStorage.setItem('userInfo', JSON.stringify(data));
     } catch (error) {

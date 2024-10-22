@@ -80,7 +80,7 @@ export default function PostsChannel() {
     }, [dispatch, id, isPinChannel]);
 
     useEffect(() => {
-        dispatch(barMenu());
+        if (channel) dispatch(barMenu());
     }, [dispatch, channel]);
 
     useEffect(() => {

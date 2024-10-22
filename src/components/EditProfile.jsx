@@ -41,6 +41,9 @@ export default function EditProfile() {
 
     const { loading, error, isSuccess } = userUploadAvatar;
     const { userInfo: userInfoProfile } = userProfile;
+    const { isSuccess: isSuccessUpdateProfile } = useSelector(
+        (state) => state.userUpdateProfile,
+    );
 
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
@@ -57,9 +60,6 @@ export default function EditProfile() {
     const handleSubmit = () => {
         if (inValidateUser({ name, username, bio, website }) === 'pass') {
             dispatch(updateUser({ name, username, bio, website }));
-            setNotifyMessage('Update profile successfully');
-            setShowNotify(true);
-            setTimeout(() => setShowNotify(false), 1200);
         }
     };
 
@@ -144,6 +144,19 @@ export default function EditProfile() {
             modalElement.removeEventListener('touchend', handleTouchEnd);
         };
     }, []);
+
+    useEffect(() => {
+        if (!loading && isSuccessUpdateProfile == 1) {
+            setNotifyMessage('Update profile successfully');
+            setShowNotify(true);
+            setTimeout(() => setShowNotify(false), 1200);
+            dispatch(profile());
+        } else if (!loading && isSuccessUpdateProfile == 0) {
+            setNotifyMessage('Update profile failed');
+            setShowNotify(true);
+            setTimeout(() => setShowNotify(false), 1200);
+        }
+    }, [loading, isSuccessUpdateProfile]);
 
     useEffect(() => {
         if (!loading && isSuccess) {

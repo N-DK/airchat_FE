@@ -127,46 +127,58 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
     }, [item]);
 
     useEffect(() => {
-        if (newPost?.reply_post && newPost?.reply_post === item?.id) {
-            setList((prev) => {
-                const newPosts = prev.map((post) => {
-                    if (post.id === newPost.reply_post) {
-                        const updatedReplies = post.reply.map((reply) => {
-                            // Nếu user_id của reply trùng với user_id của newPost thì ghi đè
-                            if (reply.user_id === newPost.user_id) {
-                                return {
+        if (newPost) {
+            if (newPost?.reply_post && newPost?.reply_post === item?.id) {
+                setList((prev) => {
+                    const newPosts = prev.map((post) => {
+                        if (post.id === newPost.reply_post) {
+                            const updatedReplies = post.reply.map((reply) => {
+                                // Nếu user_id của reply trùng với user_id của newPost thì ghi đè
+                                if (reply.user_id === newPost.user_id) {
+                                    return {
+                                        ...newPost,
+                                        img: convertObjectURL(newPost?.img),
+                                    };
+                                }
+                                return reply;
+                            });
+
+                            // Kiểm tra xem đã có reply với user_id trùng chưa
+                            const hasExistingReply = updatedReplies.some(
+                                (reply) => reply.user_id === newPost.user_id,
+                            );
+
+                            // Nếu chưa có thì thêm mới
+                            if (!hasExistingReply) {
+                                updatedReplies.push({
                                     ...newPost,
                                     img: convertObjectURL(newPost?.img),
-                                };
+                                });
                             }
-                            return reply;
-                        });
 
-                        // Kiểm tra xem đã có reply với user_id trùng chưa
-                        const hasExistingReply = updatedReplies.some(
-                            (reply) => reply.user_id === newPost.user_id,
-                        );
-
-                        // Nếu chưa có thì thêm mới
-                        if (!hasExistingReply) {
-                            updatedReplies.push({
-                                ...newPost,
-                                img: convertObjectURL(newPost?.img),
-                            });
+                            return {
+                                ...post,
+                                reply: updatedReplies,
+                            };
                         }
-
-                        return {
-                            ...post,
-                            reply: updatedReplies,
-                        };
-                    }
-                    return post;
+                        return post;
+                    });
+                    return newPosts;
                 });
-                return newPosts;
-            });
 
-            if (isRecord) toggleIsRecord();
-            dispatch({ type: POST_SUBMIT_RESET });
+                if (isRecord) toggleIsRecord();
+                dispatch({ type: POST_SUBMIT_RESET });
+            } else if (!newPost?.reply_post) {
+                setList((prev) => {
+                    if (!prev.some((post) => post.id === newPost.id)) {
+                        const newPosts = [newPost, ...prev];
+                        if (isRecord) toggleIsRecord();
+                        dispatch({ type: POST_SUBMIT_RESET });
+                        return newPosts;
+                    }
+                    return prev;
+                });
+            }
         }
     }, [newPost]);
 

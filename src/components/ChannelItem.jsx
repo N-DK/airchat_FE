@@ -41,7 +41,7 @@ export const ChannelItem = ({ data }) => {
                         <p className="text-black dark:text-white">
                             {data?.name}
                         </p>
-                        <p className="text-gray-500">3 members</p>
+                        {/* <p className="text-gray-500">3 members</p> */}
                     </div>
                 </div>
                 <button className="text-base dark:text-white">Join</button>

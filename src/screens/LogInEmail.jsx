@@ -6,7 +6,6 @@ import {
     checkUserAccount,
     checkUserEmail,
 } from './../redux/actions/UserActions';
-import LoadingSpinner from './../components/LoadingSpinner';
 import { SAVE_USER_EMAIL_TEMPORARY } from '../redux/constants/UserConstants';
 import React from 'react';
 
@@ -30,7 +29,7 @@ export default function LogInEmail() {
 
     useEffect(() => {
         if (account) {
-            if (account.login) {
+            if (account.login == 1) {
                 navigate('/login');
                 if (email) {
                     dispatch({
@@ -38,8 +37,10 @@ export default function LogInEmail() {
                         payload: email,
                     });
                 }
-            } else {
+            } else if (account.login == 0) {
                 dispatch(checkUserEmail(email));
+            } else {
+                navigate('/aboutyou');
             }
         }
     }, [account]);

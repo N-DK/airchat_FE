@@ -43,7 +43,7 @@ export default function AboutYou() {
     const handleIsValidate = () => {
         // username không được chứa ký tự đặt biệt và 2 đến 20 ký tự
         // password phải có ít nhất 6 ký tự, có ít nhất 1 chữ hoa, 1 chữ thường, 1 số
-        // fullname chỉ được chứa ký tự chữ cái
+        // fullname chỉ được chứa ký tự chữ cái và khoảng trắng
 
         if (!userName.match(/^[a-zA-Z0-9]+$/)) {
             setError(
@@ -64,8 +64,8 @@ export default function AboutYou() {
             return false;
         }
 
-        if (!fullName.match(/^[a-zA-Z]+$/)) {
-            setError('Full name only alphabetic characters are allowed');
+        if (!fullName.match(/^[a-zA-Z\s]+$/)) {
+            setError('Full name only contains letters and spaces');
             return false;
         }
 
