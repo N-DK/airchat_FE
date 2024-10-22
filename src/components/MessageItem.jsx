@@ -6,7 +6,7 @@ import React, {
     useContext,
     useCallback,
 } from 'react';
-import moment from 'moment';
+import moment from 'moment/moment';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Avatar } from 'antd';
@@ -14,6 +14,7 @@ import { FaBookmark, FaChartLine, FaRegStar } from 'react-icons/fa6';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     bookMark,
+    deletePost,
     heart,
     setPostActive,
     unReportPost,
@@ -35,6 +36,7 @@ import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { IoEyeOffSharp } from 'react-icons/io5';
 import HiddenPostComponent from './HiddenPostComponent';
 import { FaRegBookmark } from 'react-icons/fa';
+import ModalDelete from './ModalDelete';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -47,6 +49,7 @@ function MessageItem({
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
+    const [isOpen, setIsOpen] = useState(false);
     const [isHeart, setIsHeart] = useState(true);
     const [likeCount, setLikeCount] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
@@ -64,6 +67,7 @@ function MessageItem({
     const [initialLoad, setInitialLoad] = useState(true);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { success: reportSuccess } = useSelector((state) => state.reportPost);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const { isRunAuto } = useContext(AppContext);
 
@@ -354,9 +358,9 @@ function MessageItem({
                                             />
                                         )}
                                         <RiDeleteBin6Line
-                                            // onClick={() => {
-                                            //     setIsOpen(true);
-                                            // }}
+                                            onClick={() => {
+                                                setIsOpen(true);
+                                            }}
                                             className="text-white"
                                         />
                                     </div>
@@ -383,6 +387,7 @@ function MessageItem({
                                         <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
                                             {moment
                                                 .unix(data.create_at)
+                                                .locale(language.split('-')[0])
                                                 .fromNow(true)}
                                         </span>
                                     </div>
@@ -492,6 +497,13 @@ function MessageItem({
                                 </div>
                             </div>
                         </div>
+                        <ModalDelete
+                            title="TITLE_DELETE_POST"
+                            subTitle="SUBTITLE_DELETE_POST"
+                            isOpen={isOpen}
+                            setIsOpen={setIsOpen}
+                            handle={() => dispatch(deletePost(data?.id))}
+                        />
                         <CustomContextMenu
                             rect={rect}
                             isVisible={contextMenuVisible}

@@ -171,7 +171,7 @@ export const deletePostReducer = (state = {}, action) => {
         case POST_DELETE_SUCCESS:
             return {
                 loading: false,
-                success: true,
+                success: action.payload,
             };
         case POST_DELETE_FAIL:
             return { loading: false, error: action.payload };

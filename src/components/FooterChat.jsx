@@ -19,6 +19,7 @@ import { setPostActive, submitPost } from '../redux/actions/PostActions';
 import {
     setObjectActive,
     setObjectAudioCurrent,
+    setObjectVideoCurrent,
 } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
 
@@ -328,21 +329,7 @@ export default function FooterChat({
                         audioCurrent.play();
                     }
                 } else {
-                    if (audioCurrent && !audioCurrent?.paused) {
-                        audioCurrent?.pause();
-                    }
-
-                    const audio = object?.audio;
-
-                    audio.playbackRate = isRunSpeed;
-
-                    dispatch(setObjectAudioCurrent(audio));
-
-                    audio.onended = () => {
-                        handleScroll(object);
-                    };
-
-                    audio?.play();
+                    handleAudioPlayback(object);
                 }
             } else if (object?.video) {
                 if (object?.video === videoCurrent) {
@@ -350,21 +337,7 @@ export default function FooterChat({
                         videoCurrent?.play();
                     }
                 } else {
-                    if (videoCurrent && !videoCurrent.paused) {
-                        videoCurrent.pause();
-                    }
-
-                    const video = object?.video;
-
-                    video.playbackRate = isRunSpeed;
-
-                    dispatch(setObjectAudioCurrent(video));
-
-                    video.onended = () => {
-                        handleScroll(object);
-                    };
-
-                    video?.play();
+                    handleVideoPlayback(object);
                 }
             } else {
                 handleScroll(object);
@@ -402,6 +375,66 @@ export default function FooterChat({
                     block: 'start',
                 });
             }
+        }
+    };
+
+    async function handleAudioPlayback(object) {
+        if (audioCurrent && !audioCurrent.paused) {
+            await new Promise((resolve) => {
+                audioCurrent.onpause = () => {
+                    resolve();
+                };
+                audioCurrent.pause();
+            });
+        }
+
+        const audio = object?.audio;
+
+        if (audio) {
+            audio.playbackRate = isRunSpeed;
+
+            audio.onended = () => {
+                handleScroll(object);
+            };
+
+            try {
+                await audio.play();
+                dispatch(setObjectAudioCurrent(audio));
+            } catch (error) {
+                console.error('Error playing audio:', error);
+            }
+        } else {
+            console.error('Audio object is undefined');
+        }
+    }
+
+    const handleVideoPlayback = async (object) => {
+        if (videoCurrent && !videoCurrent.paused) {
+            await new Promise((resolve) => {
+                videoCurrent.onpause = () => {
+                    resolve();
+                };
+                videoCurrent.pause();
+            });
+        }
+
+        const video = object?.video;
+
+        if (video) {
+            video.playbackRate = isRunSpeed;
+
+            video.onended = () => {
+                handleScroll(object);
+            };
+
+            try {
+                await video.play();
+                dispatch(setObjectVideoCurrent(video));
+            } catch (error) {
+                console.error('Error playing video:', error);
+            }
+        } else {
+            console.error('Video object is undefined');
         }
     };
 

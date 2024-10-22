@@ -593,7 +593,10 @@ export default function Profile() {
                             </div>
                         </div>
 
-                        <div className="sticky top-[90px] left-0 z-30 bg-white dark:bg-darkPrimary px-6 md:px-10 flex pt-4 md:pt-6 gap-4">
+                        <div
+                            ref={divRef}
+                            className="sticky top-[90px] left-0 z-30 bg-white dark:bg-darkPrimary px-6 md:px-10 flex pt-4 md:pt-6 gap-4"
+                        >
                             {ACTIONS.filter((item) =>
                                 stranger_id ? item.id !== 'bookmarks' : true,
                             ).map((item) => (

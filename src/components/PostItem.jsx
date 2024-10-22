@@ -7,8 +7,8 @@ import React, {
     useContext,
 } from 'react';
 import { Avatar } from 'antd';
-import { RiAddLine } from 'react-icons/ri';
-import { FaChartLine } from 'react-icons/fa';
+import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
+import { FaChartLine, FaRegStar } from 'react-icons/fa';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,6 +16,7 @@ import { usePingStates } from '../hooks/usePingStates';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     bookMark,
+    deletePost,
     heart,
     setPostActive,
     unReportPost,
@@ -23,7 +24,7 @@ import {
 import MessageItem from './MessageItem';
 import { addViewPost, follow, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
-import { FaBookmark } from 'react-icons/fa6';
+import { FaBookmark, FaRegBookmark } from 'react-icons/fa6';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
@@ -35,6 +36,7 @@ import HiddenPostComponent from './HiddenPostComponent';
 import { LANGUAGE } from '../constants/language.constant';
 import moment from 'moment/moment';
 import 'moment/locale/vi';
+import ModalDelete from './ModalDelete';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -54,10 +56,14 @@ function PostItem({
     const [shareCount, setShareCount] = useState(item?.number_share ?? 0);
     const [isShare, setIsShare] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { success: unReportPostSuccess } = useSelector(
         (state) => state.unReportPost,
     );
+    // const { success: deletePostSuccess } = useSelector(
+    //     (state) => state.userDeletePost,
+    // );
     const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [targetElement, setTargetElement] = useState(null);
@@ -295,7 +301,7 @@ function PostItem({
         setIsBookMark((prev) => {
             setData((prev) => ({
                 ...prev,
-                bookmark: !prev,
+                bookmark: !isBookMark,
             }));
             return !prev;
         });
@@ -406,6 +412,30 @@ function PostItem({
                                         : 'shadow-md'
                                 }`}
                             >
+                                {userInfo?.id === data?.user_id && (
+                                    <div
+                                        className={`absolute top-[-16px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                                    >
+                                        <FaRegStar className="text-white" />
+                                        {isBookMark ? (
+                                            <FaBookmark
+                                                className="text-purple-700 text-[0.9rem]"
+                                                onClick={handleBookMark}
+                                            />
+                                        ) : (
+                                            <FaRegBookmark
+                                                className="text-white text-[0.9rem]"
+                                                onClick={handleBookMark}
+                                            />
+                                        )}
+                                        <RiDeleteBin6Line
+                                            onClick={() => {
+                                                setIsOpen(true);
+                                            }}
+                                            className="text-white"
+                                        />
+                                    </div>
+                                )}
                                 <div
                                     id={`post-item-${data?.id}`}
                                     onTouchStart={handleTouchStart}
@@ -653,6 +683,13 @@ function PostItem({
                             setData={setData}
                             likeCount={likeCount}
                             shareCount={shareCount}
+                        />
+                        <ModalDelete
+                            title="TITLE_DELETE_POST"
+                            subTitle="SUBTITLE_DELETE_POST"
+                            isOpen={isOpen}
+                            setIsOpen={setIsOpen}
+                            handle={() => dispatch(deletePost(data?.id))}
                         />
                     </>
                 )}

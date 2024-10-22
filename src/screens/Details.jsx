@@ -11,7 +11,7 @@ import moment from 'moment/moment';
 import { Avatar } from 'antd';
 import { FaChevronLeft, FaChartLine } from 'react-icons/fa';
 import { TbUpload } from 'react-icons/tb';
-import { RiAddLine } from 'react-icons/ri';
+import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { debounce } from 'lodash';
@@ -19,6 +19,7 @@ import { debounce } from 'lodash';
 import { AppContext } from '../AppContext';
 import {
     bookMark,
+    deletePost,
     getReplyAll,
     heart,
     setPostActive,
@@ -29,9 +30,9 @@ import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import MessageItem from '../components/MessageItem';
 import icon1 from '../assets/Untitled-2.png';
-import { sharePost } from '../redux/actions/UserActions';
+import { profile, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from '../components/CustomContextMenu';
-import { FaBookmark } from 'react-icons/fa6';
+import { FaBookmark, FaRegBookmark, FaRegStar } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import {
@@ -41,6 +42,7 @@ import {
 import { BsEmojiFrown } from 'react-icons/bs';
 import HiddenPostComponent from '../components/HiddenPostComponent';
 import { LANGUAGE } from '../constants/language.constant';
+import ModalDelete from '../components/ModalDelete';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -100,6 +102,7 @@ export default function Details() {
     const [initialLoad, setInitialLoad] = useState(true);
     const [rect, setRect] = useState(null);
 
+    const [isOpen, setIsOpen] = useState(false);
     const contentsChattingRef = useRef(null);
     const divRef = useRef(null);
     const videoRef = useRef(null);
@@ -289,7 +292,7 @@ export default function Details() {
         setIsBookMark((prev) => {
             setData((prev) => ({
                 ...prev,
-                bookmark: !prev,
+                bookmark: !isBookMark,
             }));
             return !prev;
         });
@@ -302,6 +305,10 @@ export default function Details() {
             report: !prev.report,
         }));
     }, [data]);
+
+    useEffect(() => {
+        if (!userInfo) dispatch(profile());
+    }, [userInfo]);
 
     const closeContextMenu = () => setContextMenuVisible(false);
 
@@ -408,6 +415,30 @@ export default function Details() {
                         isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
                     }`}
                 >
+                    {userInfo?.id === data?.user_id && (
+                        <div
+                            className={`absolute top-[-16px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                        >
+                            <FaRegStar className="text-white" />
+                            {isBookMark ? (
+                                <FaBookmark
+                                    className="text-purple-700 text-[0.9rem]"
+                                    onClick={handleBookMark}
+                                />
+                            ) : (
+                                <FaRegBookmark
+                                    className="text-white text-[0.9rem]"
+                                    onClick={handleBookMark}
+                                />
+                            )}
+                            <RiDeleteBin6Line
+                                onClick={() => {
+                                    setIsOpen(true);
+                                }}
+                                className="text-white"
+                            />
+                        </div>
+                    )}
                     <div
                         id={`post-item-reply-${data?.id}`}
                         onTouchStart={handleTouchStart}
@@ -597,6 +628,13 @@ export default function Details() {
                 likeCount={likeCount}
                 shareCount={shareCount}
                 rect={rect}
+            />
+            <ModalDelete
+                title="TITLE_DELETE_POST"
+                subTitle="SUBTITLE_DELETE_POST"
+                isOpen={isOpen}
+                setIsOpen={setIsOpen}
+                handle={() => dispatch(deletePost(data?.id))}
             />
         </>
     );

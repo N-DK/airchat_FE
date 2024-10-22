@@ -248,7 +248,7 @@ const ChatRoom = () => {
             return (
                 <div className="rounded-lg dark:bg-darkPrimary bg-slatePrimary flex items-center justify-end h-[70px] py-3">
                     <div className="flex items-center px-3">
-                        <div className="mr-2 bg-slatePrimary">
+                        <div className="mr-2 bg-slatePrimary dark:bg-darkPrimary">
                             <p className="dark:text-white text-end text-lg">
                                 {userInfo?.name}
                             </p>

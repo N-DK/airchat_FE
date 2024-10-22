@@ -372,7 +372,7 @@ export const deletePost = (post_id) => async (dispatch, getState) => {
         );
         dispatch({
             type: POST_DELETE_SUCCESS,
-            payload: data.results,
+            payload: data?.results,
         });
     } catch (error) {
         dispatch({

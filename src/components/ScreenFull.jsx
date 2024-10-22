@@ -92,7 +92,7 @@ export default function ScreenFull({ postsList }) {
                                 />
                             </div>
                             <h4 className="col-span-2 text-white line-clamp-4 md:text-4xl">
-                                {item.contents}
+                                {item.content}
                             </h4>
                         </div>
 

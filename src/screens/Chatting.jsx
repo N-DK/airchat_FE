@@ -112,7 +112,7 @@ export default function Chatting() {
     }, [isAddChannel, isRecord, toggleIsAddChannel, toggleIsRecord]);
 
     const handleScroll = useCallback(() => {
-        const contents = contentsChattingRef.current;
+        const contents = contentsChattingRef?.current;
         if (!contents || !hasMore) return;
 
         const { scrollTop, clientHeight, scrollHeight } = contents;
@@ -190,7 +190,7 @@ export default function Chatting() {
     }, [isVisible, contentsChattingRef, redirect]);
 
     useEffect(() => {
-        const contents = contentsChattingRef.current;
+        const contents = contentsChattingRef?.current;
         if (loading || !contents) return;
 
         contents.addEventListener('scroll', handleScroll);
@@ -209,19 +209,19 @@ export default function Chatting() {
     }, [page, pages, redirect, dispatch]);
 
     useEffect(() => {
-        const contents = contentsChattingRef.current;
-        if (contents) contents.scrollTo({ top: 0 });
+        const contents = contentsChattingRef?.current;
+        if (contents) contents?.scrollTo({ top: 0 });
 
         setPage(1);
         setHasMore(true);
 
         if (redirect === 'see-all') {
             navigate('/seeall');
-        } else if (redirect.includes('group-channel')) {
-            const channel_id = redirect.split('/')[1];
+        } else if (redirect?.includes('group-channel')) {
+            const channel_id = redirect?.split('/')[1];
             dispatch(
                 listPost(
-                    redirect.split('/')[0],
+                    redirect?.split('/')[0],
                     INITIAL_LIMIT,
                     INITIAL_OFFSET,
                     channel_id,
@@ -249,7 +249,7 @@ export default function Chatting() {
             try {
                 const filteredPosts = await Promise.all(
                     postListData?.map(async (item) => {
-                        if (!item.audio) return null;
+                        if (!item?.audio) return null;
                         try {
                             const audio = new Audio(
                                 `https://talkie.transtechvietnam.com/${item?.audio}`,
@@ -284,7 +284,11 @@ export default function Chatting() {
     useEffect(() => {
         if (channel || error) {
             if (isAddChannel) toggleIsAddChannel();
-            setNotifyMessage(channel ? 'Channel created' : error);
+            setNotifyMessage(
+                channel
+                    ? LANGUAGE[language]?.CHANNEL_CREATED
+                    : LANGUAGE[language]?.ERROR_CHANNEL,
+            );
             setShowNotify(true);
             setTimeout(() => setShowNotify(false), 500);
             dispatch({ type: CHANNEL_ADD_RESET });

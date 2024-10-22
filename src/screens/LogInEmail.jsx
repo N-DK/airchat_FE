@@ -13,6 +13,7 @@ import { LANGUAGE } from '../constants/language.constant';
 export default function LogInEmail() {
     const [email, setEmail] = useState('');
     const [isContinue, setIsContinue] = useState(false);
+
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const userAccount = useSelector((state) => state.userAccount);
@@ -30,7 +31,7 @@ export default function LogInEmail() {
     };
 
     useEffect(() => {
-        if (account) {
+        if (account && email) {
             if (account.login == 1) {
                 navigate('/login');
                 if (email) {

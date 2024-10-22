@@ -193,6 +193,8 @@ export const LANGUAGE = {
         LANGUAGE: 'Ngôn ngữ',
         DAY: 'Ngày',
         ENTER_A_NAME: 'Nhập tên kênh',
+        CHANNEL_CREATED: 'Kênh đã được tạo',
+        ERROR_CHANNEL: 'Đã có lỗi xảy ra',
     },
     'en-US': {
         AUDIO: 'Audio',
@@ -390,6 +392,8 @@ export const LANGUAGE = {
         UNBLOCKED: 'Unblocked',
         SUCCESS: 'success',
         ENTER_A_NAME: 'Enter a name',
+        CHANNEL_CREATED: 'Channel created',
+        ERROR_CHANNEL: 'Something went wrong',
     },
 };
 

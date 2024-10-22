@@ -24,6 +24,7 @@ const ListPostProfile = ({
             <ListPostItems
                 postsList={list?.filter((item) => item.user_id !== userInfo.id)}
                 isTurnOnCamera={isTurnOnCamera}
+                contentsChattingRef={contentsChattingRef}
             />
         </>
     );

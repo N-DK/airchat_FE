@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { USER_UPDATE_PROFILE_RESET } from '../redux/constants/UserConstants';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function AboutYou() {
     const inputRef = useRef(null);
@@ -21,6 +22,12 @@ export default function AboutYou() {
     const { loading, isSuccess } = userUpdateProfile;
     const [error, setError] = useState(null);
     const { language } = useSelector((state) => state.userLanguage);
+
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
     const navigateSelectAvatarHandle = () => {
         if (isContinue) {
@@ -135,15 +142,26 @@ export default function AboutYou() {
                 </div>
 
                 <div className="flex justify-center mt-3">
-                    <div className="flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
+                    <div className="relative flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
                         <input
-                            className="text-black dark:text-white text-center bg-inherit w-full border-none outline-none text-[17px] font-medium"
+                            className="text-black dark:text-white text-center bg-inherit w-[85%] border-none outline-none text-[17px] font-medium"
                             placeholder={LANGUAGE[language].PASSWORD}
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             onBlur={() => checkInput()}
+                            style={{
+                                WebkitTextSecurity: showPassword
+                                    ? 'none'
+                                    : 'disc',
+                            }}
                         />
+                        <div
+                            className="absolute right-6 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                            onClick={togglePasswordVisibility}
+                        >
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </div>
                     </div>
                 </div>
 
