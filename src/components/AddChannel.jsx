@@ -6,6 +6,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addChannel } from '../redux/actions/ChannelActions';
 import LoadingSpinner from './LoadingSpinner';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function AddChannel() {
     const [file, setFile] = useState(null);
@@ -13,6 +14,7 @@ export default function AddChannel() {
     const { isAddChannel, toggleIsAddChannel } = useContext(AppContext);
     const [isContinue, setIsContinue] = useState(false);
     const { loading: loadingAdd } = useSelector((state) => state.channelAdd);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const modalRef = useRef(null);
     const dispatch = useDispatch();
@@ -94,7 +96,7 @@ export default function AddChannel() {
                         </button>
                         <div>
                             <h4 className="text-black dark:text-white">
-                                New Channel
+                                {LANGUAGE[language].NEW_CHANNEL}
                             </h4>
                         </div>
                         <button onClick={handleCreateChannel}>
@@ -105,26 +107,25 @@ export default function AddChannel() {
                                         : 'text-zinc-500'
                                 }`}
                             >
-                                Create
+                                {LANGUAGE[language].CREATE}
                             </h4>
                         </button>
                     </div>
 
                     <div className="mt-9">
                         <p className="text-center text-lg text-zinc-500 dark:text-gray-400">
-                            Your channel will not be activated until at least 3
-                            separate people pose into it
+                            {LANGUAGE[language].NEW_CHANNEL_DESCRIPTION}
                         </p>
                     </div>
 
                     <div className="mt-10">
                         <h4 className="text-black dark:text-white">
-                            Channel Name
+                            {LANGUAGE[language].CHANNEL_NAME}
                         </h4>
                         <input
                             type="text"
                             className="text-black dark:text-white mt-2 w-full bg-inherit placeholder-zinc-300 dark:placeholder-gray-400 text-3xl font-semibold outline-none"
-                            placeholder="Enter a name"
+                            placeholder={LANGUAGE[language].ENTER_A_NAME}
                             value={channelName}
                             onChange={(e) => setChannelName(e.target.value)}
                         />
@@ -132,7 +133,7 @@ export default function AddChannel() {
 
                     <div className="mt-10">
                         <h4 className="text-black dark:text-white">
-                            Channel Photo
+                            {LANGUAGE[language].CHANNEL_PHOTO}
                         </h4>
                         <label htmlFor="file_input" className="inline-block">
                             {!file ? (

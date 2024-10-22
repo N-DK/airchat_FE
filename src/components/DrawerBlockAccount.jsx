@@ -15,8 +15,21 @@ import {
 import LoadingSpinner from './LoadingSpinner';
 import Message from './Message';
 import '../App.css';
+import { LANGUAGE } from '../constants/language.constant';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
+
+const NotifyText = ({ message, show }) => {
+    return (
+        <div
+            className={`bg-white z-[99999999] absolute left-1/2 transform -translate-x-1/2 w-auto dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+                show ? 'translate-y-0 mt-3' : '-translate-y-full'
+            }`}
+        >
+            <h6 className="text-black dark:text-white">{message}</h6>
+        </div>
+    );
+};
 
 const BlocAccountItem = ({
     user,
@@ -27,6 +40,8 @@ const BlocAccountItem = ({
     handleReport,
 }) => {
     const Dropdown = () => {
+        const { language } = useContext(AppContext);
+
         return (
             <Menu
                 as="div"
@@ -45,7 +60,13 @@ const BlocAccountItem = ({
                             <button
                                 className="flex justify-between items-center w-full px-4 py-2 text-sm dark:text-white"
                                 onClick={() => {
-                                    showMessage('Muted');
+                                    showMessage(
+                                        isMute(
+                                            user?.blocked_id ?? user?.mute_id,
+                                        )
+                                            ? LANGUAGE[language].UNMUTE
+                                            : LANGUAGE[language].MUTE,
+                                    );
                                     handleAction(
                                         mute,
                                         user?.blocked_id ?? user?.mute_id,
@@ -62,8 +83,8 @@ const BlocAccountItem = ({
                             >
                                 <span>
                                     {isMute(user?.blocked_id ?? user?.mute_id)
-                                        ? 'Unmute'
-                                        : 'Mute'}
+                                        ? LANGUAGE[language].UNMUTE
+                                        : LANGUAGE[language].MUTE}
                                 </span>
                                 <FaVolumeMute size={16} />
                             </button>
@@ -71,7 +92,13 @@ const BlocAccountItem = ({
                         <MenuItem>
                             <button
                                 onClick={() => {
-                                    showMessage('Blocked');
+                                    showMessage(
+                                        isBlock(
+                                            user?.blocked_id ?? user?.mute_id,
+                                        )
+                                            ? LANGUAGE[language].UNBLOCKED
+                                            : LANGUAGE[language].BLOCKED,
+                                    );
                                     handleAction(
                                         block,
                                         user?.blocked_id ?? user?.mute_id,
@@ -89,8 +116,8 @@ const BlocAccountItem = ({
                             >
                                 <span>
                                     {isBlock(user?.blocked_id ?? user?.mute_id)
-                                        ? 'Unblock'
-                                        : 'Block'}
+                                        ? LANGUAGE[language].UNBLOCKED
+                                        : LANGUAGE[language].BLOCKED}
                                 </span>
                                 <FaBan size={16} />
                             </button>
@@ -133,18 +160,18 @@ const BlocAccountItem = ({
     );
 };
 const DrawerBlockAccount = ({ type }) => {
-    const [messageApi, contextHolder] = message.useMessage();
     const showMessage = (message) => {
-        messageApi.open({
-            type: 'success',
-            content: message,
-            duration: 1,
-        });
+        setShowNotify(true);
+        setNotifyMessage(message + ' ' + LANGUAGE[language].SUCCESS);
+        setTimeout(() => setShowNotify(false), 1200);
     };
 
     const [userList, setUserList] = useState([]);
 
-    const { showDrawerBlockAccount, toggleShowDrawerBlockAccount } =
+    const [showNotify, setShowNotify] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
+
+    const { showDrawerBlockAccount, toggleShowDrawerBlockAccount, language } =
         useContext(AppContext);
     const dispatch = useDispatch();
     const { block: userListBlock, loading } = useSelector(
@@ -212,7 +239,6 @@ const DrawerBlockAccount = ({ type }) => {
 
     return (
         <>
-            {contextHolder}
             <div
                 className={`absolute left-0 top-0 z-50 w-full h-screen transition-all duration-300 ${
                     showDrawerBlockAccount
@@ -230,8 +256,8 @@ const DrawerBlockAccount = ({ type }) => {
                         </button>
                         <div className="text-black dark:text-white font-semibold">
                             {type === 'block'
-                                ? 'Blocked Accounts'
-                                : 'Muted Accounts'}
+                                ? LANGUAGE[language].BLOCKED_ACCOUNT
+                                : LANGUAGE[language].MUTED_ACCOUNT}
                         </div>
                     </div>
                     {loading ? (
@@ -254,6 +280,7 @@ const DrawerBlockAccount = ({ type }) => {
                     )}
                 </div>
             </div>
+            <NotifyText message={notifyMessage} show={showNotify} />
         </>
     );
 };

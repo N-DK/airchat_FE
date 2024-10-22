@@ -3,6 +3,7 @@ import '../App.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaRegTrashAlt } from 'react-icons/fa';
+import { LANGUAGE } from '../constants/language.constant';
 
 const CustomContextMenuDeletePhoto = ({
     isVisible,
@@ -13,6 +14,7 @@ const CustomContextMenuDeletePhoto = ({
 }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { language } = useSelector((state) => state.userLanguage);
     const [elementPosition, setElementPosition] = useState({
         top: 0,
         left: 0,
@@ -61,7 +63,7 @@ const CustomContextMenuDeletePhoto = ({
                             }
                             className="dark:bg-dark2Primary flex items-center text-red-500 rounded-xl py-2 px-4 mb-3 float-right"
                         >
-                            Delete photo
+                            {LANGUAGE[language]['TITLE_DELETE_PHOTO']}
                             <FaRegTrashAlt className="ml-2" />
                         </button>
                         {React.createElement(tagName.toLowerCase(), {

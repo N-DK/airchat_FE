@@ -1,13 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import '../App.css';
-import {
-    FaBookmark,
-    FaCopy,
-    FaFlag,
-    FaHeart,
-    FaRegBookmark,
-    FaRegHeart,
-} from 'react-icons/fa';
+import { FaBookmark, FaCopy, FaFlag, FaRegBookmark } from 'react-icons/fa';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import {
     PiArrowsClockwiseBold,
@@ -16,8 +9,8 @@ import {
 import { bookMark, heart, reportPost } from '../redux/actions/PostActions';
 import { useDispatch, useSelector } from 'react-redux';
 import { sharePost } from '../redux/actions/UserActions';
-import { message } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { LANGUAGE } from '../constants/language.constant';
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -43,15 +36,7 @@ const CustomContextMenu = ({
     rect,
 }) => {
     const dispatch = useDispatch();
-    // const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
-    // const showMessage = (message) => {
-    //     messageApi.open({
-    //         type: 'success',
-    //         content: message,
-    //         duration: 1,
-    //     });
-    // };
 
     const [interactionState, setInteractionState] = useState({
         isHeart: isHeart,
@@ -62,6 +47,8 @@ const CustomContextMenu = ({
     const [initialLoad, setInitialLoad] = useState(true);
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
+
+    const { language } = useSelector((state) => state.userLanguage);
 
     const [elementPosition, setElementPosition] = useState({
         top: 0,
@@ -113,7 +100,7 @@ const CustomContextMenu = ({
             e.stopPropagation();
             navigator.clipboard.writeText(data?.content);
             setShowNotify(true);
-            setNotifyMessage('Copied to clipboard');
+            setNotifyMessage(LANGUAGE[language].COPY_TEXT_SUCCESS);
             setTimeout(() => setShowNotify(false), 1200);
         },
         [data],
@@ -156,15 +143,6 @@ const CustomContextMenu = ({
         },
         [dispatch, data],
     );
-
-    // useEffect(() => {
-    //     if (reportSuccess) {
-    //         // showMessage('Reported post');
-    //         console.log('Reported post');
-
-    //         onClose();
-    //     }
-    // }, [reportSuccess]);
 
     useEffect(() => {
         if (!interactionState.isHeart) {
@@ -251,10 +229,9 @@ const CustomContextMenu = ({
 
         return (
             <>
-                {/* {contextHolder} */}
                 <div
                     onClick={onClose}
-                    className="fixed top-0 left-0 w-full h-full backdrop-blur-xl bg-black/30 z-[99999999]"
+                    className="fixed top-0 left-0 w-full h-full backdrop-blur-xl bg-black/30 z-[99999999] overflow-auto scrollbar-none"
                 >
                     <div
                         style={{
@@ -264,18 +241,22 @@ const CustomContextMenu = ({
                     >
                         <div className="dark:bg-darkPrimary w-[250px] bg-white rounded-lg p-2 mb-3">
                             {renderButton(
-                                `Copy text`,
+                                LANGUAGE[language].COPY_TEXT,
                                 <FaCopy />,
                                 handleCopy,
                                 'border-b-[1px] border-gray-200 dark:border-dark2Primary',
                             )}
                             {renderButton(
-                                'Share post',
+                                LANGUAGE[language].COPY_LINK,
                                 <HiMiniArrowUpTray />,
                                 handleSharePost,
                                 'border-b-[1px] border-gray-200 dark:border-dark2Primary',
                             )}
-                            {renderButton('Report', <FaFlag />, handleReport)}
+                            {renderButton(
+                                LANGUAGE[language].REPORT,
+                                <FaFlag />,
+                                handleReport,
+                            )}
                         </div>
                         {React.createElement(tagName.toLowerCase(), {
                             className,

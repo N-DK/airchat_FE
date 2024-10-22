@@ -10,7 +10,7 @@ import moment from 'moment';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Avatar } from 'antd';
-import { FaBookmark, FaChartLine } from 'react-icons/fa6';
+import { FaBookmark, FaChartLine, FaRegStar } from 'react-icons/fa6';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     bookMark,
@@ -31,8 +31,10 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import { AppContext } from '../AppContext';
-import { RiAddLine } from 'react-icons/ri';
+import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { IoEyeOffSharp } from 'react-icons/io5';
+import HiddenPostComponent from './HiddenPostComponent';
+import { FaRegBookmark } from 'react-icons/fa';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -94,7 +96,7 @@ function MessageItem({
             {
                 // threshold: 0.3,
                 // rootMargin: '-100px 0px -610px 0px', //rootMargin: '-200px 0px -510px 0px',
-                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                threshold: [0.1], // đa dạng giá trị threshold cho nhiều tình huống
                 rootMargin: `-${Math.max(
                     window.innerHeight * 0.1,
                     100,
@@ -253,45 +255,11 @@ function MessageItem({
         <div ref={messageRef} className="w-full py-6">
             <>
                 {data?.report ? (
-                    <div className="w-full">
-                        <p className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
-                            <IoEyeOffSharp className="mr-2 text-bluePrimary" />
-                            Hidden
-                        </p>
-                        <div className="flex items-center dark:text-white mt-1 pb-2 border-b dark:border-dark2Primary">
-                            <p className="flex-1">
-                                Hiding posts helps TALKIE personalize your Feed.
-                            </p>
-                            <button
-                                onClick={handleUndo}
-                                className="w-20 ml-1 py-2 px-3 rounded-lg bg-gray-300 dark:bg-dark2Primary"
-                            >
-                                Undo
-                            </button>
-                        </div>
-                        <div className="flex items-center mt-2">
-                            <Link
-                                to={
-                                    data?.user_id === userInfo?.id
-                                        ? '/profile'
-                                        : `/profile/${data?.user_id}`
-                                }
-                            >
-                                <Avatar
-                                    src={`${BASE_URL}${data?.avatar}`}
-                                    alt="avatar"
-                                    className="mr-2"
-                                />
-                            </Link>
-                            <p className="dark:text-white">
-                                Snooze{' '}
-                                <span className="font-medium">
-                                    {data?.name}
-                                </span>{' '}
-                                for 30 days
-                            </p>
-                        </div>
-                    </div>
+                    <HiddenPostComponent
+                        data={data}
+                        userInfo={userInfo}
+                        handleUndo={handleUndo}
+                    />
                 ) : (
                     <>
                         <div
@@ -369,6 +337,30 @@ function MessageItem({
                                         : ' shadow-md'
                                 }`}
                             >
+                                {userInfo?.id === data?.user_id && (
+                                    <div
+                                        className={`absolute top-[-16px] ${position}-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                                    >
+                                        <FaRegStar className="text-white" />
+                                        {isBookMark ? (
+                                            <FaBookmark
+                                                className="text-purple-700 text-[0.9rem]"
+                                                onClick={handleBookMark}
+                                            />
+                                        ) : (
+                                            <FaRegBookmark
+                                                className="text-white text-[0.9rem]"
+                                                onClick={handleBookMark}
+                                            />
+                                        )}
+                                        <RiDeleteBin6Line
+                                            // onClick={() => {
+                                            //     setIsOpen(true);
+                                            // }}
+                                            className="text-white"
+                                        />
+                                    </div>
+                                )}
                                 <div
                                     id={`post-item-reply-${data.id}`}
                                     onTouchStart={handleTouchStart}

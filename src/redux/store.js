@@ -36,6 +36,7 @@ import {
     userSettingNotificationReducer,
     userChangePasswordReducer,
     listNotificationReducer,
+    userLanguageReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -72,9 +73,11 @@ import {
     setObjectAudioCurrentReducer,
     setObjectVideoCurrentReducer,
 } from './reducers/SurfReducers';
+import { DEFAULT_LANGUAGE } from '../constants/language.constant';
 
 const reducer = combineReducers({
     userLogin: userLoginReducer,
+    userLanguage: userLanguageReducer,
     userUpdateProfile: userUpdateProfileReducer,
     userUpdateAvatar: userUpdateAvatarReducer,
     userAccount: userCheckAccountReducer,
@@ -144,6 +147,12 @@ const userInfoFromLocalStorage = localStorage.getItem('userInfo')
 const userThemeFromLocalStorage = localStorage.getItem('theme')
     ? JSON.parse(localStorage.getItem('theme'))
     : null;
+const userLanguageFromLocalStorage = localStorage.getItem('language')
+    ? JSON.parse(localStorage.getItem('language'))
+    : (() => {
+          localStorage.setItem('language', JSON.stringify(DEFAULT_LANGUAGE));
+          return DEFAULT_LANGUAGE;
+      })();
 
 const initialState = {
     userLogin: {
@@ -151,6 +160,9 @@ const initialState = {
     },
     userTheme: {
         theme: userThemeFromLocalStorage,
+    },
+    userLanguage: {
+        language: userLanguageFromLocalStorage,
     },
 };
 

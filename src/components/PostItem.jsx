@@ -6,10 +6,9 @@ import React, {
     useCallback,
     useContext,
 } from 'react';
-import moment from 'moment';
 import { Avatar } from 'antd';
 import { RiAddLine } from 'react-icons/ri';
-import { FaHeart, FaRegHeart, FaChartLine } from 'react-icons/fa';
+import { FaChartLine } from 'react-icons/fa';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { Link, useNavigate } from 'react-router-dom';
@@ -18,31 +17,34 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     bookMark,
     heart,
-    reportPost,
     setPostActive,
     unReportPost,
 } from '../redux/actions/PostActions';
 import MessageItem from './MessageItem';
-import {
-    addViewPost,
-    follow,
-    profile,
-    sharePost,
-} from '../redux/actions/UserActions';
+import { addViewPost, follow, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from './CustomContextMenu';
 import { FaBookmark } from 'react-icons/fa6';
 import { setObjectActive } from '../redux/actions/SurfActions';
-import { debounce, set } from 'lodash';
+import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import { AppContext } from '../AppContext';
 import Webcam from 'react-webcam';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
-import { IoEyeOffSharp } from 'react-icons/io5';
+import HiddenPostComponent from './HiddenPostComponent';
+import { LANGUAGE } from '../constants/language.constant';
+import moment from 'moment/moment';
+import 'moment/locale/vi';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
-function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
+function PostItem({
+    item,
+    contentsChattingRef,
+    setList,
+    isTurnOnCamera,
+    bonusHeight = 0,
+}) {
     const navigate = useNavigate();
     const { pingStates } = usePingStates();
     const dispatch = useDispatch();
@@ -75,6 +77,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
 
     const { success: newPost } = useSelector((state) => state.postSubmit);
     const { post } = useSelector((state) => state.setPostActive);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const divRef = useRef(null);
     const videoRef = useRef(null);
@@ -180,7 +183,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                 });
             }
         }
-    }, [newPost]);
+    }, [newPost, setList]);
 
     const postDetailsUrl = useMemo(() => {
         const baseUrl = `/posts/details/${data?.id}`;
@@ -203,7 +206,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
             {
                 // threshold: 0.45,
                 // rootMargin: '-100px 0px -610px 0px',
-                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                threshold: [0.1], // đa dạng giá trị threshold cho nhiều tình huống
                 rootMargin: `-${Math.max(
                     window.innerHeight * 0.1,
                     100,
@@ -249,6 +252,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                     element: document.getElementById(`post-item-${data?.id}`),
                     parent: contentsChattingRef?.current,
                     video: videoRef.current,
+                    bonus: bonusHeight,
                 }),
             );
         } else {
@@ -322,45 +326,11 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
         <div className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
             <>
                 {data?.report ? (
-                    <div className="w-full">
-                        <p className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
-                            <IoEyeOffSharp className="mr-2 text-bluePrimary" />
-                            Hidden
-                        </p>
-                        <div className="flex items-center dark:text-white mt-1 pb-2 border-b dark:border-dark2Primary">
-                            <p className="flex-1">
-                                Hiding posts helps TALKIE personalize your Feed.
-                            </p>
-                            <button
-                                onClick={handleUndo}
-                                className="w-20 ml-1 py-2 px-3 rounded-lg bg-gray-300 dark:bg-dark2Primary"
-                            >
-                                Undo
-                            </button>
-                        </div>
-                        <div className="flex items-center mt-2">
-                            <Link
-                                to={
-                                    data?.user_id === userInfo?.id
-                                        ? '/profile'
-                                        : `/profile/${data?.user_id}`
-                                }
-                            >
-                                <Avatar
-                                    src={`${BASE_URL}${data?.avatar}`}
-                                    alt="avatar"
-                                    className="mr-2"
-                                />
-                            </Link>
-                            <p className="dark:text-white">
-                                Snooze{' '}
-                                <span className="font-medium">
-                                    {data?.name}
-                                </span>{' '}
-                                for 30 days
-                            </p>
-                        </div>
-                    </div>
+                    <HiddenPostComponent
+                        data={data}
+                        userInfo={userInfo}
+                        handleUndo={handleUndo}
+                    />
                 ) : (
                     <>
                         <div
@@ -451,7 +421,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                                         </h5>
                                         {data?.name_channel && (
                                             <span className="text-bluePrimary">
-                                                in
+                                                {LANGUAGE[language].IN}
                                             </span>
                                         )}
                                         <span className="line-clamp-1 text-bluePrimary font-medium">
@@ -460,6 +430,7 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
                                             {moment
                                                 .unix(data?.create_at)
+                                                .locale(language.split('-')[0])
                                                 .fromNow(true)}
                                         </span>
                                     </div>
@@ -561,16 +532,6 @@ function PostItem({ item, contentsChattingRef, setList, isTurnOnCamera }) {
                                 ))}
                             </div>
                             <div className="flex-1 mb-2">
-                                {/* {item?.reply?.map(
-                        (reply, index) =>
-                            index === replyIndexCurrent && (
-                                <MessageItem
-                                    key={index}
-                                    position={'left'}
-                                    message={reply}
-                                />
-                            ),
-                    )} */}
                                 {isTurnOnCamera && post?.id === data.id ? (
                                     <div className="flex items-start justify-end mt-6">
                                         <div

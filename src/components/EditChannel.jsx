@@ -14,6 +14,7 @@ import {
     CHANNEL_ADD_RESET,
     CHANNEL_DELETE_RESET,
 } from '../redux/constants/ChannelConstants';
+import { LANGUAGE } from '../constants/language.constant';
 
 const NotifyPinChannel = ({ message, show }) => (
     <div
@@ -53,6 +54,7 @@ export default function EditChannel({ data }) {
     const { isSuccess, loading: loadingDelete } = useSelector(
         (state) => state.channelDelete,
     );
+    const { language } = useSelector((state) => state.userLanguage);
 
     const convertObjectURL = (selectedFile) => {
         return URL.createObjectURL(selectedFile);
@@ -152,11 +154,11 @@ export default function EditChannel({ data }) {
                             className="text-black dark:text-white "
                             onClick={() => toggleIsEditChannel()}
                         >
-                            Cancel
+                            {LANGUAGE[language].CANCEL}
                         </button>
                         <div>
                             <h4 className="text-black dark:text-white">
-                                Edit Channel
+                                {LANGUAGE[language].EDIT_CHANNEL}
                             </h4>
                         </div>
                         <button onClick={handleCreateChannel}>
@@ -167,7 +169,7 @@ export default function EditChannel({ data }) {
                                         : 'text-zinc-500'
                                 }`}
                             >
-                                Save
+                                {LANGUAGE[language].SAVE}
                             </h4>
                         </button>
                     </div>
@@ -205,18 +207,18 @@ export default function EditChannel({ data }) {
 
                     <div className="mt-5 flex item-center">
                         <h6 className="text-black dark:text-white w-24">
-                            Name
+                            {LANGUAGE[language].NAME}
                         </h6>
                         <input
                             type="text"
                             className="text-black dark:text-white flex-1 bg-inherit placeholder-zinc-300 dark:placeholder-gray-400 font-semibold outline-none"
-                            placeholder="Enter a name"
+                            placeholder={LANGUAGE[language].ENTER_A_NAME}
                             value={channelName}
                             onChange={(e) => setChannelName(e.target.value)}
                         />
                     </div>
                     <div className="h-[1px] my-2 w-full bg-gray-400"></div>
-                    <div className="flex item-center">
+                    {/* <div className="flex item-center">
                         <h6 className="text-black dark:text-white w-24">
                             Summary
                         </h6>
@@ -227,12 +229,12 @@ export default function EditChannel({ data }) {
                             value={summary}
                             onChange={(e) => setSummary(e.target.value)}
                         />
-                    </div>
+                    </div> */}
                     <button
                         onClick={handleDeleteChannel}
                         className="text-red-600 mt-10"
                     >
-                        Delete Channel
+                        {LANGUAGE[language].DELETE_CHANNEL}
                     </button>
                 </div>
                 {(loadingDelete || loadingEdit) && (

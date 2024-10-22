@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaRegUser, FaUser } from 'react-icons/fa6';
 import talkieLogo from '../assets/talkie-logo.png';
 import { Avatar } from 'antd';
-import moment from 'moment';
+import moment from 'moment/moment';
 import { getListNotification } from '../redux/actions/UserActions';
 import LoaderSkeletonNotificationItem from '../components/LoaderSkeletonNotificationItem';
 
@@ -20,6 +20,7 @@ const NotificationItem = ({ item }) => {
             navigate(`/posts/details/${item?.post_id}`);
         }
     };
+    const { language } = useSelector((state) => state.userLanguage);
 
     return (
         <div
@@ -40,7 +41,10 @@ const NotificationItem = ({ item }) => {
                     <p className="dark:text-white">
                         {item?.name} {item?.content}
                         <span className="text-gray-500 ml-2 dark:text-gray-400">
-                            {moment.unix(item?.created_at).fromNow(true)}
+                            {moment
+                                .unix(item?.created_at)
+                                .locale(language.split('-')[0])
+                                .fromNow(true)}
                         </span>
                     </p>
                 </div>
@@ -58,28 +62,39 @@ export default function Notifications() {
     const [listMentions, setListMentions] = useState([]);
     const [listFollowing, setListFollowing] = useState([]);
     const [listAll, setListAll] = useState([]);
-
+    const { language } = useSelector((state) => state.userLanguage);
     const actions = [
         {
             id: 1,
-            name: 'All',
-            contents: 'No Activity',
-            descriptions:
+            'name-en-US': 'All',
+            'name-vi-VN': 'Tất cả',
+            'contents-en-US': 'No Activity',
+            'contents-vi-VN': 'Không hoạt động',
+            'descriptions-en-US':
                 'Join some conversations to start receiving activity.',
+            'descriptions-vi-VN':
+                'Tham gia vào một số cuộc trò chuyện để bắt đầu nhận được hoạt động.',
         },
         {
             id: 2,
-            name: 'Mentions',
-            contents: 'No Mentions',
-            descriptions: 'Mentions and replies will show up here.',
+            'name-en-US': 'Mentions',
+            'name-vi-VN': 'Nhắc đến',
+            'contents-en-US': 'No Mentions',
+            'contents-vi-VN': 'Không nhắc đến',
+            'descriptions-en-US': 'Mentions and replies will show up here.',
+            'descriptions-vi-VN': 'Nhắc đến và trả lời sẽ hiển thị ở đây.',
             key: 'mentions',
         },
         {
             id: 3,
-            name: 'Following',
-            contents: 'No Activity',
-            descriptions:
+            'name-en-US': 'Following',
+            'name-vi-VN': 'Theo dõi',
+            'contents-en-US': 'No Activity',
+            'contents-vi-VN': 'Không hoạt động',
+            'descriptions-en-US':
                 'Activity from users that you follow will show up here.',
+            'descriptions-vi-VN':
+                'Hoạt động từ người dùng mà bạn theo dõi sẽ hiển thị ở đây.',
             key: 'follow',
         },
     ];
@@ -140,7 +155,7 @@ export default function Notifications() {
                                         : 'text-gray-400'
                                 }`}
                             >
-                                {item.name}
+                                {item['name-' + language]}
                             </span>
                         </button>
                     ))}
@@ -158,14 +173,17 @@ export default function Notifications() {
                                         <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
                                             <h5>
                                                 {
-                                                    actions[showActions - 1]
-                                                        .contents
+                                                    actions[showActions - 1][
+                                                        'contents-' + language
+                                                    ]
                                                 }
                                             </h5>
                                             <span className="text-[15px] text-center">
                                                 {
-                                                    actions[showActions - 1]
-                                                        .descriptions
+                                                    actions[showActions - 1][
+                                                        'descriptions-' +
+                                                            language
+                                                    ]
                                                 }
                                             </span>
                                         </div>
@@ -185,14 +203,17 @@ export default function Notifications() {
                                         <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
                                             <h5>
                                                 {
-                                                    actions[showActions - 1]
-                                                        .contents
+                                                    actions[showActions - 1][
+                                                        'contents-' + language
+                                                    ]
                                                 }
                                             </h5>
                                             <span className="text-[15px] text-center">
                                                 {
-                                                    actions[showActions - 1]
-                                                        .descriptions
+                                                    actions[showActions - 1][
+                                                        'descriptions-' +
+                                                            language
+                                                    ]
                                                 }
                                             </span>
                                         </div>
@@ -212,14 +233,17 @@ export default function Notifications() {
                                         <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
                                             <h5>
                                                 {
-                                                    actions[showActions - 1]
-                                                        .contents
+                                                    actions[showActions - 1][
+                                                        'contents-' + language
+                                                    ]
                                                 }
                                             </h5>
                                             <span className="text-[15px] text-center">
                                                 {
-                                                    actions[showActions - 1]
-                                                        .descriptions
+                                                    actions[showActions - 1][
+                                                        'descriptions-' +
+                                                            language
+                                                    ]
                                                 }
                                             </span>
                                         </div>

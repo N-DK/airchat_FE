@@ -9,36 +9,45 @@ import {
 } from '../redux/actions/UserActions';
 import '../App.css';
 import { HiOutlineChevronUpDown } from 'react-icons/hi2';
+import { LANGUAGE } from '../constants/language.constant';
 
 const settings = [
     {
-        name: 'Replies',
+        'name-en-US': 'Replies',
+        'name-vi-VN': 'Trả lời',
         key: 'replies',
     },
     {
-        name: 'Mentions',
+        'name-en-US': 'Mentions',
+        'name-vi-VN': 'Nhắc đến',
         key: 'mentions',
     },
     {
-        name: 'Likes',
+        'name-en-US': 'Likes',
+        'name-vi-VN': 'Thích',
         key: 'likes',
     },
     {
-        name: 'Reposts',
+        'name-en-US': 'Reposts',
+        'name-vi-VN': 'Chia sẻ',
         key: 'reposts',
         isBorder: false,
     },
 ];
 
-const settingsNotification = ['None', 'Following', 'All'];
+const settingsNotification = {
+    'en-US': ['None', 'Following', 'All'],
+    'vi-VN': ['Không', 'Theo dõi', 'Tất cả'],
+};
 
 const ItemNotification = ({ item, handle, indexActive }) => {
+    const { language } = useSelector((state) => state.userLanguage);
     const [activeText, setActiveText] = useState(
-        settingsNotification[indexActive],
+        settingsNotification[language][indexActive],
     );
     const dispatch = useDispatch();
     useEffect(() => {
-        setActiveText(settingsNotification[indexActive]);
+        setActiveText(settingsNotification[language][indexActive]);
     }, [indexActive]);
 
     return (
@@ -49,7 +58,7 @@ const ItemNotification = ({ item, handle, indexActive }) => {
                     : ''
             } dark:text-white`}
         >
-            <p>{item.name}</p>
+            <p>{item['name-' + language]}</p>
             <Menu
                 as="div"
                 className="relative inline-block text-left z-[999px]"
@@ -64,7 +73,7 @@ const ItemNotification = ({ item, handle, indexActive }) => {
                     className="z-[999] absolute right-0 mt-2 w-40 origin-top-right bg-white border border-gray-300 divide-y divide-gray-200 rounded-md shadow-lg outline-none dark:bg-dark2Primary dark:border-none"
                 >
                     <div className="py-1">
-                        {settingsNotification.map((not, index) => (
+                        {settingsNotification[language].map((not, index) => (
                             <MenuItem key={index}>
                                 <p
                                     onClick={() => {
@@ -74,7 +83,9 @@ const ItemNotification = ({ item, handle, indexActive }) => {
                                             }),
                                         );
                                         setActiveText(
-                                            settingsNotification[index],
+                                            settingsNotification[language][
+                                                index
+                                            ],
                                         );
                                     }}
                                     className="p-2 px-4"
@@ -95,6 +106,7 @@ const DrawerNotification = () => {
         useContext(AppContext);
     const dispatch = useDispatch();
     const { notification } = useSelector((state) => state.userGetNotification);
+    const { language } = useSelector((state) => state.userLanguage);
 
     useEffect(() => {
         dispatch(getNotification());
@@ -118,13 +130,13 @@ const DrawerNotification = () => {
                             <FaAngleLeft className="text-lg md:text-[22px]" />
                         </button>
                         <div className="text-black dark:text-white font-semibold">
-                            Notification Settings
+                            {LANGUAGE[language].NOTIFICATION_SETTING}
                         </div>
                     </div>
                     <div className="mx-5 rounded-2xl mt-6 dark:bg-darkPrimary">
                         {settings?.map((setting) => (
                             <ItemNotification
-                                key={setting.name}
+                                key={setting['name-en-US']}
                                 item={setting}
                                 indexActive={notification?.[setting.key]}
                             />

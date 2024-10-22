@@ -34,35 +34,46 @@ import {
     deletePhoto,
     deletePost,
     listPostProfile,
+    setPostActive,
 } from '../redux/actions/PostActions';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import ListPostItems from '../components/ListPostItems';
 import { IoIosSettings } from 'react-icons/io';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import ModalDelete from '../components/ModalDelete';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import DrawerFollower from '../components/DrawerFollower';
 import Webcam from 'react-webcam';
 import { BsEmojiFrown } from 'react-icons/bs';
-
+import { LANGUAGE } from '../constants/language.constant';
+import { debounce } from 'lodash';
+import { setObjectActive } from '../redux/actions/SurfActions';
 const ACTIONS = [
     {
         id: 'posts',
-        name: 'Posts',
-        contents: 'No messages yet',
-        descriptions: 'Your messages will show up here.',
+        'name-en-US': 'Posts',
+        'name-vi-VN': 'Bài viết',
+        'contents-en-US': 'No messages yet',
+        'contents-vi-VN': 'Không có tin nhắn nào',
+        'descriptions-en-US': 'Your messages will show up here.',
+        'descriptions-vi-VN': 'Tin nhắn của bạn sẽ hiển thị ở đây.',
     },
     {
         id: 'highlights',
-        name: 'Highlights',
-        contents: 'No highlights',
-        descriptions: 'Starred items appear here',
+        'name-en-US': 'Highlights',
+        'name-vi-VN': 'Nhấn lên',
+        'contents-en-US': 'No highlights',
+        'contents-vi-VN': 'Không có nhấn lên nào',
+        'descriptions-en-US': 'Starred items appear here',
+        'descriptions-vi-VN': 'Các mục được đánh dấu sẽ hiển thị ở đây',
     },
     {
         id: 'bookmarks',
-        name: 'Bookmarks',
-        contents: 'No bookmarks',
-        descriptions: 'Bookmarks threads to save them for later.',
+        'name-en-US': 'Bookmarks',
+        'name-vi-VN': 'Đánh dấu',
+        'contents-en-US': 'No bookmarks',
+        'contents-vi-VN': 'Không có đánh dấu nào',
+        'descriptions-en-US': 'Bookmarks threads to save them for later.',
+        'descriptions-vi-VN': 'Đánh dấu các chủ đề để lưu chúng cho sau.',
     },
 ];
 
@@ -73,7 +84,7 @@ export default function Profile() {
     const [typeDrawer, setTypeDrawer] = useState(null);
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
-
+    const refProfile = useRef(null);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { stranger_id } = useParams();
@@ -117,7 +128,8 @@ export default function Profile() {
     const { isSuccess } = userUpdateProfile;
     const { isSuccess: isSuccessFollow } = userFollow;
     const { following: userInfoListFollowing } = userListFollow;
-    const { posts: listPostStranger } = postListProfileStranger;
+    const { posts: listPostStranger, loading: loadingListPostStranger } =
+        postListProfileStranger;
     const { block: blocks } = userListBlock;
     const { mute: mutes } = userListMute;
     const { isSuccess: isSuccessBlock } = userBlock;
@@ -125,6 +137,9 @@ export default function Profile() {
     const { success: isSuccessBookmark } = userBookMark;
     const { isSuccess: isSuccessShare } = userSharePost;
     const { post } = useSelector((state) => state.setPostActive);
+    const { language } = useSelector((state) => state.userLanguage);
+    const divRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     const modalHandle = () => {
         if (isEditProfile) toggleIsEditProfile();
@@ -200,6 +215,54 @@ export default function Profile() {
     useEffect(() => {
         if (showDrawerFollow) toggleShowDrawerFollow();
     }, [window.location.pathname]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                // threshold: 0.45,
+                // rootMargin: '-100px 0px -610px 0px',
+                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.2,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.55, 400)}px 0px`,
+            },
+        );
+
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
+
+        return () => {
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
+        };
+    }, [userInfo]);
+
+    useEffect(() => {
+        if (isVisible) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            dispatch(setPostActive(null));
+            dispatch(
+                setObjectActive({
+                    post: null,
+                    audio: null,
+                    element: divRef.current,
+                    parent: refProfile?.current,
+                    video: null,
+                    bonus: -150,
+                }),
+            );
+        }
+    }, [isVisible, refProfile]);
 
     useEffect(() => {
         if (stranger_id) dispatch(getProfileStranger(stranger_id));
@@ -286,14 +349,14 @@ export default function Profile() {
 
     const renderActionButtons = () => (
         <div className="flex gap-3 text-black dark:text-white">
-            {!stranger_id && (
+            {/* {!stranger_id && (
                 <button
                     onClick={toggleShowInviteFriend}
                     className="h-[34px] md:h-[40px] w-[34px] md:w-[40px] border-[1px] border-gray-400 rounded-full flex justify-center items-center"
                 >
                     <IoGiftOutline className="opacity-30 text-xl md:text-2xl" />
                 </button>
-            )}
+            )} */}
             <button className="h-[34px] md:h-[40px] w-[34px] md:w-[40px] border-[1px] border-gray-400 rounded-full flex justify-center items-center">
                 <FiUpload className="opacity-30 text-xl md:text-2xl" />
             </button>
@@ -310,17 +373,17 @@ export default function Profile() {
             >
                 <span className="font-medium md:text-xl">
                     {stranger_id
-                        ? (isBlock() && 'Blocked') ||
-                          (isFollowing() && 'Following') ||
-                          'Follow'
-                        : 'Edit Profile'}
+                        ? (isBlock() && LANGUAGE[language].BLOCKED) ||
+                          (isFollowing() && LANGUAGE[language].FOLLOWING) ||
+                          LANGUAGE[language].FOLLOW
+                        : LANGUAGE[language].EDIT_PROFILE}
                 </span>
             </button>
         </div>
     );
 
     const renderContent = () => {
-        if (loadingListProfile) {
+        if (loadingListProfile || loadingListPostStranger) {
             return (
                 <div className="mt-4">
                     <LoadingSpinner />
@@ -333,11 +396,14 @@ export default function Profile() {
                 <ListPostItems
                     postsList={listPostStranger}
                     isTurnOnCamera={isTurnOnCameraReply}
+                    contentsChattingRef={refProfile}
+                    bonusHeight={-70}
                 />
             ) : (
                 <ListPostProfile
                     list={listPostUserProfile}
                     userInfo={userInfo}
+                    contentsChattingRef={refProfile}
                     isTurnOnCamera={isTurnOnCameraReply}
                 />
             );
@@ -350,9 +416,11 @@ export default function Profile() {
                         key={item.id}
                         className="flex flex-col items-center pt-4 px-2"
                     >
-                        <h5 className="text-gray-500">{item.contents} </h5>
+                        <h5 className="text-gray-500">
+                            {item['contents-' + language]}
+                        </h5>
                         <span className="text-[15px] text-gray-500 text-center">
-                            {item.descriptions}
+                            {item['descriptions-' + language]}
                         </span>
                     </div>
                 ),
@@ -386,7 +454,9 @@ export default function Profile() {
                                         active ? '' : ''
                                     }  flex justify-between w-full px-4 py-2 text-sm dark:text-white`}
                                 >
-                                    {isBlock() ? 'Unblock' : 'Block'}
+                                    {isBlock()
+                                        ? LANGUAGE[language].UNBLOCK
+                                        : LANGUAGE[language].BLOCK}
                                 </button>
                             )}
                         </MenuItem>
@@ -403,7 +473,9 @@ export default function Profile() {
                                         active ? '' : ''
                                     }  flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-white`}
                                 >
-                                    {isMute() ? 'Unmute' : 'Mute'}
+                                    {isMute()
+                                        ? LANGUAGE[language].UNMUTE
+                                        : LANGUAGE[language].MUTE}
                                 </button>
                             )}
                         </MenuItem>
@@ -428,7 +500,7 @@ export default function Profile() {
                             className="text-gray-500 dark:text-gray-400 mb-3"
                         />
                         <p className="text-center dark:text-gray-400 text-xl">
-                            The user is not exist
+                            {LANGUAGE[language].NOT_FOUND_USER}
                         </p>
                     </div>
                 </div>
@@ -440,7 +512,10 @@ export default function Profile() {
     return userInfo ? (
         <>
             <div className="relative flex flex-col justify-between h-screen overflow-hidden bg-slatePrimary dark:bg-darkPrimary">
-                <div className="overflow-auto scrollbar-none pb-[410px]">
+                <div
+                    ref={refProfile}
+                    className="overflow-auto scrollbar-none pb-[410px]"
+                >
                     <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
                         <button onClick={() => navigate(-1)}>
                             <FaAngleLeft className="text-lg md:text-[22px]" />
@@ -498,7 +573,7 @@ export default function Profile() {
                                         {userInfo?.number_following}
                                     </h6>
                                     <span className="text-[15px] md:text-lg text-gray-500 dark:text-gray-400">
-                                        Following
+                                        {LANGUAGE[language].FOLLOWING}
                                     </span>
                                 </div>
                                 <div
@@ -512,7 +587,7 @@ export default function Profile() {
                                         {userInfo?.number_follow}
                                     </h6>
                                     <span className="text-[15px] md:text-lg text-gray-500 dark:text-gray-400">
-                                        Follower
+                                        {LANGUAGE[language].FOLLOWER}
                                     </span>
                                 </div>
                             </div>
@@ -538,7 +613,7 @@ export default function Profile() {
                                                 : 'text-gray-400'
                                         }`}
                                     >
-                                        {item.name}
+                                        {item['name-' + language]}
                                     </span>
                                 </button>
                             ))}
@@ -546,8 +621,9 @@ export default function Profile() {
 
                         {showActions === 'posts' && !stranger_id && (
                             <div
+                                ref={divRef}
                                 onClick={toggleIsRecord}
-                                className="bg-slatePrimary dark:bg-darkPrimary flex items-center py-4 md:py-5 px-3 md:px-6 gap-3 md:gap-6 border-b-[6px] border-gray-200 dark:border-dark2Primary"
+                                className={`bg-slatePrimary dark:bg-darkPrimary flex items-center py-4 md:py-5 px-3 md:px-6 gap-3 md:gap-6 border-b-[6px] border-gray-200 dark:border-dark2Primary`}
                             >
                                 <figure>
                                     <div
@@ -587,7 +663,10 @@ export default function Profile() {
                                         {userInfo?.name}
                                     </h5>
                                     <button className="text-gray-400">
-                                        New post to followers...
+                                        {
+                                            LANGUAGE[language]
+                                                .NEW_POST_TO_FOLLOWERS
+                                        }
                                     </button>
                                 </div>
                             </div>

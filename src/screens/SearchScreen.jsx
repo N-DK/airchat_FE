@@ -16,6 +16,7 @@ import {
     search,
 } from '../redux/actions/UserActions';
 import PeopleCircle from '../components/PeopleCricle';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function SearchScreen() {
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function SearchScreen() {
     const [recentSearch, setRecentSearch] = useState([]);
     const debouncedSearch = useDebounce(searchText, 500);
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
-
+    const { language } = useSelector((state) => state.userLanguage);
     const { loading, channels } = useSelector((state) => state.channelList);
     const { search: searchResult } = useSelector((state) => state.userSearch);
     const { post } = useSelector((state) => state.setPostActive);
@@ -76,7 +77,7 @@ export default function SearchScreen() {
             return (
                 <div
                     onClick={() => {
-                        navigate(`/channel/${item?.id}`, {
+                        navigate(`/channel/${item?.id || item?.channel_id}`, {
                             state: {
                                 channelData: {
                                     name: item?.name_channel,
@@ -134,7 +135,7 @@ export default function SearchScreen() {
                     <IoSearch size="1.5rem" className="text-gray-500 m-0 p-0" />
                     <input
                         className="bg-inherit w-3/5 border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
-                        placeholder="Search"
+                        placeholder={LANGUAGE[language].SEARCH}
                         type="text"
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
@@ -150,13 +151,13 @@ export default function SearchScreen() {
                         <div className="mt-2">
                             <div className="flex items-center justify-between mb-4">
                                 <h5 className="font-bold text-black dark:text-white">
-                                    Recent searches
+                                    {LANGUAGE[language].RECENT_SEARCHES}
                                 </h5>
                                 <button
                                     onClick={handleClearRecentSearch}
                                     className="dark:text-white text-sm bg-black/20 rounded-full px-3 py-1"
                                 >
-                                    Clear
+                                    {LANGUAGE[language].CLEAR}
                                 </button>
                             </div>
                             <div className="flex overflow-x-auto scrollbar-none">
@@ -166,7 +167,7 @@ export default function SearchScreen() {
                     )}
                     <div className="mt-8">
                         <h5 className="font-bold text-black dark:text-white">
-                            Top Channels
+                            {LANGUAGE[language].TOP_CHANNELS}
                         </h5>
                         {loading ? (
                             <LoaderSkeletonChannels />

@@ -2,11 +2,13 @@ import { Avatar } from 'antd';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addRecentSearch } from '../redux/actions/UserActions';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { LANGUAGE } from '../constants/language.constant';
 
 export const ChannelItem = ({ data }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { language } = useSelector((state) => state.userLanguage);
 
     const handleJoinChannel = () => {
         // navigate(`/channel/${data?.id}`);
@@ -44,7 +46,9 @@ export const ChannelItem = ({ data }) => {
                         {/* <p className="text-gray-500">3 members</p> */}
                     </div>
                 </div>
-                <button className="text-base dark:text-white">Join</button>
+                <button className="text-base dark:text-white">
+                    {LANGUAGE[language].JOIN}
+                </button>
             </div>
         </div>
     );

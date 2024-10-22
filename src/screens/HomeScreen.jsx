@@ -1,19 +1,49 @@
 import { useEffect } from 'react';
 import talkieLogo from '../assets/talkie-logo.png';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import React from 'react';
+import { LANGUAGE } from '../constants/language.constant';
+import { checkUserAccount, profile } from '../redux/actions/UserActions';
 
 export default function HomeScreen() {
     const navigate = useNavigate();
     const userLogin = useSelector((state) => state.userLogin);
+    const { language } = useSelector((state) => state.userLanguage);
     const { userInfo } = userLogin;
+    const dispatch = useDispatch();
+
+    const { userInfo: userInfoProfile } = useSelector(
+        (state) => state.userProfile,
+    );
+    const userAccount = useSelector((state) => state.userAccount);
+    const {
+        account,
+        loading: loadingAccount,
+        error: errorAccount,
+    } = userAccount;
 
     useEffect(() => {
         if (userInfo?.token) {
-            navigate('/chatting');
+            dispatch(profile());
         }
-    }, [userInfo]);
+    }, [userInfo?.token]);
+
+    useEffect(() => {
+        if (account && userInfoProfile) {
+            if (account.login == 1 && userInfo?.token) {
+                navigate('/chatting');
+            } else if (account.login == 2) {
+                navigate('/aboutyou');
+            }
+        }
+    }, [account, userInfoProfile, userInfo]);
+
+    useEffect(() => {
+        if (userInfoProfile) {
+            dispatch(checkUserAccount(userInfoProfile?.email));
+        }
+    }, [userInfoProfile]);
 
     return (
         <>
@@ -34,24 +64,28 @@ export default function HomeScreen() {
                             onClick={() => navigate('/login/phonenumber')}
                             className="text-xl md:text-2xl bg-black dark:bg-white text-white dark:text-black w-full md:w-2/3 rounded-full px-8 py-4 md:py-6 shadow-2xl"
                         >
-                            Continue with Phone
+                            {LANGUAGE[language].CONTINUE_WITH_PHONE}
                         </button>
                         <button
                             onClick={() => navigate('/login/email')}
                             className="text-xl md:text-2xl text-black dark:text-gray-300 bg-white dark:bg-dark2Primary w-full md:w-2/3 rounded-full px-8 py-4 md:py-6 shadow-2xl"
                         >
-                            Continue with Email
+                            {LANGUAGE[language].CONTINUE_WITH_EMAIL}
                         </button>
                     </div>
                     <div className="text-black dark:text-gray-300 my-7 px-6 md:px-10 flex flex-col flex-wrap justify-center md:flex-row gap-x-2 items-center">
                         <span className="text-sm md:text-lg">
-                            By pressing on “Continue with...” you agree to our
+                            {LANGUAGE[language].BY_PRESSING_ON_CONTINUE_WITH}
                         </span>
                         <div className="text-sm md:text-lg">
-                            <span className="underline">Privacy Policy</span>
-                            <span className="mx-2">and</span>
                             <span className="underline">
-                                Terms and Conditions
+                                {LANGUAGE[language].PRIVACY_POLICY}
+                            </span>
+                            <span className="mx-2">
+                                {LANGUAGE[language].AND}
+                            </span>
+                            <span className="underline">
+                                {LANGUAGE[language].TERMS_AND_CONDITIONS}
                             </span>
                         </div>
                     </div>

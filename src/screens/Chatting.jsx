@@ -21,7 +21,7 @@ import { AppContext } from '../AppContext';
 import { usePingStates } from '../hooks/usePingStates';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
-import { barMenu, listPost } from '../redux/actions/PostActions';
+import { barMenu, listPost, setPostActive } from '../redux/actions/PostActions';
 import { profile } from '../redux/actions/UserActions';
 import { USER_PROFILE_SUCCESS } from '../redux/constants/UserConstants';
 import {
@@ -30,6 +30,9 @@ import {
 } from '../redux/actions/MessageAction';
 import { CHANNEL_ADD_RESET } from '../redux/constants/ChannelConstants';
 import Webcam from 'react-webcam';
+import { debounce } from 'lodash';
+import { setObjectActive } from '../redux/actions/SurfActions';
+import { LANGUAGE } from '../constants/language.constant';
 
 const INITIAL_LIMIT = 25;
 const INITIAL_OFFSET = 0;
@@ -61,6 +64,8 @@ export default function Chatting() {
     const dispatch = useDispatch();
     const { search } = useLocation();
     const redirect = search.split('=')[1] || 'for-you';
+    const divRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     const { post } = useSelector((state) => state.setPostActive);
     const { userInfo } = useSelector((state) => state.userProfile);
@@ -84,6 +89,7 @@ export default function Chatting() {
         isRunSpeed,
         isFullScreen,
         newMessageFromFooter,
+        language,
     } = useContext(AppContext);
 
     const { pingStates, setPingStates, checkPingStates, currentItemIndex } =
@@ -134,6 +140,54 @@ export default function Chatting() {
         },
         [redirect],
     );
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                // threshold: 0.45,
+                // rootMargin: '-100px 0px -610px 0px',
+                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.1,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
+            },
+        );
+
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
+
+        return () => {
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isVisible) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            dispatch(setPostActive(null));
+            dispatch(
+                setObjectActive({
+                    post: null,
+                    audio: null,
+                    element: divRef.current,
+                    parent: contentsChattingRef?.current,
+                    video: null,
+                    bonus: -70,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef, redirect]);
 
     useEffect(() => {
         const contents = contentsChattingRef.current;
@@ -251,12 +305,17 @@ export default function Chatting() {
                 ref={contentsChattingRef}
                 className="absolute top-0 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
             >
-                <div className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 pt-[164px] md:pt-[170px] px-3 md:px-6 gap-3 md:gap-6">
+                <div
+                    ref={divRef}
+                    className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 pt-[164px] md:pt-[170px] px-3 md:px-6 gap-3 md:gap-6"
+                >
                     <figure>
                         <div
                             className={`h-10 md:h-12 w-10 md:w-12 ${
                                 isTurnOnCamera ? 'scale-[1.5]' : 'scale-[1]'
-                            } rounded-full overflow-hidden transition-all  duration-300`}
+                            } rounded-full overflow-hidden transition-all  duration-300 ${
+                                isVisible ? 'bg-red-500' : ''
+                            }`}
                         >
                             {isTurnOnCamera ? (
                                 <Webcam
@@ -291,7 +350,8 @@ export default function Chatting() {
                             {userInfo?.name}
                         </h5>
                         <button className="text-gray-400">
-                            {newMessageFromFooter || "What's on your mind?"}
+                            {newMessageFromFooter ||
+                                LANGUAGE[language].WHAT_ON_YOUR_MIND}
                         </button>
                     </div>
                 </div>

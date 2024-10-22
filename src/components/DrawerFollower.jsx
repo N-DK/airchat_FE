@@ -18,70 +18,19 @@ import {
 } from '../redux/actions/UserActions';
 import LoadingSpinner from './LoadingSpinner';
 import { ItemFollow } from './ItemFollow';
+import { LANGUAGE } from '../constants/language.constant';
 
-// const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
-//     const [localIsFollowing, setLocalIsFollowing] = useState(isFollowing);
-//     const [isLoading, setIsLoading] = useState(false);
-
-//     const handleClick = useCallback(async () => {
-//         setIsLoading(true);
-//         try {
-//             await handleFollow(
-//                 follow,
-//                 data?.stranger_id ?? data?.following_stranger_id,
-//             );
-//             setLocalIsFollowing((prev) => !prev);
-//         } catch (error) {
-//             console.error('Failed to follow/unfollow:', error);
-//         } finally {
-//             setIsLoading(false);
-//         }
-//     }, [handleFollow, data]);
-
-//     return (
-//         <div className="flex items-center justify-between mb-10">
-//             <div className="flex-1 w-10 h-10 rounded-full flex items-center">
-//                 <Avatar
-//                     size={44}
-//                     src={
-//                         data?.image === '0'
-//                             ? 'https://picsum.photos/200/300'
-//                             : data.image
-//                     }
-//                     alt=""
-//                 />
-//                 <div className="ml-3">
-//                     <h5>{data?.name}</h5>
-//                     <span>{data?.user_name}</span>
-//                 </div>
-//             </div>
-//             <button
-//                 onClick={handleClick}
-//                 disabled={isLoading}
-//                 className={`rounded-full px-8 py-1 ${
-//                     localIsFollowing
-//                         ? 'bg-bluePrimary text-white'
-//                         : 'bg-gray-300'
-//                 } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-//             >
-//                 {isLoading ? (
-//                     <LoadingSpinner />
-//                 ) : localIsFollowing ? (
-//                     'Following'
-//                 ) : (
-//                     'Follow'
-//                 )}
-//             </button>
-//         </div>
-//     );
-// });
-
-const EmptyFollow = React.memo(() => (
-    <div className="flex flex-col items-center justify-center h-full fixed z-50 w-full left-0">
-        <img src="./src/assets/Untitled-2.png" alt="" />
-        <h5 className="mt-3 dark:text-white">Nothing to show here</h5>
-    </div>
-));
+const EmptyFollow = React.memo(() => {
+    const { language } = useSelector((state) => state.userLanguage);
+    return (
+        <div className="flex flex-col items-center justify-center h-full fixed z-50 w-full left-0 pb-[200px]">
+            <img src="./src/assets/Untitled-2.png" alt="" />
+            <h5 className="mt-3 dark:text-white">
+                {LANGUAGE[language].EMPTY_FOLLOW}
+            </h5>
+        </div>
+    );
+});
 
 function DrawerFollower({
     userInfo,
@@ -92,7 +41,7 @@ function DrawerFollower({
 }) {
     const { showDrawerFollow, toggleShowDrawerFollow } = useContext(AppContext);
     const dispatch = useDispatch();
-
+    const { language } = useSelector((state) => state.userLanguage);
     const [listFollow, setListFollow] = useState([]);
 
     const { follower, following } = useSelector(
@@ -178,7 +127,8 @@ function DrawerFollower({
                         <FaAngleLeft className="text-lg md:text-[22px]" />
                     </button>
                     <div className="text-black dark:text-white font-semibold">
-                        {userInfo?.username}'s {typeDrawer}
+                        {userInfo?.username}'s{' '}
+                        {LANGUAGE[language][typeDrawer?.toUpperCase()]}
                     </div>
                 </div>
                 {memoizedListFollow}

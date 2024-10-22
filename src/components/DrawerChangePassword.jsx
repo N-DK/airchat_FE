@@ -4,6 +4,7 @@ import { AppContext } from '../AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import '../App.css';
 import { changePassword } from '../redux/actions/UserActions';
+import { LANGUAGE } from '../constants/language.constant';
 
 const Notify = ({ message, show }) => (
     <div
@@ -56,6 +57,7 @@ const DrawerChangePassword = () => {
     const { isSuccess, error: errorChangePassword } = useSelector(
         (state) => state.userChangePassword,
     );
+    const { language } = useSelector((state) => state.userLanguage);
 
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -128,22 +130,22 @@ const DrawerChangePassword = () => {
                                 <FaAngleLeft className="text-lg md:text-[22px]" />
                             </button>
                             <div className="text-black dark:text-white font-semibold">
-                                Change Password
+                                {LANGUAGE[language].CHANGE_PASSWORD}
                             </div>
                         </div>
                         <div className="mx-5 mt-6">
                             <InputPassword
-                                label={'Old password'}
+                                label={LANGUAGE[language].OLD_PASSWORD}
                                 value={oldPassword}
                                 setValue={setOldPassword}
                             />
                             <InputPassword
-                                label={'New password'}
+                                label={LANGUAGE[language].NEW_PASSWORD}
                                 value={newPassword}
                                 setValue={setNewPassword}
                             />
                             <InputPassword
-                                label={'Confirm password'}
+                                label={LANGUAGE[language].CONFIRM_PASSWORD}
                                 value={confirmPassword}
                                 setValue={setConfirmPassword}
                             />
@@ -154,13 +156,13 @@ const DrawerChangePassword = () => {
                         <button
                             disabled={!isContinue}
                             onClick={handleChangePassword}
-                            className={`absolute bottom-10 w-[90%] left-1/2 -translate-x-1/2 h-12 bg-blue-500 text-white rounded-lg ${
+                            className={`absolute  bottom-10 w-[90%] left-1/2 -translate-x-1/2 h-12 bg-blue-500 rounded-lg ${
                                 isContinue
-                                    ? ''
+                                    ? 'dark:text-white'
                                     : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-gray-500'
                             }`}
                         >
-                            Change password
+                            {LANGUAGE[language].CHANGE_PASSWORD}
                         </button>
                     </div>
                 </div>

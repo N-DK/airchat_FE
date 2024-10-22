@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import PostItem from './PostItem';
 
-function ListPostItems({ postsList, contentsChattingRef, isTurnOnCamera }) {
+function ListPostItems({
+    postsList,
+    contentsChattingRef,
+    isTurnOnCamera,
+    bonusHeight,
+}) {
     const [data, setData] = useState([]);
 
     useEffect(() => {
@@ -19,6 +24,7 @@ function ListPostItems({ postsList, contentsChattingRef, isTurnOnCamera }) {
                     contentsChattingRef={contentsChattingRef}
                     setList={setData}
                     isTurnOnCamera={isTurnOnCamera}
+                    bonusHeight={bonusHeight}
                 />
             ))}
         </div>

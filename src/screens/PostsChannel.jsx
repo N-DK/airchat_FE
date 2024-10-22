@@ -12,7 +12,7 @@ import { FaChevronLeft } from 'react-icons/fa6';
 import { TbUpload, TbPinnedFilled } from 'react-icons/tb';
 import { AppContext } from '../AppContext';
 import { pinChannel, postsChannel } from '../redux/actions/ChannelActions';
-import { barMenu } from '../redux/actions/PostActions';
+import { barMenu, setPostActive } from '../redux/actions/PostActions';
 import FooterChat from '../components/FooterChat';
 import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
@@ -24,6 +24,9 @@ import EditChannel from '../components/EditChannel';
 import { profile } from '../redux/actions/UserActions';
 import Webcam from 'react-webcam';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
+import { LANGUAGE } from '../constants/language.constant';
+import { setObjectActive } from '../redux/actions/SurfActions';
+import { debounce } from 'lodash';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
 
@@ -57,6 +60,8 @@ export default function PostsChannel() {
     const [notifyMessage, setNotifyMessage] = useState('');
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
+    const divRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     const contentsChattingRef = useRef(null);
 
@@ -71,13 +76,18 @@ export default function PostsChannel() {
     const { isSuccess: isSuccessFollow } = useSelector(
         (state) => state.userFollow,
     );
+    const { language } = useSelector((state) => state.userLanguage);
 
     const handlePinChannel = useCallback(() => {
         dispatch(pinChannel(id));
         setShowNotify(true);
-        setNotifyMessage(isPinChannel ? 'Channel unpinned' : 'Channel pinned');
+        setNotifyMessage(
+            isPinChannel
+                ? LANGUAGE[language].CHANNEL_UNPINNED
+                : LANGUAGE[language].CHANNEL_PINNED,
+        );
         setTimeout(() => setShowNotify(false), 1200);
-    }, [dispatch, id, isPinChannel]);
+    }, [dispatch, id, isPinChannel, language]);
 
     useEffect(() => {
         if (channel) dispatch(barMenu());
@@ -90,7 +100,9 @@ export default function PostsChannel() {
     useEffect(() => {
         if (menus && state?.channelData) {
             const isPinned = menus.some(
-                (item) => item.name === state.channelData.name,
+                (item) =>
+                    item.name === state.channelData.name ||
+                    item.name === state.channelData?.name_channel,
             );
             setIsPinChannel(isPinned);
         }
@@ -121,6 +133,54 @@ export default function PostsChannel() {
     }, []);
 
     useEffect(() => {
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                // threshold: 0.45,
+                // rootMargin: '-100px 0px -610px 0px',
+                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.1,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
+            },
+        );
+
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
+
+        return () => {
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isVisible) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            dispatch(setPostActive(null));
+            dispatch(
+                setObjectActive({
+                    post: null,
+                    audio: null,
+                    element: divRef.current,
+                    parent: contentsChattingRef?.current,
+                    video: null,
+                    bonus: -70,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef]);
+
+    useEffect(() => {
         if (isSuccessFollow) {
             dispatch(postsChannel(id));
         }
@@ -144,7 +204,7 @@ export default function PostsChannel() {
                                     onClick={() => toggleIsEditChannel()}
                                     className={`flex justify-between w-full px-4 py-2 text-sm dark:text-white`}
                                 >
-                                    Edit channel
+                                    {LANGUAGE[language].EDIT_CHANNEL}
                                 </button>
                             )}
                         </MenuItem>
@@ -206,7 +266,10 @@ export default function PostsChannel() {
             ref={contentsChattingRef}
             className="flex flex-col absolute top-0 pt-32 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
         >
-            <div className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6">
+            <div
+                ref={divRef}
+                className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6"
+            >
                 <figure>
                     <div
                         className={`h-10 md:h-12 w-10 md:w-12 ${
@@ -245,7 +308,8 @@ export default function PostsChannel() {
                         {userInfo?.name}
                     </h5>
                     <button className="text-gray-400">
-                        {newMessageFromFooter || "What's on your mind?"}
+                        {newMessageFromFooter ||
+                            LANGUAGE[language].WHAT_ON_YOUR_MIND}
                     </button>
                 </div>
             </div>

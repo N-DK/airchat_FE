@@ -23,6 +23,7 @@ import { IoCloseCircleOutline, IoVideocam } from 'react-icons/io5';
 import Webcam from 'react-webcam';
 import { useLocation } from 'react-router-dom';
 import { listChannel } from '../redux/actions/ChannelActions';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -53,6 +54,7 @@ export default function RecordModal({ handle }) {
     const [result, setResult] = useState([]);
     const [url, setUrl] = useState('');
     const debouncedSearch = useDebounce(searchText, 500);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const submitRecordHandle = () => {
         const blob = recorder.getBlob();
@@ -72,7 +74,7 @@ export default function RecordModal({ handle }) {
             reader.readAsDataURL(blob);
             reader.onloadend = () => {
                 const base64data = reader.result;
-                handle(recordContents, base64data);
+                handle(recordContents, base64data, file);
                 if (isRecord) toggleIsRecord();
             };
         } else {
@@ -208,7 +210,7 @@ export default function RecordModal({ handle }) {
             const rec = new SpeechRecognition();
             rec.continuous = true;
             rec.interimResults = true;
-            rec.lang = 'en-US';
+            rec.lang = language;
             rec.onresult = (event) => {
                 let finalTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -323,7 +325,11 @@ export default function RecordModal({ handle }) {
                 <div className="text-bluePrimary flex justify-between items-center">
                     <div className="flex gap-2 items-end">
                         <div className="flex gap-2">
-                            <span className="text-xl">To</span>
+                            {(post?.name || getChannelName()) && (
+                                <span className="text-xl">
+                                    {LANGUAGE[language].TO}
+                                </span>
+                            )}
                             <span className="text-xl font-semibold">
                                 {post?.name ?? getChannelName()}
                             </span>
@@ -353,7 +359,9 @@ export default function RecordModal({ handle }) {
                             onChange={(e) => setRecordContents(e.target.value)}
                             readOnly={!recordContents}
                             className="w-full bg-inherit text-white placeholder-white outline-none"
-                            placeholder="Tap the microphone to record..."
+                            placeholder={
+                                LANGUAGE[language].TAP_THE_MIC_DESCRIPTION
+                            }
                             style={{ minHeight: '32px' }}
                             cols="30"
                             rows="3"
@@ -514,23 +522,23 @@ export default function RecordModal({ handle }) {
             <ModalDelete
                 isOpen={isOpen}
                 setIsOpen={setIsOpen}
-                title="Allow Microphone Access"
-                subTitle="Please allow microphone access to record audio for voice commands and messages."
+                title={'ALLOW_MIC_ACCESS'}
+                subTitle={'SUBTITLE_ALLOW_MIC_ACCESS'}
                 handle={handleAllow}
-                buttonOKText="Allow"
+                buttonOKText={'ALLOW'}
                 buttonOKColor="bg-dark2Primary"
             />
             <ModalDelete
-                title="Add Link"
-                subTitle="Would you like to paste link from clipboard to add it?"
+                title="TITLE_ADD_LINK"
+                subTitle="SUBTITLE_ADD_LINK"
                 isOpen={isOpenLink}
                 setIsOpen={setIsOpenLink}
                 handle={handlePasteUrl}
-                buttonOKText="Paste"
+                buttonOKText="PASTE"
             />
             <ModalDelete
-                title="Are you sure you want to delete this photo?"
-                subTitle=""
+                title="TITLE_DELETE_PHOTO"
+                subTitle="SUBTITLE_DELETE_PHOTO"
                 isOpen={isOpenDeletePhoto}
                 setIsOpen={setIsOpenDeletePhoto}
                 handle={() => {

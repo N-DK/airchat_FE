@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import moment from 'moment';
+import moment from 'moment/moment';
 import { Avatar } from 'antd';
 import { FaChevronLeft, FaChartLine } from 'react-icons/fa';
 import { TbUpload } from 'react-icons/tb';
@@ -19,7 +19,6 @@ import { debounce } from 'lodash';
 import { AppContext } from '../AppContext';
 import {
     bookMark,
-    detailsPost,
     getReplyAll,
     heart,
     setPostActive,
@@ -39,8 +38,9 @@ import {
     POST_REPLY_ALL_RESET,
     POST_SUBMIT_RESET,
 } from '../redux/constants/PostConstants';
-import { IoEyeOffSharp } from 'react-icons/io5';
 import { BsEmojiFrown } from 'react-icons/bs';
+import HiddenPostComponent from '../components/HiddenPostComponent';
+import { LANGUAGE } from '../constants/language.constant';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -113,6 +113,7 @@ export default function Details() {
     const { userInfo } = useSelector((state) => state.userProfile);
     const { success: newPost } = useSelector((state) => state.postSubmit);
     const { success: reportSuccess } = useSelector((state) => state.reportPost);
+    const { language } = useSelector((state) => state.userLanguage);
 
     // const userId = new URLSearchParams(location.search).get('userId') || null;
 
@@ -333,7 +334,8 @@ export default function Details() {
             </div>
             <div className="flex justify-center mt-1">
                 <p className="text-gray-500 text-sm">
-                    in {data?.name_channel ?? 'Just Chatting'}
+                    {LANGUAGE[language].IN}{' '}
+                    {data?.name_channel ?? 'Just Chatting'}
                 </p>
             </div>
         </div>
@@ -416,7 +418,10 @@ export default function Details() {
                                 {data?.name}
                             </h5>
                             <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
-                                {moment.unix(data?.create_at).fromNow(true)}
+                                {moment
+                                    .unix(data?.create_at)
+                                    .locale(language.split('-')[0])
+                                    .fromNow(true)}
                             </span>
                         </div>
                         <p className="md:text-lg text-black dark:text-white">
@@ -531,46 +536,12 @@ export default function Details() {
                     ) : data ? (
                         <>
                             {data?.report ? (
-                                <div className="w-full mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
-                                    <p className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
-                                        <IoEyeOffSharp className="mr-2 text-bluePrimary" />
-                                        Hidden
-                                    </p>
-                                    <div className="flex items-center dark:text-white mt-1 pb-2 border-b dark:border-dark2Primary">
-                                        <p className="flex-1">
-                                            Hiding posts helps TALKIE
-                                            personalize your Feed.
-                                        </p>
-                                        <button
-                                            onClick={handleUndo}
-                                            className="w-20 ml-1 py-2 px-3 rounded-lg bg-gray-300 dark:bg-dark2Primary"
-                                        >
-                                            Undo
-                                        </button>
-                                    </div>
-                                    <div className="flex items-center mt-2">
-                                        <Link
-                                            to={
-                                                data?.user_id === userInfo?.id
-                                                    ? '/profile'
-                                                    : `/profile/${data?.user_id}`
-                                            }
-                                        >
-                                            <Avatar
-                                                src={`${BASE_URL}${data?.avatar}`}
-                                                alt="avatar"
-                                                className="mr-2"
-                                            />
-                                        </Link>
-                                        <p className="dark:text-white">
-                                            Snooze{' '}
-                                            <span className="font-medium">
-                                                {data?.name}
-                                            </span>{' '}
-                                            for 30 days
-                                        </p>
-                                    </div>
-                                </div>
+                                <HiddenPostComponent
+                                    data={data}
+                                    userInfo={userInfo}
+                                    handleUndo={handleUndo}
+                                    className="mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary"
+                                />
                             ) : (
                                 <>
                                     {renderPostContent()}
@@ -597,7 +568,7 @@ export default function Details() {
                                     className="text-gray-500 dark:text-gray-400 mb-3"
                                 />
                                 <p className="text-center dark:text-gray-400 text-xl">
-                                    This post is no vailager
+                                    {LANGUAGE[language].NOT_FOUND_POST}
                                 </p>
                             </div>
                         </div>

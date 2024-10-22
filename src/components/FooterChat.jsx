@@ -20,6 +20,7 @@ import {
     setObjectActive,
     setObjectAudioCurrent,
 } from '../redux/actions/SurfActions';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function FooterChat({
     isSwiping,
@@ -89,6 +90,7 @@ export default function FooterChat({
     const { videoCurrent } = useSelector(
         (state) => state.setObjectVideoCurrent,
     );
+    const { language } = useSelector((state) => state.userLanguage);
     const dispatch = useDispatch();
 
     const navigateHandle = (name) => {
@@ -282,7 +284,7 @@ export default function FooterChat({
             const recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'en-US'; // 'vi-VN, en-US'
+            recognition.lang = language; // 'vi-VN, en-US'
             let newTranscript = '';
             recognition.onresult = (event) => {
                 let interimTranscript = '';
@@ -320,8 +322,8 @@ export default function FooterChat({
                 videoCurrent?.pause();
             }
         } else if (isRunAuto && !isFullScreen && object) {
-            if (object.audio) {
-                if (object.audio === audioCurrent) {
+            if (object?.audio) {
+                if (object?.audio === audioCurrent) {
                     if (audioCurrent?.paused) {
                         audioCurrent.play();
                     }
@@ -330,7 +332,7 @@ export default function FooterChat({
                         audioCurrent?.pause();
                     }
 
-                    const audio = object.audio;
+                    const audio = object?.audio;
 
                     audio.playbackRate = isRunSpeed;
 
@@ -340,10 +342,10 @@ export default function FooterChat({
                         handleScroll(object);
                     };
 
-                    audio.play();
+                    audio?.play();
                 }
-            } else if (object.video) {
-                if (object.video === videoCurrent) {
+            } else if (object?.video) {
+                if (object?.video === videoCurrent) {
                     if (videoCurrent?.paused) {
                         videoCurrent?.play();
                     }
@@ -352,7 +354,7 @@ export default function FooterChat({
                         videoCurrent.pause();
                     }
 
-                    const video = object.video;
+                    const video = object?.video;
 
                     video.playbackRate = isRunSpeed;
 
@@ -362,7 +364,7 @@ export default function FooterChat({
                         handleScroll(object);
                     };
 
-                    video.play();
+                    video?.play();
                 }
             } else {
                 handleScroll(object);
@@ -507,7 +509,7 @@ export default function FooterChat({
                                     : 'text-gray-300 dark:text-gray-500'
                             }`}
                         >
-                            Audio
+                            {LANGUAGE[language].AUDIO}
                         </button>
                         <button
                             onClick={toggleRecordOption('video')}
@@ -517,7 +519,7 @@ export default function FooterChat({
                                     : 'text-gray-300 dark:text-gray-500'
                             }`}
                         >
-                            Video
+                            {LANGUAGE[language].VIDEO}
                         </button>
                     </div>
                 </div>

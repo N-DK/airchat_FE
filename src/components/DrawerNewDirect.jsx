@@ -9,6 +9,7 @@ import { searchUser } from '../redux/actions/MessageAction';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { LANGUAGE } from '../constants/language.constant';
 
 const UserSearchItem = ({ user, handleClick }) => {
     return (
@@ -38,6 +39,7 @@ const DrawerNewDirect = ({}) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { users, loading } = useSelector((state) => state.searchUser);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const handleClick = (user) => {
         navigate(`/messages/t/${user?.id}`, { state: { user } });
@@ -70,7 +72,7 @@ const DrawerNewDirect = ({}) => {
                         <FaAngleLeft className="text-lg md:text-[22px]" />
                     </button>
                     <div className="text-black dark:text-white font-semibold">
-                        New Direct Message
+                        {LANGUAGE[language].NEW_DIRECT_MESSAGE}
                     </div>
                 </div>
                 <div className="w-[90%] mx-auto relative mt-4 flex bg-grayPrimary dark:bg-darkPrimary items-center rounded-full px-6 py-3">
@@ -81,8 +83,8 @@ const DrawerNewDirect = ({}) => {
                         />
                     </div>
                     <input
-                        className="bg-inherit w-3/5 border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
-                        placeholder="Search Conversations"
+                        className="bg-inherit w-full border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
+                        placeholder={LANGUAGE[language].SEARCH_CONVERSATION}
                         type="text"
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
@@ -109,8 +111,7 @@ const DrawerNewDirect = ({}) => {
                         ))
                     ) : (
                         <p className="text-center dark:text-white mt-4 text-gray-500">
-                            You can only start direct messages with people that
-                            have new DMs enabled
+                            {LANGUAGE[language].START_DIRECT_MESSAGE}
                         </p>
                     )}
                 </div>

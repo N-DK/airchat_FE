@@ -13,7 +13,7 @@ import {
     listMessageRecent,
 } from '../redux/actions/MessageAction';
 import { Avatar } from 'antd';
-import moment from 'moment';
+import moment from 'moment/moment';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import DrawerNewDirect from '../components/DrawerNewDirect';
 import { AppContext } from '../AppContext';
@@ -25,9 +25,11 @@ import {
 } from '../services/socket.service';
 import { profile } from '../redux/actions/UserActions';
 import LoaderSkeletonMessageItem from '../components/LoaderSkeletonMessageItem';
+import { LANGUAGE } from '../constants/language.constant';
 
 const MessageItem = React.memo(({ message, handle, isOther }) => {
     const isUnread = !message?.status;
+    const { language } = useSelector((state) => state.userLanguage);
     return (
         <div
             onClick={handle}
@@ -48,7 +50,10 @@ const MessageItem = React.memo(({ message, handle, isOther }) => {
                             : message?.receiver_name}
                     </span>
                     <span className="text-gray-500 ml-2 text-sm">
-                        {moment.unix(message?.created_at).fromNow(true)}
+                        {moment
+                            .unix(message?.created_at)
+                            .locale(language.split('-')[0])
+                            .fromNow(true)}
                     </span>
                 </p>
                 <p
@@ -68,14 +73,19 @@ const MessageItem = React.memo(({ message, handle, isOther }) => {
     );
 });
 
-const MessageItemEmpty = () => (
-    <div className="flex flex-col items-center justify-center mt-14">
-        <h5 className="text-black dark:text-gray-300">No Direct Messages</h5>
-        <span className="text-[16px] text-gray-500 text-center">
-            You can start a private conversation with anyone that follows you
-        </span>
-    </div>
-);
+const MessageItemEmpty = () => {
+    const { language } = useSelector((state) => state.userLanguage);
+    return (
+        <div className="flex flex-col items-center justify-center mt-14">
+            <h5 className="text-black dark:text-gray-300">
+                {LANGUAGE[language].NO_DIRECT_MESSAGES}
+            </h5>
+            <span className="text-[16px] text-gray-500 text-center">
+                {LANGUAGE[language].START_A_PRIVATE_CONVERSATION}
+            </span>
+        </div>
+    );
+};
 
 export default function Messages() {
     const dispatch = useDispatch();
@@ -90,6 +100,7 @@ export default function Messages() {
     const { socket, isConnected } = useSelector((state) => state.socket);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredMessages, setFilteredMessages] = useState([]);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const handleReadMessage = useCallback(
         (message) => {
@@ -213,7 +224,7 @@ export default function Messages() {
             <div className="flex flex-col gap-8 items-center pt-12 px-5 dark:bg-darkPrimary border-b-[1px] border-gray-200 pb-6">
                 <div className="w-full relative">
                     <h5 className="col-span-2 text-center text-black dark:text-white">
-                        Direct Messages
+                        {LANGUAGE[language].DIRECT_MESSAGES}
                     </h5>
                     <button
                         onClick={toggleShowDrawerNewDirect}
@@ -229,8 +240,8 @@ export default function Messages() {
                 <div className="flex gap-3 bg-grayPrimary dark:bg-dark2Primary items-center w-full rounded-full px-6 py-3">
                     <IoSearch size="1.5rem" className="text-gray-500 m-0 p-0" />
                     <input
-                        className="bg-inherit w-3/5 border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
-                        placeholder="Search Conversations"
+                        className="bg-inherit w-full border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
+                        placeholder={LANGUAGE[language].SEARCH_CONVERSATION}
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -256,10 +267,10 @@ export default function Messages() {
                     />
                     <div>
                         <h5 className="text-black dark:text-gray-300">
-                            Note to Self
+                            {LANGUAGE[language].NOTE_TO_SELF}
                         </h5>
                         <span className="text-[16px] text-gray-500">
-                            Send a message to yourself
+                            {LANGUAGE[language].SEND_A_MESSAGE_TO_YOURSELF}
                         </span>
                     </div>
                 </div>

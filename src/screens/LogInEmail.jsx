@@ -8,6 +8,7 @@ import {
 } from './../redux/actions/UserActions';
 import { SAVE_USER_EMAIL_TEMPORARY } from '../redux/constants/UserConstants';
 import React from 'react';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function LogInEmail() {
     const [email, setEmail] = useState('');
@@ -22,6 +23,7 @@ export default function LogInEmail() {
     } = userAccount;
     const userEmail = useSelector((state) => state.userEmail);
     const { userInfo, loading: loadingEmail, error: errorEmail } = userEmail;
+    const { language } = useSelector((state) => state.userLanguage);
 
     const submitEmailHandle = () => {
         dispatch(checkUserAccount(email));
@@ -66,15 +68,17 @@ export default function LogInEmail() {
     return (
         <div className="flex flex-col justify-between h-screen bg-white dark:bg-darkPrimary">
             <div className="px-6">
-                <div className="grid grid-cols-3 mt-12 text-black dark:text-white">
+                <div className="flex items-center justify-center mt-12 text-black dark:text-white">
                     <button
                         onClick={() => navigate('/')}
-                        className="col-span-1 h-7 md:ml-6 md:h-10 w-7 md:w-10 flex items-center justify-center bg-grayPrimary dark:bg-dark2Primary rounded-full"
+                        className="absolute left-7 h-7 md:ml-6 md:h-10 w-7 md:w-10 flex items-center justify-center bg-grayPrimary dark:bg-dark2Primary rounded-full"
                     >
                         <FaAngleLeft className="md:text-xl" />
                     </button>
-                    <div className="col-span-1 w-full flex justify-center">
-                        <h5 className="md:text-2xl">Welcome In</h5>
+                    <div className=" flex-1 flex justify-center">
+                        <h5 className="md:text-2xl">
+                            {LANGUAGE[language].WELCOME_IN}
+                        </h5>
                     </div>
                 </div>
 
@@ -87,7 +91,7 @@ export default function LogInEmail() {
                         </button>
                         <input
                             className=" text-black dark:text-white bg-inherit w-full border-none outline-none text-[17px] font-medium"
-                            placeholder="enter your email"
+                            placeholder={LANGUAGE[language].ENTER_YOUR_EMAIL}
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -113,9 +117,9 @@ export default function LogInEmail() {
                     }`}
                 >
                     {loadingAccount || loadingEmail ? (
-                        <span>Loading...</span>
+                        <span>{LANGUAGE[language].LOADING}</span>
                     ) : (
-                        <span>Continue</span>
+                        <span>{LANGUAGE[language].CONTINUE}</span>
                     )}
                 </button>
             </div>

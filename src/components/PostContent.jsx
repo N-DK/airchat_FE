@@ -1,8 +1,14 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar } from 'antd';
-import moment from 'moment';
+import moment from 'moment/moment';
 import { FaRegStar, FaBookmark, FaRegBookmark } from 'react-icons/fa';
 import { PiSpinnerBold } from 'react-icons/pi';
 import { RiDeleteBin6Line, RiSearch2Line } from 'react-icons/ri';
@@ -10,6 +16,7 @@ import {
     bookMark,
     deletePhoto,
     deletePost,
+    setPostActive,
     updatePost,
     uploadImage,
 } from '../redux/actions/PostActions';
@@ -23,6 +30,15 @@ import { searchUser } from '../redux/actions/MessageAction';
 import { SEARCH_USER_SUCCESS } from '../redux/constants/MessageConstants';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import ModalDelete from './ModalDelete';
+import { LANGUAGE } from '../constants/language.constant';
+import { FaRegHeart, FaHeart, FaChartLine } from 'react-icons/fa';
+import { PiArrowsClockwiseBold } from 'react-icons/pi';
+import { HiMiniArrowUpTray } from 'react-icons/hi2';
+import { heart } from '../redux/actions/PostActions';
+import { debounce } from 'lodash';
+import { setObjectActive } from '../redux/actions/SurfActions';
+import { AppContext } from '../AppContext';
+import { BASE_URL } from '../constants/api.constant';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -47,6 +63,7 @@ const MentionsItem = ({ user, handle, isMentions }) => {
 };
 
 const renderPostHeader = (item) => {
+    const { language } = useSelector((state) => state.userLanguage);
     return (
         <div className="flex items-center gap-[5px]">
             <h5 className="line-clamp-1 md:text-xl text-white dark:text-white">
@@ -57,13 +74,55 @@ const renderPostHeader = (item) => {
                 {item.name_channel}
             </span>
             <span className="whitespace-nowrap text-gray-300 dark:text-gray-400 font-medium text-sm md:text-base">
-                {moment.unix(item.create_at).fromNow(true)}
+                {moment
+                    .unix(item.create_at)
+                    .locale(language.split('-')[0])
+                    .fromNow(true)}
             </span>
         </div>
     );
 };
 
-function PostContent({ item }) {
+const renderPostActions = (item) => {
+    const [isHeart, setIsHeart] = useState(!!item.heart);
+    const [likeCount, setLikeCount] = useState(item?.number_heart || 0);
+
+    return (
+        <div className="absolute items-center bottom-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
+            <div
+                onClick={() =>
+                    handleAction(heart, item.id, () => {
+                        setIsHeart(!isHeart);
+                        setLikeCount(likeCount + (isHeart ? -1 : 1));
+                    })
+                }
+                className="flex items-center text-white"
+            >
+                {isHeart ? (
+                    <FaHeart className="text-red-500" />
+                ) : (
+                    <FaRegHeart />
+                )}
+                <span className="ml-2 text-sm font-medium">{likeCount}</span>
+            </div>
+            <div className="flex items-center text-white">
+                <PiArrowsClockwiseBold />
+                <span className="ml-2 text-sm font-medium">
+                    {item.number_view}
+                </span>
+            </div>
+            <div className="flex items-center text-white">
+                <FaChartLine />
+                <span className="ml-2 text-sm font-medium">
+                    {item.number_share}
+                </span>
+            </div>
+            <HiMiniArrowUpTray className="text-white" />
+        </div>
+    );
+};
+
+function PostContent({ item, contentsChattingRef }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -81,11 +140,17 @@ function PostContent({ item }) {
     const [isOpenLink, setIsOpenLink] = useState(false);
     const [file, setFile] = useState(null);
     const [isBookMark, setIsBookMark] = useState(!!item.bookmark);
-    const pressTimer = useRef();
     const [targetElement, setTargetElement] = useState(null);
     const [rect, setRect] = useState(null);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [currentItemId, setCurrentItemId] = useState(null);
+    const [isVisible, setIsVisible] = useState(false);
+    const pressTimer = useRef();
+    const videoRef = useRef(null);
+    const divRef = useRef(null);
+
+    const { isRunAuto } = useContext(AppContext);
+
     const { loading: loadingUpload, success } = useSelector(
         (state) => state.postUploadImage,
     );
@@ -95,6 +160,12 @@ function PostContent({ item }) {
     const { userInfo } = useSelector((state) => state.userProfile);
 
     const { users, loading } = useSelector((state) => state.searchUser);
+    const { language } = useSelector((state) => state.userLanguage);
+
+    const handleAction = (action, id, callback) => {
+        dispatch(action(id));
+        callback();
+    };
 
     const handleToggleSearch = (itemId) => {
         if (currentItemId !== itemId) {
@@ -114,11 +185,6 @@ function PostContent({ item }) {
                 ? `/?userId=${item?.reply[0]?.user_id}`
                 : '';
         navigate(`/posts/details/${item?.id}${userId}`);
-    };
-
-    const handleAction = (action, id, callback) => {
-        dispatch(action(id));
-        callback();
     };
 
     const handleToggleBookMark = () => {
@@ -219,180 +285,284 @@ function PostContent({ item }) {
         setRect(targetElement?.getBoundingClientRect());
     }, [targetElement]);
 
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                // threshold: 0.3,
+                // rootMargin: '-100px 0px -610px 0px', //rootMargin: '-200px 0px -510px 0px',
+                threshold: [0.1], // đa dạng giá trị threshold cho nhiều tình huống
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.1,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
+            },
+        );
+
+        if (divRef?.current) {
+            observer.observe(divRef?.current);
+        }
+
+        return () => {
+            if (divRef?.current) {
+                observer.unobserve(divRef?.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isVisible) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            if (window.location.pathname.includes('/posts/details')) {
+                dispatch(setPostActive(data));
+            }
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Audio(
+                              `https://talkie.transtechvietnam.com/${data?.audio}`,
+                          )
+                        : null,
+                    element: document.getElementById(
+                        `post-item-profile-${data?.id}`,
+                    ),
+                    parent: contentsChattingRef?.current,
+                    video: videoRef.current,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef, videoRef]);
+
     return (
         <>
-            <div className="absolute top-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
-                <FaRegStar className="text-white" />
-                {isBookMark ? (
-                    <FaBookmark
-                        className="text-purple-700 text-[0.9rem]"
-                        onClick={handleToggleBookMark}
-                    />
-                ) : (
-                    <FaRegBookmark
-                        className="text-white text-[0.9rem]"
-                        onClick={handleToggleBookMark}
-                    />
-                )}
-                <RiDeleteBin6Line
-                    onClick={() => {
-                        setIsOpen(true);
-                    }}
-                    className="text-white"
-                />
-            </div>
-            <div onClick={() => handleNavigate(data)}>
-                {renderPostHeader(data)}
-                <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
-                    {data.content}
-                </p>
-                {(data?.tag_user || tagsUser?.length > 0) && (
-                    <div className="flex flex-wrap">
-                        {tagsUser?.map((tag, i) => (
-                            <span
-                                className={`font-semibold dark:text-white text-white mr-2`}
-                                key={i}
-                            >
-                                {tag?.name}
-                            </span>
-                        ))}
-                    </div>
-                )}
-                {(data?.img || file) && (
-                    <figure
-                        onTouchStart={(e) => {
-                            e.stopPropagation();
-                            handleTouchStart(item);
-                        }}
-                        onTouchEnd={handleTouchEnd}
-                        id={`delete-photo-${data.id}`}
-                        className="max-w-full relative min-h-40 mt-2"
-                    >
-                        <Avatar
-                            src={
-                                file
-                                    ? convertObjectURL(file)
-                                    : `https://talkie.transtechvietnam.com/${data.img}`
-                            }
-                            className=" w-full h-full object-cover rounded-xl"
-                        />
-                        {(loadingUpload || loadingDeletePhoto) && (
-                            <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
-                                <LoadingSpinner />
-                            </div>
-                        )}
-                    </figure>
-                )}
-                {/* {data?.video && (
-                    <video
-                        controls
-                        className="w-full mt-2 rounded-xl"
-                        src={`https://talkie.transtechvietnam.com/${data.video}`}
-                    />
-                )} */}
-                {(data?.url || url) && (
-                    <div>
-                        <LinkPreviewComponent
-                            url={url ?? data.url}
-                            post_id={data.id}
-                            setData={setData}
-                            dataUrl={data.url}
-                        />
-                    </div>
-                )}
-                <div className="flex items-center mt-2">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleUploadAvatar(data.id);
-                        }}
-                    >
-                        <LuImagePlus className="dark:text-white text-white mr-2" />
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsOpenLink(true);
-                        }}
-                    >
-                        <IoMdLink
-                            className="dark:text-white text-white mr-2"
-                            size={20}
-                        />
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleSearch(data.id);
-                        }}
-                    >
-                        <GoMention className="dark:text-white text-white mr-2" />
-                    </button>
-                </div>
-                {isShowSearch && (
-                    <>
-                        <div className="w-[80%] flex flex-wrap gap-1 mt-2">
-                            {(result.length > 0 ? result : tagsUser)?.map(
-                                (user, i) => (
-                                    <MentionsItem
-                                        key={i}
-                                        user={user}
-                                        handle={(e) => {
-                                            e.stopPropagation();
-                                            handleMentions(user);
-                                        }}
-                                        isMentions={isMentions(user?.id)}
-                                    />
-                                ),
-                            )}
-                        </div>
-                        <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%] bg-white">
-                            <input
-                                onChange={(e) => setSearchText(e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
-                                placeholder="Search"
-                                className="border-none outline-none bg-transparent w-full dark:text-white dark:placeholder-gray-400"
+            <div className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
+                <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
+                    {data?.video && isVisible && isRunAuto ? (
+                        <div className="w-full h-full">
+                            <video
+                                ref={videoRef}
+                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                src={`https://talkie.transtechvietnam.com/${data.video}`}
                             />
-                            <RiSearch2Line className="dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
-                            {loading && (
-                                <PiSpinnerBold className="dark:text-white absolute right-1 top-1/2 -translate-y-1/2 spinner" />
-                            )}
                         </div>
-                    </>
-                )}
+                    ) : (
+                        <Avatar
+                            src={`${BASE_URL}${data?.avatar}`}
+                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                            alt="icon"
+                        />
+                    )}
+
+                    <div
+                        className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
+                            isVisible && isRunAuto && data?.video
+                                ? 'h-16 w-16'
+                                : 'w-10 h-10'
+                        }  md:w-12 rounded-full ${
+                            isVisible && isRunAuto ? 'animate-ping' : ''
+                        }`}
+                    ></div>
+                </div>
+                <div className="w-full">
+                    <div
+                        ref={divRef}
+                        className={`relative bg-bluePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
+                            isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
+                        }`}
+                    >
+                        <div id={`post-item-profile-${data?.id}`}>
+                            <div className="absolute top-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
+                                <FaRegStar className="text-white" />
+                                {isBookMark ? (
+                                    <FaBookmark
+                                        className="text-purple-700 text-[0.9rem]"
+                                        onClick={handleToggleBookMark}
+                                    />
+                                ) : (
+                                    <FaRegBookmark
+                                        className="text-white text-[0.9rem]"
+                                        onClick={handleToggleBookMark}
+                                    />
+                                )}
+                                <RiDeleteBin6Line
+                                    onClick={() => {
+                                        setIsOpen(true);
+                                    }}
+                                    className="text-white"
+                                />
+                            </div>
+                            <div onClick={() => handleNavigate(data)}>
+                                {renderPostHeader(data)}
+                                <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
+                                    {data.content}
+                                </p>
+                                {(data?.tag_user || tagsUser?.length > 0) && (
+                                    <div className="flex flex-wrap">
+                                        {tagsUser?.map((tag, i) => (
+                                            <span
+                                                className={`font-semibold dark:text-white text-white mr-2`}
+                                                key={i}
+                                            >
+                                                {tag?.name}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                {(data?.img || file) && (
+                                    <figure
+                                        onTouchStart={(e) => {
+                                            e.stopPropagation();
+                                            handleTouchStart(item);
+                                        }}
+                                        onTouchEnd={handleTouchEnd}
+                                        id={`delete-photo-${data.id}`}
+                                        className="max-w-full relative min-h-40 mt-2"
+                                    >
+                                        <Avatar
+                                            src={
+                                                file
+                                                    ? convertObjectURL(file)
+                                                    : `https://talkie.transtechvietnam.com/${data.img}`
+                                            }
+                                            className=" w-full h-full object-cover rounded-xl"
+                                        />
+                                        {(loadingUpload ||
+                                            loadingDeletePhoto) && (
+                                            <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
+                                                <LoadingSpinner />
+                                            </div>
+                                        )}
+                                    </figure>
+                                )}
+                                {(data?.url || url) && (
+                                    <div>
+                                        <LinkPreviewComponent
+                                            url={url ?? data.url}
+                                            post_id={data.id}
+                                            setData={setData}
+                                            dataUrl={data.url}
+                                        />
+                                    </div>
+                                )}
+                                <div className="flex items-center mt-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleUploadAvatar(data.id);
+                                        }}
+                                    >
+                                        <LuImagePlus className="dark:text-white text-white mr-2" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsOpenLink(true);
+                                        }}
+                                    >
+                                        <IoMdLink
+                                            className="dark:text-white text-white mr-2"
+                                            size={20}
+                                        />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleSearch(data.id);
+                                        }}
+                                    >
+                                        <GoMention className="dark:text-white text-white mr-2" />
+                                    </button>
+                                </div>
+                                {isShowSearch && (
+                                    <>
+                                        <div className="w-[80%] flex flex-wrap gap-1 mt-2">
+                                            {(result.length > 0
+                                                ? result
+                                                : tagsUser
+                                            )?.map((user, i) => (
+                                                <MentionsItem
+                                                    key={i}
+                                                    user={user}
+                                                    handle={(e) => {
+                                                        e.stopPropagation();
+                                                        handleMentions(user);
+                                                    }}
+                                                    isMentions={isMentions(
+                                                        user?.id,
+                                                    )}
+                                                />
+                                            ))}
+                                        </div>
+                                        <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%] bg-white">
+                                            <input
+                                                onChange={(e) =>
+                                                    setSearchText(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
+                                                placeholder={
+                                                    LANGUAGE[language].SEARCH
+                                                }
+                                                className="border-none outline-none bg-transparent w-full dark:text-white dark:placeholder-gray-400"
+                                            />
+                                            <RiSearch2Line className="dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
+                                            {loading && (
+                                                <PiSpinnerBold className="dark:text-white absolute right-1 top-1/2 -translate-y-1/2 spinner" />
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            <ModalDelete
+                                title="TITLE_DELETE_POST"
+                                subTitle="SUBTITLE_DELETE_POST"
+                                isOpen={isOpen}
+                                setIsOpen={setIsOpen}
+                                handle={() =>
+                                    handleAction(deletePost, item?.id, () => {})
+                                }
+                            />
+                            <ModalDelete
+                                title="TITLE_ADD_LINK"
+                                subTitle="SUBTITLE_ADD_LINK"
+                                isOpen={isOpenLink}
+                                setIsOpen={setIsOpenLink}
+                                handle={handlePasteUrl}
+                                buttonOKText="PASTE"
+                            />
+                            <ModalDelete
+                                title="TITLE_DELETE_PHOTO"
+                                subTitle="SUBTITLE_DELETE_PHOTO"
+                                isOpen={isOpenDeletePhoto}
+                                setIsOpen={setIsOpenDeletePhoto}
+                                handle={() => {
+                                    item.img = null;
+                                    setFile(null);
+                                    dispatch(deletePhoto(item?.id));
+                                }}
+                            />
+                            <CustomContextMenuDeletePhoto
+                                isVisible={contextMenuVisible}
+                                onClose={closeContextMenu}
+                                targetElement={targetElement}
+                                rect={rect}
+                                handle={handleDeletePhoto}
+                            />
+                        </div>
+                        {renderPostActions(item)}
+                    </div>
+                </div>
             </div>
-            <ModalDelete
-                title="Do you want to delete this post?"
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-                handle={() => handleAction(deletePost, item?.id, () => {})}
-            />
-            <ModalDelete
-                title="Add Link"
-                subTitle="Would you like to paste link from clipboard to add it?"
-                isOpen={isOpenLink}
-                setIsOpen={setIsOpenLink}
-                handle={handlePasteUrl}
-                buttonOKText="Paste"
-            />
-            <ModalDelete
-                title="Are you sure you want to delete this photo?"
-                subTitle=""
-                isOpen={isOpenDeletePhoto}
-                setIsOpen={setIsOpenDeletePhoto}
-                handle={() => {
-                    item.img = null;
-                    setFile(null);
-                    dispatch(deletePhoto(item?.id));
-                }}
-            />
-            <CustomContextMenuDeletePhoto
-                isVisible={contextMenuVisible}
-                onClose={closeContextMenu}
-                targetElement={targetElement}
-                rect={rect}
-                handle={handleDeletePhoto}
-            />
         </>
     );
 }

@@ -105,6 +105,7 @@ import {
     USER_LIST_NOTIFICATION_FAIL,
     USER_CODE_RESET,
     USER_PROFILE_RESET,
+    USER_LANGUAGE_SUCCESS,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -362,6 +363,14 @@ export const themeDarkUser = () => async (dispatch) => {
         payload: 'dark',
     });
     localStorage.setItem('theme', JSON.stringify('dark'));
+};
+
+export const languageUser = (language) => async (dispatch) => {
+    dispatch({
+        type: USER_LANGUAGE_SUCCESS,
+        payload: language,
+    });
+    localStorage.setItem('language', JSON.stringify(language));
 };
 
 export const themeResetUser = () => async (dispatch) => {

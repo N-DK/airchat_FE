@@ -2,17 +2,19 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function ModalDelete({
     isOpen,
     setIsOpen,
     handle,
-    title = 'Delete',
-    subTitle = 'This action cannot be undone.',
-    buttonOKText = 'Delete',
+    title = 'TITLE_DELETE_POST',
+    subTitle = 'SUBTITLE_DELETE_POST',
+    buttonOKText = 'DELETE',
     buttonOKColor = '',
 }) {
     const userTheme = useSelector((state) => state.userTheme);
+    const { language } = useSelector((state) => state.userLanguage);
     const { theme } = userTheme;
     function closeModal() {
         setIsOpen(false);
@@ -70,11 +72,11 @@ export default function ModalDelete({
                                                 : 'text-gray-900'
                                         }`}
                                     >
-                                        {title}
+                                        {LANGUAGE[language][title]}
                                     </Dialog.Title>
                                     <div className="mt-2">
                                         <p className="text-sm text-gray-500">
-                                            {subTitle}
+                                            {LANGUAGE[language][subTitle]}
                                         </p>
                                     </div>
 
@@ -85,7 +87,7 @@ export default function ModalDelete({
                                                 className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                                                 onClick={closeModal}
                                             >
-                                                Cancel
+                                                {LANGUAGE[language].CANCEL}
                                             </button>
                                             <button
                                                 type="button"
@@ -99,7 +101,11 @@ export default function ModalDelete({
                                                     closeModal();
                                                 }}
                                             >
-                                                {buttonOKText}
+                                                {
+                                                    LANGUAGE[language][
+                                                        buttonOKText
+                                                    ]
+                                                }
                                             </button>
                                         </div>
                                     </div>

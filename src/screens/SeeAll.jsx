@@ -17,6 +17,7 @@ import {
 } from '../redux/actions/UserActions';
 import PeopleCircle from '../components/PeopleCricle';
 import { FaC, FaChevronLeft } from 'react-icons/fa6';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function SeeAll() {
     const navigate = useNavigate();
@@ -33,6 +34,7 @@ export default function SeeAll() {
     const { search: recentSearchResult } = useSelector(
         (state) => state.userGetRecentSearch,
     );
+    const { language } = useSelector((state) => state.userLanguage);
 
     const handleClearRecentSearch = useCallback(() => {
         setRecentSearch([]);
@@ -129,7 +131,9 @@ export default function SeeAll() {
         <div className="relative flex flex-col h-screen bg-slatePrimary dark:bg-dark2Primary overflow-hidden">
             <div className=" flex justify-center pt-10 px-5 bg-white dark:bg-darkPrimary pb-[18px]">
                 <div className="relative w-full justify-center flex">
-                    <h4 className="dark:text-white">All Channels</h4>
+                    <h4 className="dark:text-white">
+                        {LANGUAGE[language].ALL_CHANNELS}
+                    </h4>
                     <button
                         onClick={() => navigate('/chatting')}
                         className="absolute top-1/2 -translate-y-1/2 left-4"
@@ -138,8 +142,8 @@ export default function SeeAll() {
                     </button>
                 </div>
             </div>
-            <div className="mx-5 h-full overflow-auto scrollbar-none pb-[200px]">
-                <div className="mt-3">
+            <div className="h-full overflow-auto scrollbar-none pb-[200px]">
+                <div className="mt-3 mx-5">
                     <div className="flex gap-3 bg-grayPrimary dark:bg-darkPrimary items-center w-full rounded-full px-6 py-3">
                         <IoSearch
                             size="1.5rem"
@@ -147,7 +151,7 @@ export default function SeeAll() {
                         />
                         <input
                             className="bg-inherit w-3/5 border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
-                            placeholder="Search"
+                            placeholder={LANGUAGE[language].SEARCH}
                             type="text"
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
@@ -155,13 +159,15 @@ export default function SeeAll() {
                     </div>
                 </div>
                 {searchText ? (
-                    <Search data={searchResult} />
+                    <div className="mt-3">
+                        <Search data={searchResult} />
+                    </div>
                 ) : (
-                    <>
+                    <div className="mx-5">
                         {channels?.hosting?.length > 0 && (
                             <div className="mt-8">
                                 <h5 className="font-bold text-black dark:text-white">
-                                    Hosting
+                                    {LANGUAGE[language].HOSTING}
                                 </h5>
                                 {loading ? (
                                     <LoaderSkeletonChannels />
@@ -177,7 +183,7 @@ export default function SeeAll() {
                         {channels?.recent?.length > 0 && (
                             <div className="mt-8">
                                 <h5 className="font-bold text-black dark:text-white">
-                                    Recently Active
+                                    {LANGUAGE[language].RECENTLY_ACTIVE}
                                 </h5>
                                 {loading ? (
                                     <LoaderSkeletonChannels />
@@ -193,7 +199,7 @@ export default function SeeAll() {
                         {channels?.trending?.length > 0 && (
                             <div className="mt-8">
                                 <h5 className="font-bold text-black dark:text-white">
-                                    Trending
+                                    {LANGUAGE[language].TRENDING}
                                 </h5>
                                 {loading ? (
                                     <LoaderSkeletonChannels />
@@ -206,7 +212,7 @@ export default function SeeAll() {
                                 )}
                             </div>
                         )}
-                    </>
+                    </div>
                 )}
             </div>
 

@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import React from 'react';
+import { profile } from './redux/actions/UserActions';
 
 function PrivateRouter({ comp: Component }) {
     const userLogin = useSelector((state) => state.userLogin);

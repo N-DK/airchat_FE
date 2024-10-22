@@ -12,6 +12,7 @@ import {
 import { FaAngleLeft, FaSpinner } from 'react-icons/fa6';
 import Message from './Message';
 import DrawerChangePassword from './DrawerChangePassword';
+import { LANGUAGE } from '../constants/language.constant';
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -56,10 +57,12 @@ export default function EditProfile() {
     const [sendMessage, setSendMessage] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
     const [showNotify, setShowNotify] = useState(false);
+    const [isHandleSubmit, setIsHandleSubmit] = useState(false);
 
     const handleSubmit = () => {
         if (inValidateUser({ name, username, bio, website }) === 'pass') {
             dispatch(updateUser({ name, username, bio, website }));
+            setIsHandleSubmit(true);
         }
     };
 
@@ -146,23 +149,27 @@ export default function EditProfile() {
     }, []);
 
     useEffect(() => {
-        if (!loading && isSuccessUpdateProfile == 1) {
-            setNotifyMessage('Update profile successfully');
+        if (!loading && isHandleSubmit && isSuccessUpdateProfile == 1) {
+            setNotifyMessage(LANGUAGE[language].UPDATE_PROFILE_SUCCESS);
             setShowNotify(true);
             setTimeout(() => setShowNotify(false), 1200);
+            setIsHandleSubmit(false);
             dispatch(profile());
-        } else if (!loading && isSuccessUpdateProfile == 0) {
-            setNotifyMessage('Update profile failed');
+        } else if (!loading && isHandleSubmit && isSuccessUpdateProfile == 0) {
+            setNotifyMessage(LANGUAGE[language].UPDATE_PROFILE_FAILED);
             setShowNotify(true);
             setTimeout(() => setShowNotify(false), 1200);
+            setIsHandleSubmit(false);
         }
-    }, [loading, isSuccessUpdateProfile]);
+    }, [loading, isSuccessUpdateProfile, isHandleSubmit]);
 
     useEffect(() => {
         if (!loading && isSuccess) {
             dispatch(profile());
         }
     }, [loading]);
+
+    const { language } = useSelector((state) => state.userLanguage);
 
     return (
         <>
@@ -181,14 +188,14 @@ export default function EditProfile() {
                             <FaAngleLeft className="text-lg md:text-[22px] " />
                         </button>
                         <button className="text-black dark:text-white font-semibold">
-                            Edit Profile
+                            {LANGUAGE[language].EDIT_PROFILE}
                         </button>
                         <button
                             disabled={disableSave}
                             onClick={handleSubmit}
                             className="font-semibold text-bluePrimary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Save
+                            {LANGUAGE[language].SAVE}
                         </button>
                     </div>
 
@@ -215,13 +222,13 @@ export default function EditProfile() {
                     <div>
                         <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
                             <h6 className="text-black dark:text-white md:text-xl">
-                                Name
+                                {LANGUAGE[language].NAME}
                             </h6>
                             <div className=" col-span-2">
                                 <input
                                     className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
                                     type="text"
-                                    placeholder="Enter your name"
+                                    placeholder={`${LANGUAGE[language].ENTER_YOUR} ${LANGUAGE[language].NAME}`}
                                     value={name}
                                     onChange={(e) => {
                                         setName(e.target.value);
@@ -235,13 +242,13 @@ export default function EditProfile() {
                         </div>
                         <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
                             <h6 className="text-black dark:text-white md:text-xl">
-                                Username
+                                {LANGUAGE[language].USERNAME}
                             </h6>
                             <div className="col-span-2">
                                 <input
                                     className="bg-inherit  outline-none text-bluePrimary md:text-xl"
                                     type="text"
-                                    placeholder="Enter your username"
+                                    placeholder={`${LANGUAGE[language].ENTER_YOUR} ${LANGUAGE[language].USERNAME}`}
                                     value={username}
                                     onChange={(e) => {
                                         setUsername(e.target.value);
@@ -257,12 +264,12 @@ export default function EditProfile() {
                         </div>
                         <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
                             <h6 className="text-black dark:text-white md:text-xl">
-                                Bio
+                                {LANGUAGE[language].BIO}
                             </h6>
                             <input
                                 className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
                                 type="text"
-                                placeholder="Enter your bio"
+                                placeholder={`${LANGUAGE[language].ENTER_YOUR} ${LANGUAGE[language].BIO}`}
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
                             />
@@ -272,7 +279,7 @@ export default function EditProfile() {
                             className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5"
                         >
                             <h6 className="text-black dark:text-white md:text-xl">
-                                Password
+                                {LANGUAGE[language].PASSWORD}
                             </h6>
                             <input
                                 className="bg-inherit col-span-2 outline-none text-bluePrimary md:text-xl"
@@ -283,13 +290,13 @@ export default function EditProfile() {
                         </div>
                         <div className="grid grid-cols-3 border-b-[1px] border-gray-300 px-6 md:px-10 py-3 md:py-5">
                             <h6 className="text-black dark:text-white md:text-xl">
-                                Website
+                                {LANGUAGE[language].WEBSITE}
                             </h6>
                             <div className="col-span-2">
                                 <input
                                     className="bg-inherit outline-none text-bluePrimary md:text-xl"
                                     type="text"
-                                    placeholder="Enter your website"
+                                    placeholder={`${LANGUAGE[language].ENTER_YOUR} ${LANGUAGE[language].WEBSITE}`}
                                     value={website}
                                     onChange={(e) => {
                                         setWebsite(e.target.value);

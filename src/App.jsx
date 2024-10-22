@@ -24,6 +24,7 @@ import ChatRoom from './screens/ChatRoom';
 import SearchScreen from './screens/SearchScreen';
 import PrivacyModal from './components/ModalPolicy';
 import './App.css';
+import 'moment/locale/vi';
 
 function App() {
     const userTheme = useSelector((state) => state.userTheme);

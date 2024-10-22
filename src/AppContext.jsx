@@ -1,5 +1,6 @@
 import { createContext, useState } from 'react';
 import React from 'react';
+import { useSelector } from 'react-redux';
 
 export const AppContext = createContext();
 
@@ -41,6 +42,7 @@ export const AppProvider = ({ children }) => {
     const toggleShowDrawerChangePassword = () => {
         setShowDrawerChangePassword((prev) => !prev);
     };
+    const { language } = useSelector((state) => state.userLanguage);
     return (
         <AppContext.Provider
             value={{
@@ -74,6 +76,7 @@ export const AppProvider = ({ children }) => {
                 toggleShowDrawerChangePassword,
                 newMessageFromFooter,
                 setNewMessageFromFooter,
+                language,
             }}
         >
             {children}

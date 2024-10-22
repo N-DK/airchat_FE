@@ -10,11 +10,14 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 export default function PrivacyModal() {
-    const [isOpen, setIsOpen] = useState(true); // Mở modal khi app vừa mở
+    const [isOpen, setIsOpen] = useState(
+        localStorage.getItem('notification_policy') ? false : true,
+    );
     const userTheme = useSelector((state) => state.userTheme);
     const { theme } = userTheme;
     function closeModal() {
         setIsOpen(false);
+        localStorage.setItem('notification_policy', false);
     }
 
     return (

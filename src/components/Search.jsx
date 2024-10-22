@@ -10,22 +10,29 @@ import { useDispatch, useSelector } from 'react-redux';
 import ChannelCircle from './ChannelCircle';
 import PeopleCircle from './PeopleCricle';
 import { listFollow, profile } from '../redux/actions/UserActions';
-
-const EmptySearch = React.memo(() => (
-    <div className="flex flex-col items-center justify-start h-full fixed z-50 w-full left-0">
-        <img src="./src/assets/Untitled-2.png" alt="" />
-        <h5 className="mt-3 dark:text-white">No results</h5>
-        <p className="text-gray-500 dark:text-gray-400">
-            Try searching for something else
-        </p>
-    </div>
-));
+import { LANGUAGE } from '../constants/language.constant';
+import { title } from 'process';
+const EmptySearch = React.memo(() => {
+    const { language } = useSelector((state) => state.userLanguage);
+    return (
+        <div className="flex flex-col items-center justify-start h-full fixed z-50 w-full left-0">
+            <img src="./src/assets/Untitled-2.png" alt="" />
+            <h5 className="mt-3 dark:text-white">
+                {LANGUAGE[language].NO_RESULTS}
+            </h5>
+            <p className="text-gray-500 dark:text-gray-400">
+                {LANGUAGE[language].TRY_SEARCHING_FOR_SOMETHING_ELSE}
+            </p>
+        </div>
+    );
+});
 
 const ListFollow = React.memo(({ data }) => {
     const dispatch = useDispatch();
     const { following: userInfoListFollowing } = useSelector(
         (state) => state.userListFollow,
     );
+
     const { userInfo } = useSelector((state) => state.userProfile);
 
     useEffect(() => {
@@ -74,6 +81,8 @@ const ListChannel = React.memo(({ data }) =>
 );
 
 const Latest = React.memo(({ data, setActiveKey }) => {
+    const { language } = useSelector((state) => state.userLanguage);
+
     return (
         <>
             {(data?.channel?.length === 0 || !data?.channel) &&
@@ -86,12 +95,12 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                 {data?.channel?.length > 0 && (
                     <div className="px-2 mb-2">
                         <div className="flex items-center justify-between dark:text-white mb-4">
-                            <h6 className="">Channels</h6>
+                            <h6 className="">{LANGUAGE[language].CHANNELS}</h6>
                             <button
                                 onClick={() => setActiveKey('4')}
                                 className="text-base"
                             >
-                                See more
+                                {LANGUAGE[language].SEE_MORE}
                             </button>
                         </div>
                         <div className="flex">
@@ -105,12 +114,12 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                 {data?.people?.length > 0 && (
                     <div className="px-2 mb-2">
                         <div className="mb-4 flex items-center justify-between dark:text-white">
-                            <h6 className="">People</h6>
+                            <h6 className="">{LANGUAGE[language].PEOPLE}</h6>
                             <button
                                 onClick={() => setActiveKey('3')}
                                 className="text-base"
                             >
-                                See more
+                                {LANGUAGE[language].SEE_MORE}
                             </button>
                         </div>
                         <div className="flex overflow-x-auto scrollbar-none">
@@ -128,7 +137,7 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                 {data?.top?._data?.length > 0 && (
                     <div>
                         <h6 className="mb-4 px-2 dark:text-white">
-                            Recent posts
+                            {LANGUAGE[language].RECENT_POSTS}
                         </h6>
                         <div>
                             <ListPostItems
@@ -156,12 +165,14 @@ const TabContent = React.memo(
 const tabData = [
     {
         key: '1',
-        title: 'Latest',
+        'title-en-US': 'Latest',
+        'title-vi-VN': 'Mới nhất',
         component: Latest,
     },
     {
         key: '2',
-        title: 'Top',
+        'title-en-US': 'Top',
+        'title-vi-VN': 'Nổi bật',
         component: ({ data }) => {
             const topPosts = data?.top;
             return topPosts?._data?.length > 0 ? (
@@ -174,8 +185,18 @@ const tabData = [
             );
         },
     },
-    { key: '3', title: 'People', component: ListFollow },
-    { key: '4', title: 'Channels', component: ListChannel },
+    {
+        key: '3',
+        'title-en-US': 'People',
+        'title-vi-VN': 'Người',
+        component: ListFollow,
+    },
+    {
+        key: '4',
+        'title-en-US': 'Channels',
+        'title-vi-VN': 'Kênh',
+        component: ListChannel,
+    },
 ];
 
 function Search({ data, isTurnOnCamera }) {
@@ -183,6 +204,7 @@ function Search({ data, isTurnOnCamera }) {
     const [searchData, setSearchData] = useState(data);
     const { loading } = useSelector((state) => state.userSearch);
     const { userInfo } = useSelector((state) => state.userProfile);
+    const { language } = useSelector((state) => state.userLanguage);
     const dispatch = useDispatch();
     useEffect(() => {
         if (!userInfo) dispatch(profile());
@@ -212,7 +234,7 @@ function Search({ data, isTurnOnCamera }) {
     const tabPanes = useMemo(
         () =>
             tabData.map((tab) => (
-                <TabPane tab={tab.title} key={tab.key}>
+                <TabPane tab={tab[`title-${language}`]} key={tab.key}>
                     {loading ? (
                         <div className="mt-4">
                             <LoadingSpinner />

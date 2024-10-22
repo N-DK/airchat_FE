@@ -8,6 +8,7 @@ import {
 } from '../redux/constants/UserConstants';
 import { login } from '../redux/actions/UserActions';
 import React from 'react';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function Login() {
     const inputRef = useRef(null);
@@ -20,6 +21,7 @@ export default function Login() {
     const { emailTemporary } = userEmail;
     const userLogin = useSelector((state) => state.userLogin);
     const { userInfo, loading, error: errorLogin } = userLogin;
+    const { language } = useSelector((state) => state.userLanguage);
 
     const navigateLoginHandle = () => {
         dispatch({
@@ -68,7 +70,9 @@ export default function Login() {
                         <FaAngleLeft className="md:text-xl" />
                     </button>
                     <div className="absolute w-full top-0 flex justify-center">
-                        <h5 className="md:text-2xl">Login</h5>
+                        <h5 className="md:text-2xl">
+                            {LANGUAGE[language].LOGIN}
+                        </h5>
                     </div>
                 </div>
 
@@ -96,7 +100,7 @@ export default function Login() {
                         </button>
                         <input
                             className=" text-black dark:text-white bg-inherit w-full border-none outline-none text-[17px] font-medium"
-                            placeholder="Enter your password"
+                            placeholder={LANGUAGE[language].ENTER_YOUR_PASSWORD}
                             ref={inputRef}
                             type="password"
                             value={password}
@@ -123,7 +127,11 @@ export default function Login() {
                             : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                     }`}
                 >
-                    {loading ? <span>Loading...</span> : <span>Continue</span>}
+                    {loading ? (
+                        <span>{LANGUAGE[language].LOADING}</span>
+                    ) : (
+                        <span>{LANGUAGE[language].CONTINUE}</span>
+                    )}
                 </button>
             </div>
         </div>

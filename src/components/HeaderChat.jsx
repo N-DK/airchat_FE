@@ -15,14 +15,15 @@ import { AppContext } from '../AppContext';
 import LoaderSkeletonMenuBar from './LoaderSkeletonMenuBar';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import { LANGUAGE } from '../constants/language.constant';
+import { standardizeNames } from '../utils/standardizeNames.utils';
 
 const HeaderChat = ({ title, isSwiping, handleAction }) => {
     const { menus, loading } = useSelector((state) => state.menuBar);
     const redirect =
         useLocation().search.split('=')[1] || window.location.pathname;
     const navigate = useNavigate();
-    const { toggleIsAddChannel } = useContext(AppContext);
-    // const { channel } = useSelector((state) => state.channelPin);
+    const { toggleIsAddChannel, language } = useContext(AppContext);
 
     useEffect(() => {
         const channelId = redirect.includes('group-channel')
@@ -119,7 +120,9 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                                 : 'text-black dark:text-gray-400'
                         }
                     >
-                        {item.name}
+                        {item.key !== 'group-channel'
+                            ? LANGUAGE[language][standardizeNames(item?.name)]
+                            : item?.name}
                     </span>
                     {item.key === 'group-channel' && (
                         <Menu
@@ -156,7 +159,7 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                                                     );
                                                 }}
                                             >
-                                                Trending
+                                                {LANGUAGE[language].TRENDING}
                                             </button>
                                         </MenuItem>
                                         <MenuItem>
@@ -170,7 +173,7 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                                                     );
                                                 }}
                                             >
-                                                Recent
+                                                {LANGUAGE[language].RECENT}
                                             </button>
                                         </MenuItem>
                                     </div>

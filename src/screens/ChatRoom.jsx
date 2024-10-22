@@ -25,6 +25,7 @@ import {
 import { EMIT_EVENT, LISTEN_EVENT } from '../constants/sockets.constant';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getProfileStranger, profile } from '../redux/actions/UserActions';
+import { LANGUAGE } from '../constants/language.constant';
 
 const ChatRoom = () => {
     const navigate = useNavigate();
@@ -38,6 +39,7 @@ const ChatRoom = () => {
     // const [minHeight, setMinHeight] = useState('100%');
     const [messages, setMessages] = useState(initMessages);
     const refContainer = useRef(null);
+    const { language } = useSelector((state) => state.userLanguage);
 
     useEffect(() => {
         const sortedMessages = initMessages?.sort((a, b) => a?.id - b?.id);
@@ -73,7 +75,7 @@ const ChatRoom = () => {
                     sender_name: message.sender,
                     message: message.message,
                     id: message.messageID,
-                    temp_image: message.temp_image,
+                    image: message.temp_image,
                     audio: `https://talkie.transtechvietnam.com${message.audioPath}`,
                     video: message.videoPath,
                     number_heart: 0,
@@ -109,8 +111,12 @@ const ChatRoom = () => {
         return new Blob([ab], { type: mimeType });
     };
 
+    const convertObjectURL = (selectedFile) => {
+        return selectedFile ? URL.createObjectURL(selectedFile) : null;
+    };
+
     const sendNewMessage = useCallback(
-        (message, audio) => {
+        (message, audio, file) => {
             const newMessage = message;
 
             if (socket?.connected) {
@@ -125,6 +131,7 @@ const ChatRoom = () => {
                     receiver: id,
                     message: newMessage,
                     audio: audio,
+                    image: file,
                 });
                 if (userInfo?.id != id) {
                     setMessages((prev) => {
@@ -145,6 +152,7 @@ const ChatRoom = () => {
                                 created_at: Date.now() / 1000,
                                 sender_avt: userInfo?.image,
                                 audio: audioURL,
+                                image: convertObjectURL(file),
                             },
                         ];
                     });
@@ -238,14 +246,14 @@ const ChatRoom = () => {
             );
         } else if (!loadingMessage && messages?.length === 0) {
             return (
-                <div className="rounded-lg dark:bg-darkPrimary bg-white flex items-center justify-end h-[70px] py-3">
+                <div className="rounded-lg dark:bg-darkPrimary bg-slatePrimary flex items-center justify-end h-[70px] py-3">
                     <div className="flex items-center px-3">
-                        <div className="mr-2">
+                        <div className="mr-2 bg-slatePrimary">
                             <p className="dark:text-white text-end text-lg">
                                 {userInfo?.name}
                             </p>
                             <p className="text-gray-500 dark:text-gray-400">
-                                Record to chat
+                                {LANGUAGE[language].RECORD_TO_CHAT}
                             </p>
                         </div>
                         <figure>

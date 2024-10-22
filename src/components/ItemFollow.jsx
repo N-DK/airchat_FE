@@ -10,6 +10,7 @@ import { follow } from '../redux/actions/UserActions';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { AppContext } from '../AppContext';
+import { LANGUAGE } from '../constants/language.constant';
 
 export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
     const { showDrawerFollow, toggleShowDrawerFollow } = useContext(AppContext);
@@ -18,6 +19,7 @@ export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
     const { userInfo } = useSelector((state) => state.userProfile);
     const { pathname } = useLocation();
     const navigate = useNavigate();
+    const { language } = useSelector((state) => state.userLanguage);
 
     const userId = useMemo(
         () => data?.stranger_id ?? data?.following_stranger_id ?? data?.id,
@@ -88,7 +90,9 @@ export const ItemFollow = React.memo(({ data, isFollowing, handleFollow }) => {
                     disabled={isLoading}
                     className={buttonClass}
                 >
-                    {localIsFollowing ? 'Following' : 'Follow'}
+                    {localIsFollowing
+                        ? LANGUAGE[language].FOLLOWING
+                        : LANGUAGE[language].FOLLOW}
                 </button>
             )}
         </div>

@@ -5,6 +5,7 @@ import { updateUser } from '../redux/actions/UserActions';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { USER_UPDATE_PROFILE_RESET } from '../redux/constants/UserConstants';
 import React from 'react';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function AboutYou() {
     const inputRef = useRef(null);
@@ -19,6 +20,7 @@ export default function AboutYou() {
     const userUpdateProfile = useSelector((state) => state.userUpdateProfile);
     const { loading, isSuccess } = userUpdateProfile;
     const [error, setError] = useState(null);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const navigateSelectAvatarHandle = () => {
         if (isContinue) {
@@ -46,26 +48,22 @@ export default function AboutYou() {
         // fullname chỉ được chứa ký tự chữ cái và khoảng trắng
 
         if (!userName.match(/^[a-zA-Z0-9]+$/)) {
-            setError(
-                'Username only alphanumeric characters and periods are allowed',
-            );
+            setError(LANGUAGE[language].USERNAME_ONLY);
             return false;
         }
 
         if (userName.length < 2 || userName.length > 20) {
-            setError('Username must be between 2 and 20 characters');
+            setError(LANGUAGE[language].USERNAME_MUST_BE);
             return false;
         }
 
         if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/)) {
-            setError(
-                'Password must be at least 6 characters and contain at least 1 uppercase letter, 1 lowercase letter, and 1 number',
-            );
+            setError(LANGUAGE[language].PASSWORD_MUST_BE);
             return false;
         }
 
         if (!fullName.match(/^[a-zA-Z\s]+$/)) {
-            setError('Full name only contains letters and spaces');
+            setError(LANGUAGE[language].FULL_NAME_ONLY);
             return false;
         }
 
@@ -105,7 +103,7 @@ export default function AboutYou() {
             <div className="px-6">
                 <div className="flex justify-center mt-12">
                     <h5 className="md:text-2xl text-black dark:text-white">
-                        About you
+                        {LANGUAGE[language].ABOUT_YOU}
                     </h5>
                 </div>
 
@@ -113,7 +111,7 @@ export default function AboutYou() {
                     <div className="flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
                         <input
                             className="text-black w-full dark:text-white text-center bg-inherit border-none outline-none text-[17px] font-medium"
-                            placeholder="Full name"
+                            placeholder={LANGUAGE[language].NAME}
                             ref={inputRef}
                             type="text"
                             value={fullName}
@@ -127,7 +125,7 @@ export default function AboutYou() {
                     <div className="flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
                         <input
                             className="text-black dark:text-white text-center bg-inherit w-full border-none outline-none text-[17px] font-medium"
-                            placeholder="Username"
+                            placeholder={LANGUAGE[language].USERNAME}
                             type="text"
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
@@ -140,7 +138,7 @@ export default function AboutYou() {
                     <div className="flex bg-grayPrimary dark:bg-dark2Primary justify-center items-center w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4">
                         <input
                             className="text-black dark:text-white text-center bg-inherit w-full border-none outline-none text-[17px] font-medium"
-                            placeholder="Password"
+                            placeholder={LANGUAGE[language].PASSWORD}
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -152,19 +150,19 @@ export default function AboutYou() {
                 {!fullName ? (
                     <div className="flex justify-center mt-3">
                         <span className="text-gray-400">
-                            Enter your full name
+                            {LANGUAGE[language].ENTER_YOUR_FULL_NAME}
                         </span>
                     </div>
                 ) : !userName ? (
                     <div className="flex justify-center mt-3">
                         <span className="text-gray-400">
-                            Enter your username
+                            {LANGUAGE[language].ENTER_YOUR_USERNAME}
                         </span>
                     </div>
                 ) : !password ? (
                     <div className="flex justify-center mt-3">
                         <span className="text-gray-400">
-                            Enter your password
+                            {LANGUAGE[language].ENTER_YOUR_PASSWORD}
                         </span>
                     </div>
                 ) : error ? (
@@ -185,7 +183,11 @@ export default function AboutYou() {
                             : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                     }`}
                 >
-                    {loading ? <LoadingSpinner /> : <span>Continue</span>}
+                    {loading ? (
+                        <LoadingSpinner />
+                    ) : (
+                        <span>{LANGUAGE[language].CONTINUE}</span>
+                    )}
                 </button>
             </div>
         </div>

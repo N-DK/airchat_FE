@@ -5,10 +5,7 @@ import { FaAngleLeft, FaUser } from 'react-icons/fa';
 import { RiAddLine } from 'react-icons/ri';
 import { uploadAvatar } from '../redux/actions/UserActions';
 import LoadingSpinner from '../components/LoadingSpinner';
-import {
-    USER_UPDATE_PROFILE_RESET,
-    USER_UPDATE_PROFILE_SUCCESS,
-} from '../redux/constants/UserConstants';
+import { LANGUAGE } from '../constants/language.constant';
 
 export default function SelectAvatar() {
     const [isContinue, setIsContinue] = useState(false);
@@ -20,6 +17,7 @@ export default function SelectAvatar() {
     const dispatch = useDispatch();
 
     const { userInfo } = useSelector((state) => state.userLogin);
+    const { language } = useSelector((state) => state.userLanguage);
 
     const handleChangeImg = useCallback((e) => {
         const file = e.target.files[0];
@@ -73,15 +71,17 @@ export default function SelectAvatar() {
 
     return (
         <div className="flex flex-col justify-between h-screen dark:bg-darkPrimary">
-            <div className="grid grid-cols-3 mt-12 px-6 text-black dark:text-white">
+            <div className="flex relative mt-12 text-black dark:text-white">
                 <button
                     onClick={() => navigate('/aboutyou')}
-                    className="col-span-1 z-10 h-7 md:ml-6 md:h-10 w-7 md:w-10 flex items-center justify-center bg-grayPrimary dark:bg-dark2Primary rounded-full"
+                    className="absolute left-7 h-7 md:ml-6 md:h-10 w-7 md:w-10 flex items-center justify-center bg-grayPrimary dark:bg-dark2Primary rounded-full"
                 >
                     <FaAngleLeft className="md:text-xl" />
                 </button>
-                <div className="col-span-1 w-full flex justify-center">
-                    <h5 className="md:text-2xl">Your avatar</h5>
+                <div className="absolute w-full top-0 flex justify-center">
+                    <h5 className="md:text-2xl">
+                        {LANGUAGE[language].YOUR_AVATAR}
+                    </h5>
                 </div>
             </div>
 
@@ -95,9 +95,7 @@ export default function SelectAvatar() {
                 />
 
                 <div className="mt-8 text-center text-[13px] md:text-lg text-gray-400">
-                    <p>
-                        A clear photo featuring your face works best on Airchat.
-                    </p>
+                    <p>{LANGUAGE[language].CLEAR_PHOTO_FEATURING_TALKIE}</p>
                 </div>
             </form>
 
@@ -110,7 +108,11 @@ export default function SelectAvatar() {
                             : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                     }`}
                 >
-                    {loading ? <LoadingSpinner /> : <span>Continue</span>}
+                    {loading ? (
+                        <LoadingSpinner />
+                    ) : (
+                        <span>{LANGUAGE[language].CONTINUE}</span>
+                    )}
                 </button>
             </div>
         </div>

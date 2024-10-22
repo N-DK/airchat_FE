@@ -109,6 +109,7 @@ import {
     USER_LIST_NOTIFICATION_FAIL,
     USER_LOGIN_ERROR_RESET,
     USER_PROFILE_RESET,
+    USER_LANGUAGE_SUCCESS,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -241,6 +242,15 @@ export const userThemeReducer = (state = {}, action) => {
             return { theme: action.payload };
         case USER_THEME_RESET:
             return {};
+        default:
+            return state;
+    }
+};
+
+export const userLanguageReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_LANGUAGE_SUCCESS:
+            return { language: action.payload };
         default:
             return state;
     }
