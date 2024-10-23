@@ -1,6 +1,12 @@
 import { Tabs } from 'antd';
 import TabPane from 'antd/es/tabs/TabPane';
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, {
+    useState,
+    useMemo,
+    useEffect,
+    useCallback,
+    useContext,
+} from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { ItemFollow } from './ItemFollow';
 import ListPostItems from './ListPostItems';
@@ -12,6 +18,8 @@ import PeopleCircle from './PeopleCricle';
 import { listFollow, profile } from '../redux/actions/UserActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { title } from 'process';
+import ScreenFull from './ScreenFull';
+import { AppContext } from '../AppContext';
 const EmptySearch = React.memo(() => {
     const { language } = useSelector((state) => state.userLanguage);
     return (
@@ -51,7 +59,7 @@ const ListFollow = React.memo(({ data }) => {
     );
 
     return data?.people?.length > 0 ? (
-        <div className="px-2">
+        <div className="px-2 mt-4">
             {data.people.map((item, index) => (
                 <ItemFollow
                     key={index}
@@ -70,7 +78,7 @@ const ListFollow = React.memo(({ data }) => {
 
 const ListChannel = React.memo(({ data }) =>
     data?.channel?.length > 0 ? (
-        <div className="px-2">
+        <div className="px-2 mt-4">
             {data.channel.map((item, index) => (
                 <ChannelItem key={index} data={item} />
             ))}
@@ -90,7 +98,7 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                 (data?.top?._data?.length === 0 || !data?.top?._data) && (
                     <EmptySearch />
                 )}
-            <div className="">
+            <div className="mt-4">
                 {/* Chats */}
                 {data?.channel?.length > 0 && (
                     <div className="px-2 mb-2">
@@ -154,9 +162,7 @@ const Latest = React.memo(({ data, setActiveKey }) => {
 
 const TabContent = React.memo(
     ({ component: Component, data, setActiveKey }) => (
-        <div
-            className={`w-full pb-[calc(100vh-390px)] dark:bg-dark2Primary mt-4`}
-        >
+        <div className={`w-full pb-[calc(100vh-390px)] dark:bg-dark2Primary`}>
             <Component data={data} setActiveKey={setActiveKey} />
         </div>
     ),
@@ -205,6 +211,7 @@ function Search({ data, isTurnOnCamera }) {
     const { loading } = useSelector((state) => state.userSearch);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { language } = useSelector((state) => state.userLanguage);
+    const { isFullScreen } = useContext(AppContext);
     const dispatch = useDispatch();
     useEffect(() => {
         if (!userInfo) dispatch(profile());
@@ -240,11 +247,13 @@ function Search({ data, isTurnOnCamera }) {
                             <LoadingSpinner />
                         </div>
                     ) : (
-                        <TabContent
-                            component={tab.component}
-                            data={searchData}
-                            setActiveKey={setActiveKey}
-                        />
+                        <>
+                            <TabContent
+                                component={tab.component}
+                                data={searchData}
+                                setActiveKey={setActiveKey}
+                            />
+                        </>
                     )}
                 </TabPane>
             )),
@@ -259,10 +268,7 @@ function Search({ data, isTurnOnCamera }) {
     }, [data, isTurnOnCamera]);
 
     return (
-        <div
-            {...handlers}
-            className="swipeable-tabs overflow-auto scrollbar-none"
-        >
+        <div {...handlers} className="overflow-auto scrollbar-none">
             <Tabs
                 activeKey={activeKey}
                 onChange={setActiveKey}
@@ -270,6 +276,7 @@ function Search({ data, isTurnOnCamera }) {
             >
                 {tabPanes}
             </Tabs>
+            {isFullScreen && <ScreenFull postsList={searchData?.top?._data} />}
         </div>
     );
 }

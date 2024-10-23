@@ -37,6 +37,8 @@ import { LANGUAGE } from '../constants/language.constant';
 import moment from 'moment/moment';
 import 'moment/locale/vi';
 import ModalDelete from './ModalDelete';
+import PostContent from './PostContent';
+import PostHosting from './PostHosting';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -72,6 +74,9 @@ function PostItem({
     const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
     const [rect, setRect] = useState(null);
+    const { success: isSuccessDeletePost, post_id: postIdDelete } = useSelector(
+        (state) => state.userDeletePost,
+    );
 
     const {
         isRecord,
@@ -89,26 +94,41 @@ function PostItem({
     const videoRef = useRef(null);
     const pressTimer = useRef();
 
-    const handleTouchStart = useCallback(() => {
-        pressTimer.current = setTimeout(() => {
-            setTargetElement(document.getElementById(`post-item-${data?.id}`));
-            setRect(targetElement?.getBoundingClientRect());
-            setContextMenuVisible(true);
-        }, 500);
-    }, [data?.id, targetElement]);
+    const handleTouchStart = useCallback(
+        (id) => {
+            pressTimer.current = setTimeout(() => {
+                const element = document.getElementById(id);
 
-    const convertObjectURL = (selectedFile) => {
-        return selectedFile ? URL.createObjectURL(selectedFile) : null;
-    };
+                if (element) {
+                    const hiddenElement = element.querySelector('#hidden');
+                    if (hiddenElement) {
+                        hiddenElement.style.display = 'none';
+                    }
+
+                    setTargetElement(element);
+                    setRect(element.getBoundingClientRect());
+                    setContextMenuVisible(true);
+                }
+            }, 500);
+        },
+        [targetElement],
+    );
 
     const handleTouchEnd = useCallback(() => {
         clearTimeout(pressTimer.current);
     }, []);
 
-    const closeContextMenu = useCallback(
-        () => setContextMenuVisible(false),
-        [],
-    );
+    const closeContextMenu = useCallback(() => {
+        setContextMenuVisible(false);
+        const hiddenElement = targetElement?.querySelector('#hidden');
+        if (hiddenElement) {
+            hiddenElement.style.display = 'flex';
+        }
+    }, [targetElement]);
+
+    const convertObjectURL = (selectedFile) => {
+        return selectedFile ? URL.createObjectURL(selectedFile) : null;
+    };
 
     const handleUndo = useCallback(() => {
         dispatch(unReportPost(data?.id));
@@ -181,15 +201,33 @@ function PostItem({
                 setList((prev) => {
                     if (!prev.some((post) => post.id === newPost.id)) {
                         const newPosts = [newPost, ...prev];
-                        if (isRecord) toggleIsRecord();
-                        dispatch({ type: POST_SUBMIT_RESET });
+
                         return newPosts;
                     }
                     return prev;
                 });
+                if (isRecord) toggleIsRecord();
+                dispatch({ type: POST_SUBMIT_RESET });
             }
         }
-    }, [newPost, setList]);
+    }, [newPost, setList, isRecord, toggleIsRecord, dispatch]);
+
+    useEffect(() => {
+        if (isSuccessDeletePost) {
+            setList((prev) => {
+                const newPosts = prev.filter(
+                    (post) => post.id !== postIdDelete,
+                );
+
+                return newPosts.map((post) => ({
+                    ...post,
+                    reply: post?.reply?.filter(
+                        (reply) => reply.id !== postIdDelete,
+                    ),
+                }));
+            });
+        }
+    }, [isSuccessDeletePost, postIdDelete]);
 
     const postDetailsUrl = useMemo(() => {
         const baseUrl = `/posts/details/${data?.id}`;
@@ -210,9 +248,7 @@ function PostItem({
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                // threshold: 0.45,
-                // rootMargin: '-100px 0px -610px 0px',
-                threshold: [0.1], // đa dạng giá trị threshold cho nhiều tình huống
+                threshold: [0.1],
                 rootMargin: `-${Math.max(
                     window.innerHeight * 0.1,
                     100,
@@ -398,153 +434,172 @@ function PostItem({
                                 }`}
                             ></div>
                         </div>
-
                         <div className="flex-1">
-                            <div
-                                ref={divRef}
-                                className={`relative transition-all bg-white dark:bg-dark2Primary duration-300 rounded-2xl w-full px-4 pb-5 pt-3 ${
-                                    userInfo?.id === data?.user_id
-                                        ? 'bg-blue-100 dark:bg-blue-900'
-                                        : ''
-                                } ${
-                                    isVisible
-                                        ? 'shadow-2xl scale-[1.02]'
-                                        : 'shadow-md'
-                                }`}
-                            >
-                                {userInfo?.id === data?.user_id && (
-                                    <div
-                                        className={`absolute top-[-16px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
-                                    >
-                                        <FaRegStar className="text-white" />
-                                        {isBookMark ? (
-                                            <FaBookmark
-                                                className="text-purple-700 text-[0.9rem]"
-                                                onClick={handleBookMark}
-                                            />
-                                        ) : (
-                                            <FaRegBookmark
-                                                className="text-white text-[0.9rem]"
-                                                onClick={handleBookMark}
-                                            />
-                                        )}
-                                        <RiDeleteBin6Line
-                                            onClick={() => {
-                                                setIsOpen(true);
-                                            }}
-                                            className="text-white"
-                                        />
-                                    </div>
-                                )}
+                            {userInfo?.id === data?.user_id ? (
+                                <PostHosting
+                                    item={data}
+                                    contentsChattingRef={contentsChattingRef}
+                                    setIsVisibleChatting={setIsVisible}
+                                    handleTouchStartPost={handleTouchStart}
+                                    handleTouchEndPost={handleTouchEnd}
+                                    handleLike={handleLike}
+                                    handleSharePost={handleSharePost}
+                                    handleBookMark={handleBookMark}
+                                />
+                            ) : (
                                 <div
-                                    id={`post-item-${data?.id}`}
-                                    onTouchStart={handleTouchStart}
-                                    onTouchEnd={handleTouchEnd}
-                                    onClick={() =>
-                                        !contextMenuVisible &&
-                                        handleOnClickPost()
-                                    }
+                                    ref={divRef}
+                                    className={`relative transition-all bg-white dark:bg-dark2Primary duration-300 rounded-2xl w-full px-4 pb-5 pt-3 ${
+                                        userInfo?.id === data?.user_id
+                                            ? 'bg-blue-100 dark:bg-blue-900'
+                                            : ''
+                                    } ${
+                                        isVisible
+                                            ? 'shadow-2xl scale-[1.02]'
+                                            : 'shadow-md'
+                                    }`}
                                 >
-                                    <div className="flex items-center gap-[5px]">
-                                        <h5 className="line-clamp-1 md:text-xl text-black dark:text-white">
-                                            {data?.name}
-                                        </h5>
-                                        {data?.name_channel && (
-                                            <span className="text-bluePrimary">
-                                                {LANGUAGE[language].IN}
-                                            </span>
-                                        )}
-                                        <span className="line-clamp-1 text-bluePrimary font-medium">
-                                            {data?.name_channel}
-                                        </span>
-                                        <span className="whitespace-nowrap text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
-                                            {moment
-                                                .unix(data?.create_at)
-                                                .locale(language.split('-')[0])
-                                                .fromNow(true)}
-                                        </span>
-                                    </div>
-                                    <p className="text-left line-clamp-5 md:text-lg text-black dark:text-white">
-                                        {data?.content}
-                                    </p>
-                                    {data?.tag_user_detail && (
-                                        <div className="flex flex-wrap">
-                                            {data?.tag_user_detail?.map(
-                                                (tag, i) => (
-                                                    <span
-                                                        className={`font-semibold dark:text-white mr-2`}
-                                                        key={i}
-                                                    >
-                                                        {tag?.name}
-                                                    </span>
-                                                ),
+                                    {userInfo?.id === data?.user_id && (
+                                        <div
+                                            className={`absolute top-[-16px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                                        >
+                                            <FaRegStar className="text-white" />
+                                            {isBookMark ? (
+                                                <FaBookmark
+                                                    className="text-purple-700 text-[0.9rem]"
+                                                    onClick={handleBookMark}
+                                                />
+                                            ) : (
+                                                <FaRegBookmark
+                                                    className="text-white text-[0.9rem]"
+                                                    onClick={handleBookMark}
+                                                />
                                             )}
-                                        </div>
-                                    )}
-                                    {data?.img && (
-                                        <figure className="max-w-full relative my-2">
-                                            <Avatar
-                                                src={`https://talkie.transtechvietnam.com/${data?.img}`}
-                                                className="min-h-40 h-full w-full object-cover rounded-xl"
-                                            />
-                                        </figure>
-                                    )}
-                                    {data?.url && (
-                                        <div>
-                                            <LinkPreviewComponent
-                                                url={data.url}
-                                                post_id={data.id}
-                                                // setData={setData}
-                                                dataUrl={data.url}
+                                            <RiDeleteBin6Line
+                                                onClick={() => {
+                                                    setIsOpen(true);
+                                                }}
+                                                className="text-white"
                                             />
                                         </div>
                                     )}
-                                </div>
-
-                                <div className="absolute bottom-[-22px] items-center right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
                                     <div
-                                        className={`flex items-center text-gray-400`}
-                                    >
-                                        <button
-                                            onClick={handleLike}
-                                            className={`btn heart ${
-                                                isHeart
-                                                    ? initialLoad
-                                                        ? 'initial-active'
-                                                        : 'active'
-                                                    : ''
-                                            } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
-                                        ></button>
-                                        <span className="ml-2 text-sm font-medium">
-                                            {likeCount}
-                                        </span>
-                                    </div>
-                                    <ActionButton
-                                        onClick={handleSharePost}
-                                        icon={
-                                            <PiArrowsClockwiseBold
-                                                color={`${
-                                                    isShare ? 'green' : ''
-                                                }`}
-                                            />
+                                        id={`post-item-${data?.id}`}
+                                        onTouchStart={() =>
+                                            handleTouchStart(
+                                                `post-item-${data?.id}`,
+                                            )
                                         }
-                                        count={shareCount}
-                                    />
-                                    {isBookMark && (
+                                        onTouchEnd={handleTouchEnd}
+                                        onClick={() =>
+                                            !contextMenuVisible &&
+                                            handleOnClickPost()
+                                        }
+                                    >
+                                        <div className="flex items-center gap-[5px]">
+                                            <h5 className="line-clamp-1 md:text-xl text-black dark:text-white">
+                                                {data?.name}
+                                            </h5>
+                                            {data?.name_channel && (
+                                                <span className="text-bluePrimary">
+                                                    {LANGUAGE[language].IN}
+                                                </span>
+                                            )}
+                                            <span className="line-clamp-1 text-bluePrimary font-medium">
+                                                {data?.name_channel}
+                                            </span>
+                                            <span className="whitespace-nowrap text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
+                                                {moment
+                                                    .unix(data?.create_at)
+                                                    .locale(
+                                                        language.split('-')[0],
+                                                    )
+                                                    .fromNow(true)}
+                                            </span>
+                                        </div>
+                                        <p className="text-left line-clamp-5 md:text-lg text-black dark:text-white">
+                                            {data?.content}
+                                        </p>
+                                        {data?.tag_user_detail && (
+                                            <div className="flex flex-wrap">
+                                                {data?.tag_user_detail?.map(
+                                                    (tag, i) => (
+                                                        <span
+                                                            className={`font-semibold dark:text-white mr-2`}
+                                                            key={i}
+                                                        >
+                                                            {tag?.name}
+                                                        </span>
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
+                                        {data?.img && (
+                                            <figure className="max-w-full relative my-2">
+                                                <Avatar
+                                                    src={`https://talkie.transtechvietnam.com/${data?.img}`}
+                                                    className="min-h-40 h-full w-full object-cover rounded-xl"
+                                                />
+                                            </figure>
+                                        )}
+                                        {data?.url && (
+                                            <div>
+                                                <LinkPreviewComponent
+                                                    url={data.url}
+                                                    post_id={data.id}
+                                                    // setData={setData}
+                                                    dataUrl={data.url}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="absolute bottom-[-22px] items-center right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
+                                        <div
+                                            className={`flex items-center text-gray-400`}
+                                        >
+                                            <button
+                                                onClick={handleLike}
+                                                className={`btn heart ${
+                                                    isHeart
+                                                        ? initialLoad
+                                                            ? 'initial-active'
+                                                            : 'active'
+                                                        : ''
+                                                } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
+                                            ></button>
+                                            <span className="ml-2 text-sm font-medium">
+                                                {likeCount}
+                                            </span>
+                                        </div>
                                         <ActionButton
-                                            onClick={handleBookMark}
+                                            onClick={handleSharePost}
                                             icon={
-                                                <FaBookmark className="text-purple-700 text-[0.9rem]" />
+                                                <PiArrowsClockwiseBold
+                                                    color={`${
+                                                        isShare ? 'green' : ''
+                                                    }`}
+                                                />
                                             }
+                                            count={shareCount}
                                         />
-                                    )}
-                                    <ActionButton
-                                        icon={<FaChartLine />}
-                                        count={data?.number_view}
-                                    />
-                                    <HiMiniArrowUpTray />
+                                        {isBookMark && (
+                                            <ActionButton
+                                                onClick={handleBookMark}
+                                                icon={
+                                                    <FaBookmark className="text-purple-700 text-[0.9rem]" />
+                                                }
+                                            />
+                                        )}
+                                        <ActionButton
+                                            icon={<FaChartLine />}
+                                            count={data?.number_view}
+                                        />
+                                        <HiMiniArrowUpTray />
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
                             <div className="flex items-center mt-5">
                                 {item?.reply?.map((reply, index) => (
                                     <Avatar

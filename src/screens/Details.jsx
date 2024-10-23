@@ -43,6 +43,8 @@ import { BsEmojiFrown } from 'react-icons/bs';
 import HiddenPostComponent from '../components/HiddenPostComponent';
 import { LANGUAGE } from '../constants/language.constant';
 import ModalDelete from '../components/ModalDelete';
+import PostHosting from '../components/PostHosting';
+import ScreenFull from '../components/ScreenFull';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -85,7 +87,8 @@ export default function Details() {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    const { isRecord, toggleIsRecord, isRunAuto } = useContext(AppContext);
+    const { isRecord, toggleIsRecord, isRunAuto, isFullScreen } =
+        useContext(AppContext);
 
     const [isSwiping, setIsSwiping] = useState(false);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
@@ -239,19 +242,37 @@ export default function Details() {
         return selectedFile ? URL.createObjectURL(selectedFile) : null;
     };
 
-    const handleTouchStart = (e) => {
-        pressTimer.current = setTimeout(() => {
-            setTargetElement(
-                document.getElementById(`post-item-reply-${data?.id}`),
-            );
-            setRect(targetElement?.getBoundingClientRect());
-            setContextMenuVisible(true);
-        }, 500);
-    };
+    const handleTouchStart = useCallback(
+        (id) => {
+            pressTimer.current = setTimeout(() => {
+                const element = document.getElementById(id);
 
-    const handleTouchEnd = () => {
+                if (element) {
+                    const hiddenElement = element.querySelector('#hidden');
+                    if (hiddenElement) {
+                        hiddenElement.style.display = 'none';
+                    }
+
+                    setTargetElement(element);
+                    setRect(element.getBoundingClientRect());
+                    setContextMenuVisible(true);
+                }
+            }, 500);
+        },
+        [targetElement],
+    );
+
+    const handleTouchEnd = useCallback(() => {
         clearTimeout(pressTimer.current);
-    };
+    }, []);
+
+    const closeContextMenu = useCallback(() => {
+        setContextMenuVisible(false);
+        const hiddenElement = targetElement?.querySelector('#hidden');
+        if (hiddenElement) {
+            hiddenElement.style.display = 'flex';
+        }
+    }, [targetElement]);
 
     const handleHeart = () => {
         dispatch(heart(data?.id));
@@ -310,8 +331,6 @@ export default function Details() {
         if (!userInfo) dispatch(profile());
     }, [userInfo]);
 
-    const closeContextMenu = () => setContextMenuVisible(false);
-
     const ActionButton = useCallback(
         ({ onClick, icon, count }) => (
             <div onClick={onClick} className="flex items-center text-gray-400">
@@ -351,10 +370,10 @@ export default function Details() {
     const renderPostContent = () => (
         <div
             ref={divRef}
-            className="flex appear-animation duration-300 mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
+            className="flex  mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
         >
             <div
-                className={`relative h-10 md:h-12 min-w-10 md:min-w-12  ${
+                className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12  ${
                     isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
                 } `}
             >
@@ -410,125 +429,116 @@ export default function Details() {
             </div>
 
             <div className="flex-1">
-                <div
-                    className={`relative bg-white dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 transition-all duration-300  ${
-                        isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
-                    }`}
-                >
-                    {userInfo?.id === data?.user_id && (
+                {userInfo?.id !== data?.user_id ? (
+                    <div
+                        className={`relative appear-animation duration-300 bg-white dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 transition-all  ${
+                            isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
+                        }`}
+                    >
                         <div
-                            className={`absolute top-[-16px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                            id={`post-item-reply-${data?.id}`}
+                            onTouchStart={() =>
+                                handleTouchStart(`post-item-reply-${data?.id}`)
+                            }
+                            onTouchEnd={handleTouchEnd}
                         >
-                            <FaRegStar className="text-white" />
-                            {isBookMark ? (
-                                <FaBookmark
-                                    className="text-purple-700 text-[0.9rem]"
+                            <div className="flex items-center gap-[5px]">
+                                <h5 className="md:text-xl text-black dark:text-white">
+                                    {data?.name}
+                                </h5>
+                                <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
+                                    {moment
+                                        .unix(data?.create_at)
+                                        .locale(language.split('-')[0])
+                                        .fromNow(true)}
+                                </span>
+                            </div>
+                            <p className="md:text-lg text-black dark:text-white">
+                                {data?.content}
+                            </p>
+                            {data?.tag_user_detail && (
+                                <div className="flex flex-wrap">
+                                    {data?.tag_user_detail?.map((tag, i) => (
+                                        <span
+                                            className={`font-semibold dark:text-white mr-2`}
+                                            key={i}
+                                        >
+                                            {tag?.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            {data?.img && (
+                                <figure className="max-w-full relative my-2">
+                                    <Avatar
+                                        src={`https://talkie.transtechvietnam.com/${data?.img}`}
+                                        className="min-h-40 h-full w-full object-cover rounded-xl"
+                                    />
+                                </figure>
+                            )}
+                            {data?.url && (
+                                <div>
+                                    <LinkPreviewComponent
+                                        url={data.url}
+                                        post_id={data.id}
+                                        // setData={setData}
+                                        dataUrl={data.url}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        <div className="absolute items-center bottom-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
+                            <div className={`flex items-center text-gray-400`}>
+                                <button
+                                    onClick={handleHeart}
+                                    className={`btn heart ${
+                                        isHeart
+                                            ? initialLoad
+                                                ? 'initial-active'
+                                                : 'active'
+                                            : ''
+                                    } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
+                                ></button>
+                                <span className="ml-2 text-sm font-medium">
+                                    {likeCount}
+                                </span>
+                            </div>
+                            <ActionButton
+                                onClick={handleSharePost}
+                                icon={
+                                    <PiArrowsClockwiseBold
+                                        color={`${isShare ? 'green' : ''}`}
+                                    />
+                                }
+                                count={shareCount}
+                            />
+                            {isBookMark && (
+                                <ActionButton
                                     onClick={handleBookMark}
-                                />
-                            ) : (
-                                <FaRegBookmark
-                                    className="text-white text-[0.9rem]"
-                                    onClick={handleBookMark}
+                                    icon={
+                                        <FaBookmark className="text-purple-700 text-[0.9rem]" />
+                                    }
                                 />
                             )}
-                            <RiDeleteBin6Line
-                                onClick={() => {
-                                    setIsOpen(true);
-                                }}
-                                className="text-white"
-                            />
-                        </div>
-                    )}
-                    <div
-                        id={`post-item-reply-${data?.id}`}
-                        onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
-                    >
-                        <div className="flex items-center gap-[5px]">
-                            <h5 className="md:text-xl text-black dark:text-white">
-                                {data?.name}
-                            </h5>
-                            <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
-                                {moment
-                                    .unix(data?.create_at)
-                                    .locale(language.split('-')[0])
-                                    .fromNow(true)}
-                            </span>
-                        </div>
-                        <p className="md:text-lg text-black dark:text-white">
-                            {data?.content}
-                        </p>
-                        {data?.tag_user_detail && (
-                            <div className="flex flex-wrap">
-                                {data?.tag_user_detail?.map((tag, i) => (
-                                    <span
-                                        className={`font-semibold dark:text-white mr-2`}
-                                        key={i}
-                                    >
-                                        {tag?.name}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        {data?.img && (
-                            <figure className="max-w-full relative my-2">
-                                <Avatar
-                                    src={`https://talkie.transtechvietnam.com/${data?.img}`}
-                                    className="min-h-40 h-full w-full object-cover rounded-xl"
-                                />
-                            </figure>
-                        )}
-                        {data?.url && (
-                            <div>
-                                <LinkPreviewComponent
-                                    url={data.url}
-                                    post_id={data.id}
-                                    // setData={setData}
-                                    dataUrl={data.url}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    <div className="absolute items-center bottom-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
-                        <div className={`flex items-center text-gray-400`}>
-                            <button
-                                onClick={handleHeart}
-                                className={`btn heart ${
-                                    isHeart
-                                        ? initialLoad
-                                            ? 'initial-active'
-                                            : 'active'
-                                        : ''
-                                } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
-                            ></button>
-                            <span className="ml-2 text-sm font-medium">
-                                {likeCount}
-                            </span>
-                        </div>
-                        <ActionButton
-                            onClick={handleSharePost}
-                            icon={
-                                <PiArrowsClockwiseBold
-                                    color={`${isShare ? 'green' : ''}`}
-                                />
-                            }
-                            count={shareCount}
-                        />
-                        {isBookMark && (
                             <ActionButton
-                                onClick={handleBookMark}
-                                icon={
-                                    <FaBookmark className="text-purple-700 text-[0.9rem]" />
-                                }
+                                icon={<FaChartLine />}
+                                count={data?.number_view}
                             />
-                        )}
-                        <ActionButton
-                            icon={<FaChartLine />}
-                            count={data?.number_view}
-                        />
-                        <HiMiniArrowUpTray />
+                            <HiMiniArrowUpTray />
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <PostHosting
+                        item={data}
+                        contentsChattingRef={contentsChattingRef}
+                        setIsVisibleChatting={setIsVisible}
+                        handleTouchStartPost={handleTouchStart}
+                        handleTouchEndPost={handleTouchEnd}
+                        handleLike={handleHeart}
+                        handleSharePost={handleSharePost}
+                        handleBookMark={handleBookMark}
+                    />
+                )}
 
                 {data?.reply?.length > 0 && (
                     <div className="relative mt-9 pb-12 overflow-auto scrollbar-none">
@@ -606,6 +616,7 @@ export default function Details() {
                     )}
                 </div>
                 <RecordModal />
+                {isFullScreen && <ScreenFull postsList={[data]} />}
                 <div
                     onClick={toggleIsRecord}
                     className={`z-40 absolute h-screen w-screen bg-black bg-opacity-10 transition-all duration-500 ${

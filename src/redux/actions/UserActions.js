@@ -516,6 +516,7 @@ export const follow = (stranger_id) => async (dispatch, getState) => {
         dispatch({
             type: USER_FOLLOW_SUCCESS,
             payload: stranger_id,
+            results: data.results,
         });
     } catch (error) {
         dispatch({

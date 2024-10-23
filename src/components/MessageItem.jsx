@@ -37,6 +37,7 @@ import { IoEyeOffSharp } from 'react-icons/io5';
 import HiddenPostComponent from './HiddenPostComponent';
 import { FaRegBookmark } from 'react-icons/fa';
 import ModalDelete from './ModalDelete';
+import PostHosting from './PostHosting';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -133,19 +134,37 @@ function MessageItem({
         }
     }, [reportSuccess]);
 
-    const handleTouchStart = (e) => {
-        pressTimer.current = setTimeout(() => {
-            setTargetElement(
-                document.getElementById(`post-item-reply-${data.id}`),
-            );
-            setRect(targetElement?.getBoundingClientRect());
-            setContextMenuVisible(true);
-        }, 500);
-    };
+    const handleTouchStart = useCallback(
+        (id) => {
+            pressTimer.current = setTimeout(() => {
+                const element = document.getElementById(id);
 
-    const handleTouchEnd = () => {
+                if (element) {
+                    const hiddenElement = element.querySelector('#hidden');
+                    if (hiddenElement) {
+                        hiddenElement.style.display = 'none';
+                    }
+
+                    setTargetElement(element);
+                    setRect(element.getBoundingClientRect());
+                    setContextMenuVisible(true);
+                }
+            }, 500);
+        },
+        [targetElement],
+    );
+
+    const handleTouchEnd = useCallback(() => {
         clearTimeout(pressTimer.current);
-    };
+    }, []);
+
+    const closeContextMenu = useCallback(() => {
+        setContextMenuVisible(false);
+        const hiddenElement = targetElement?.querySelector('#hidden');
+        if (hiddenElement) {
+            hiddenElement.style.display = 'flex';
+        }
+    }, [targetElement]);
 
     const handleHeart = () => {
         if (data?.id) {
@@ -181,12 +200,23 @@ function MessageItem({
         }
     };
 
-    const handleBookMark = () => {
-        if (data?.id) {
-            dispatch(bookMark(data.id));
-            setIsBookMark((prev) => !prev);
-        }
-    };
+    // const handleBookMark = () => {
+    //     if (data?.id) {
+    //         dispatch(bookMark(data.id));
+    //         setIsBookMark((prev) => !prev);
+    //     }
+    // };
+
+    const handleBookMark = useCallback(() => {
+        dispatch(bookMark(data?.id));
+        setIsBookMark((prev) => {
+            setData((prev) => ({
+                ...prev,
+                bookmark: !isBookMark,
+            }));
+            return !prev;
+        });
+    }, [dispatch, data?.id, isBookMark]);
 
     const handleFollow = useCallback(() => {
         dispatch(follow(data?.user_id));
@@ -206,8 +236,6 @@ function MessageItem({
             report: !prev.report,
         }));
     }, [data]);
-
-    const closeContextMenu = () => setContextMenuVisible(false);
 
     const postDetailsUrl = useMemo(() => {
         if (!data?.id) return '';
@@ -267,12 +295,12 @@ function MessageItem({
                 ) : (
                     <>
                         <div
-                            className={`w-full flex items-start appear-animation duration-300 ${
+                            className={`w-full flex items-start ${
                                 position === 'left' ? 'flex-row-reverse' : ''
                             } `}
                         >
                             <div
-                                className={`relative h-10 md:h-12 min-w-10 md:min-w-12 ${
+                                className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
                                     isVisible && isRunAuto && data?.video
                                         ? 'h-16 w-16'
                                         : ''
@@ -334,168 +362,157 @@ function MessageItem({
                                     }`}
                                 ></div>
                             </div>
-                            <div
-                                className={`transition-all duration-300 flex-1 relative rounded-xl p-3 pb-4 bg-white dark:bg-dark2Primary ${
-                                    isVisible
-                                        ? 'shadow-2xl scale-[1.02]'
-                                        : ' shadow-md'
-                                }`}
-                            >
-                                {userInfo?.id === data?.user_id && (
-                                    <div
-                                        className={`absolute top-[-16px] ${position}-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
-                                    >
-                                        <FaRegStar className="text-white" />
-                                        {isBookMark ? (
-                                            <FaBookmark
-                                                className="text-purple-700 text-[0.9rem]"
-                                                onClick={handleBookMark}
-                                            />
-                                        ) : (
-                                            <FaRegBookmark
-                                                className="text-white text-[0.9rem]"
-                                                onClick={handleBookMark}
-                                            />
-                                        )}
-                                        <RiDeleteBin6Line
-                                            onClick={() => {
-                                                setIsOpen(true);
-                                            }}
-                                            className="text-white"
-                                        />
-                                    </div>
-                                )}
+                            {userInfo?.id === data?.user_id ? (
+                                <PostHosting
+                                    item={data}
+                                    contentsChattingRef={contentsChattingRef}
+                                    setIsVisibleChatting={setIsVisible}
+                                    position={position}
+                                    handleTouchStartPost={handleTouchStart}
+                                    handleTouchEndPost={handleTouchEnd}
+                                    handleLike={handleHeart}
+                                    handleSharePost={handleSharePost}
+                                    handleBookMark={handleBookMark}
+                                />
+                            ) : (
                                 <div
-                                    id={`post-item-reply-${data.id}`}
-                                    onTouchStart={handleTouchStart}
-                                    onTouchEnd={handleTouchEnd}
-                                    onClick={() =>
-                                        !contextMenuVisible &&
-                                        handleOnClickPost()
-                                    }
+                                    className={`transition-all duration-300 flex-1 relative rounded-xl p-3 pb-4 bg-white dark:bg-dark2Primary ${
+                                        isVisible
+                                            ? 'shadow-2xl scale-[1.02]'
+                                            : ' shadow-md'
+                                    }`}
                                 >
                                     <div
-                                        className={`flex items-center gap-[5px] ${
-                                            position === 'left'
-                                                ? ' justify-end'
-                                                : ''
-                                        }`}
+                                        id={`post-item-reply-${data.id}`}
+                                        onTouchStart={() =>
+                                            handleTouchStart(
+                                                `post-item-reply-${data.id}`,
+                                            )
+                                        }
+                                        onTouchEnd={handleTouchEnd}
+                                        onClick={() =>
+                                            !contextMenuVisible &&
+                                            handleOnClickPost()
+                                        }
                                     >
-                                        <h5 className="md:text-xl text-black dark:text-white">
-                                            {data.name}
-                                        </h5>
-                                        <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
-                                            {moment
-                                                .unix(data.create_at)
-                                                .locale(language.split('-')[0])
-                                                .fromNow(true)}
-                                        </span>
-                                    </div>
-                                    <p
-                                        className={`${
-                                            position === 'left'
-                                                ? 'text-right'
-                                                : ''
-                                        } dark:text-white`}
-                                    >
-                                        {data.content}
-                                    </p>
-                                    {data?.tag_user_detail && (
-                                        <div className="flex flex-wrap">
-                                            {data?.tag_user_detail?.map(
-                                                (tag, i) => (
-                                                    <span
-                                                        className={`font-semibold dark:text-white mr-2`}
-                                                        key={i}
-                                                    >
-                                                        {tag?.name}
-                                                    </span>
-                                                ),
-                                            )}
-                                        </div>
-                                    )}
-                                    {data?.img && (
-                                        <figure className="max-w-full relative my-2">
-                                            <Avatar
-                                                src={`${
-                                                    data?.img.includes('blob')
-                                                        ? data?.img
-                                                        : `https://talkie.transtechvietnam.com/${data?.img}`
-                                                } `}
-                                                className="min-h-40 h-full w-full object-cover rounded-xl"
-                                            />
-                                        </figure>
-                                    )}
-                                    {/* {data?.video && (
-                            <video
-                                ref={videoRef}
-                                controls
-                                className="w-full mt-2 rounded-xl"
-                                src={`https://talkie.transtechvietnam.com/${data.video}`}
-                            />
-                        )} */}
-                                    {data?.url && (
-                                        <div>
-                                            <LinkPreviewComponent
-                                                url={data.url}
-                                                post_id={data.id}
-                                                // setData={setData}
-                                                dataUrl={data.url}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                                <div
-                                    className={`absolute items-center bottom-[-22px] ${position}-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
-                                >
-                                    <div
-                                        className={`flex items-center text-gray-400`}
-                                    >
-                                        <button
-                                            onClick={handleHeart}
-                                            className={`btn heart ${
-                                                isHeart
-                                                    ? initialLoad
-                                                        ? 'initial-active'
-                                                        : 'active'
-                                                    : ''
-                                            } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
-                                        ></button>
-                                        <span className="ml-2 text-sm font-medium">
-                                            {likeCount}
-                                        </span>
-                                    </div>
-
-                                    <div
-                                        onClick={handleSharePost}
-                                        className={`flex items-center text-gray-400`}
-                                    >
-                                        <PiArrowsClockwiseBold
-                                            color={isShare ? 'green' : ''}
-                                        />
-                                        <span className="ml-2 text-sm font-medium">
-                                            {shareCount}
-                                        </span>
-                                    </div>
-                                    {isBookMark && (
                                         <div
-                                            onClick={handleBookMark}
+                                            className={`flex items-center gap-[5px] ${
+                                                position === 'left'
+                                                    ? ' justify-end'
+                                                    : ''
+                                            }`}
+                                        >
+                                            <h5 className="md:text-xl text-black dark:text-white">
+                                                {data.name}
+                                            </h5>
+                                            <span className="text-gray-500 dark:text-gray-400 font-medium text-sm md:text-base">
+                                                {moment
+                                                    .unix(data.create_at)
+                                                    .locale(
+                                                        language.split('-')[0],
+                                                    )
+                                                    .fromNow(true)}
+                                            </span>
+                                        </div>
+                                        <p
+                                            className={`${
+                                                position === 'left'
+                                                    ? 'text-right'
+                                                    : ''
+                                            } dark:text-white`}
+                                        >
+                                            {data.content}
+                                        </p>
+                                        {data?.tag_user_detail && (
+                                            <div className="flex flex-wrap">
+                                                {data?.tag_user_detail?.map(
+                                                    (tag, i) => (
+                                                        <span
+                                                            className={`font-semibold dark:text-white mr-2`}
+                                                            key={i}
+                                                        >
+                                                            {tag?.name}
+                                                        </span>
+                                                    ),
+                                                )}
+                                            </div>
+                                        )}
+                                        {data?.img && (
+                                            <figure className="max-w-full relative my-2">
+                                                <Avatar
+                                                    src={`${
+                                                        data?.img.includes(
+                                                            'blob',
+                                                        )
+                                                            ? data?.img
+                                                            : `https://talkie.transtechvietnam.com/${data?.img}`
+                                                    } `}
+                                                    className="min-h-40 h-full w-full object-cover rounded-xl"
+                                                />
+                                            </figure>
+                                        )}
+                                        {data?.url && (
+                                            <div>
+                                                <LinkPreviewComponent
+                                                    url={data.url}
+                                                    post_id={data.id}
+                                                    dataUrl={data.url}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div
+                                        className={`absolute items-center bottom-[-22px] ${position}-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-white dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                                    >
+                                        <div
                                             className={`flex items-center text-gray-400`}
                                         >
-                                            <FaBookmark className="text-purple-700 text-[0.9rem]" />
+                                            <button
+                                                onClick={handleHeart}
+                                                className={`btn heart ${
+                                                    isHeart
+                                                        ? initialLoad
+                                                            ? 'initial-active'
+                                                            : 'active'
+                                                        : ''
+                                                } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
+                                            ></button>
+                                            <span className="ml-2 text-sm font-medium">
+                                                {likeCount}
+                                            </span>
                                         </div>
-                                    )}
-                                    <div
-                                        className={`flex items-center text-gray-400`}
-                                    >
-                                        <FaChartLine />
-                                        <span className="ml-2 text-sm font-medium">
-                                            {data.number_view}
-                                        </span>
+
+                                        <div
+                                            onClick={handleSharePost}
+                                            className={`flex items-center text-gray-400`}
+                                        >
+                                            <PiArrowsClockwiseBold
+                                                color={isShare ? 'green' : ''}
+                                            />
+                                            <span className="ml-2 text-sm font-medium">
+                                                {shareCount}
+                                            </span>
+                                        </div>
+                                        {isBookMark && (
+                                            <div
+                                                onClick={handleBookMark}
+                                                className={`flex items-center text-gray-400`}
+                                            >
+                                                <FaBookmark className="text-purple-700 text-[0.9rem]" />
+                                            </div>
+                                        )}
+                                        <div
+                                            className={`flex items-center text-gray-400`}
+                                        >
+                                            <FaChartLine />
+                                            <span className="ml-2 text-sm font-medium">
+                                                {data.number_view}
+                                            </span>
+                                        </div>
+                                        <HiMiniArrowUpTray />
                                     </div>
-                                    <HiMiniArrowUpTray />
                                 </div>
-                            </div>
+                            )}
                         </div>
                         <ModalDelete
                             title="TITLE_DELETE_POST"

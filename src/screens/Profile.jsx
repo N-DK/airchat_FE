@@ -47,6 +47,7 @@ import { BsEmojiFrown } from 'react-icons/bs';
 import { LANGUAGE } from '../constants/language.constant';
 import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
+import ScreenFull from '../components/ScreenFull';
 const ACTIONS = [
     {
         id: 'posts',
@@ -97,6 +98,7 @@ export default function Profile() {
         toggleIsEditProfile,
         toggleShowInviteFriend,
         toggleShowDrawerFollow,
+        isFullScreen,
     } = useContext(AppContext);
 
     const userProfile = useSelector((state) => state.userProfile);
@@ -119,12 +121,13 @@ export default function Profile() {
     const userBookMark = useSelector((state) => state.userBookMark);
     const userSharePost = useSelector((state) => state.userSharePost);
 
-    const { success: isSuccessDeletePost } = userDeletePost;
+    const { success: isSuccessDeletePost, post_id: postIdDelete } =
+        userDeletePost;
     const { userInfo: userInfoProfile, loading: loadingProfile } = userProfile;
     const { userInfo: userInfoStranger, loading: loadingStranger } =
         userProfileStranger;
     const { posts: listPost, loading: loadingListProfile } = postListProfile;
-    const { success: successSubmit, loading: loadingSubmit } = postSubmit;
+    const { success: newPost } = postSubmit;
     const { isSuccess } = userUpdateProfile;
     const { isSuccess: isSuccessFollow } = userFollow;
     const { following: userInfoListFollowing } = userListFollow;
@@ -295,18 +298,47 @@ export default function Profile() {
     }, [isSuccessFollow, dispatch, stranger_id]);
 
     useEffect(() => {
-        if (!loadingSubmit && successSubmit?.id) {
-            dispatch(listPostProfile(showActions, 100, 0));
-            if (isRecord) toggleIsRecord();
+        if (newPost && newPost?.id) {
+            // Chỉ cập nhật state của `Profile`
+            setListPostUserProfile((prev) => {
+                if (!prev.some((post) => post.id === newPost.id)) {
+                    const newPosts = [newPost, ...prev];
+                    console.log('newPosts', isRecord);
+                    return newPosts;
+                }
+                return prev;
+            });
+
+            if (isRecord) {
+                toggleIsRecord();
+            }
+
             dispatch({ type: POST_SUBMIT_RESET });
         }
-    }, [loadingSubmit, showActions, dispatch, toggleIsRecord]);
+    }, [newPost, dispatch, isRecord, toggleIsRecord]);
+
+    // useEffect(() => {
+    //     if (isSuccessDeletePost) {
+    //         dispatch(listPostProfile(showActions, 100, 0));
+    //     }
+    // }, [isSuccessDeletePost, dispatch, showActions]);
 
     useEffect(() => {
         if (isSuccessDeletePost) {
-            dispatch(listPostProfile(showActions, 100, 0));
+            setListPostUserProfile((prev) => {
+                const newPosts = prev.filter(
+                    (post) => post.id !== postIdDelete,
+                );
+
+                return newPosts.map((post) => ({
+                    ...post,
+                    reply: post?.reply?.filter(
+                        (reply) => reply.id !== postIdDelete,
+                    ),
+                }));
+            });
         }
-    }, [isSuccessDeletePost, dispatch, showActions]);
+    }, [isSuccessDeletePost, postIdDelete]);
 
     useEffect(() => {
         if (!loadingProfile && !loadingStranger) {
@@ -681,6 +713,7 @@ export default function Profile() {
 
                 <EditProfile />
                 <RecordModal />
+                {isFullScreen && <ScreenFull postsList={listPostUserProfile} />}
                 <InviteFriend />
                 <DrawerFollower
                     userInfo={userInfo}

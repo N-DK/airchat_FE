@@ -58,7 +58,7 @@ export default function ScreenFull({ postsList }) {
     // }, [currentItemIndex, postsList]);
 
     return (
-        <div className="z-50 h-full w-full fixed right-0 top-0">
+        <div className="z-[999999] h-full w-full fixed right-0 top-0">
             <div
                 ref={contentsChattingRef}
                 className="overflow-auto scrollbar-none h-full"
@@ -72,7 +72,9 @@ export default function ScreenFull({ postsList }) {
                         <div className="grid grid-cols-2 items-center relative z-10">
                             <div className="col-span-1">
                                 <Avatar
-                                    src={`${BASE_URL}${item.avatar}`}
+                                    src={`${BASE_URL}${
+                                        item.avatar ?? item.sender_avt
+                                    }`}
                                     className="w-[120px] h-[120px] md:w-[220px] md:h-[220px] object-cover rounded-full"
                                     alt=""
                                 />
@@ -92,7 +94,7 @@ export default function ScreenFull({ postsList }) {
                                 />
                             </div>
                             <h4 className="col-span-2 text-white line-clamp-4 md:text-4xl">
-                                {item.content}
+                                {item.content ?? item.message}
                             </h4>
                         </div>
 

@@ -27,6 +27,7 @@ import { DEFAULT_PROFILE } from '../constants/image.constant';
 import { LANGUAGE } from '../constants/language.constant';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
+import ScreenFull from '../components/ScreenFull';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
 
@@ -50,6 +51,7 @@ export default function PostsChannel() {
         toggleIsRecord,
         newMessageFromFooter,
         toggleIsEditChannel,
+        isFullScreen,
     } = useContext(AppContext);
     // const { isEditChannel,  } = useContext(AppContext);
 
@@ -332,6 +334,7 @@ export default function PostsChannel() {
             {renderContent()}
             <EditChannel data={{ ...state?.channelData, id }} />
             <RecordModal />
+            {isFullScreen && <ScreenFull postsList={postsList} />}
             <div
                 onClick={toggleIsRecord}
                 className={`z-40 absolute h-screen w-screen bg-black bg-opacity-10 transition-all duration-500 ${

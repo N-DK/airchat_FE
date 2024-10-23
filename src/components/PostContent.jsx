@@ -87,6 +87,13 @@ const renderPostActions = (item) => {
     const [isHeart, setIsHeart] = useState(!!item.heart);
     const [likeCount, setLikeCount] = useState(item?.number_heart || 0);
 
+    const dispatch = useDispatch();
+
+    const handleAction = (action, id, callback) => {
+        dispatch(action(id));
+        callback();
+    };
+
     return (
         <div className="absolute items-center bottom-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
             <div
@@ -144,8 +151,8 @@ function PostContent({ item, contentsChattingRef }) {
     const [rect, setRect] = useState(null);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [currentItemId, setCurrentItemId] = useState(null);
-    const [isVisible, setIsVisible] = useState(false);
     const pressTimer = useRef();
+    const [isVisible, setIsVisible] = useState(false);
     const videoRef = useRef(null);
     const divRef = useRef(null);
 
@@ -291,9 +298,7 @@ function PostContent({ item, contentsChattingRef }) {
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                // threshold: 0.3,
-                // rootMargin: '-100px 0px -610px 0px', //rootMargin: '-200px 0px -510px 0px',
-                threshold: [0.1], // đa dạng giá trị threshold cho nhiều tình huống
+                threshold: [0.1],
                 rootMargin: `-${Math.max(
                     window.innerHeight * 0.1,
                     100,
@@ -315,7 +320,7 @@ function PostContent({ item, contentsChattingRef }) {
     useEffect(() => {
         if (isVisible) {
             if (navigator.vibrate) {
-                navigator.vibrate(100); // Rung 200ms
+                navigator.vibrate(100);
             } else {
                 console.log('Thiết bị không hỗ trợ rung.');
             }
@@ -551,18 +556,18 @@ function PostContent({ item, contentsChattingRef }) {
                                     dispatch(deletePhoto(item?.id));
                                 }}
                             />
-                            <CustomContextMenuDeletePhoto
-                                isVisible={contextMenuVisible}
-                                onClose={closeContextMenu}
-                                targetElement={targetElement}
-                                rect={rect}
-                                handle={handleDeletePhoto}
-                            />
                         </div>
                         {renderPostActions(item)}
                     </div>
                 </div>
             </div>
+            <CustomContextMenuDeletePhoto
+                isVisible={contextMenuVisible}
+                onClose={closeContextMenu}
+                targetElement={targetElement}
+                rect={rect}
+                handle={handleDeletePhoto}
+            />
         </>
     );
 }

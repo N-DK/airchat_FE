@@ -4,6 +4,7 @@ import React, {
     useCallback,
     useMemo,
     useRef,
+    useContext,
 } from 'react';
 import FooterChat from '../components/FooterChat';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -26,6 +27,8 @@ import { EMIT_EVENT, LISTEN_EVENT } from '../constants/sockets.constant';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getProfileStranger, profile } from '../redux/actions/UserActions';
 import { LANGUAGE } from '../constants/language.constant';
+import { AppContext } from '../AppContext';
+import ScreenFull from '../components/ScreenFull';
 
 const ChatRoom = () => {
     const navigate = useNavigate();
@@ -40,6 +43,7 @@ const ChatRoom = () => {
     const [messages, setMessages] = useState(initMessages);
     const refContainer = useRef(null);
     const { language } = useSelector((state) => state.userLanguage);
+    const { isFullScreen } = useContext(AppContext);
 
     useEffect(() => {
         const sortedMessages = initMessages?.sort((a, b) => a?.id - b?.id);
@@ -298,6 +302,7 @@ const ChatRoom = () => {
                 </div>
             </div>
             <RecordModal handle={sendNewMessage} />
+            {isFullScreen && <ScreenFull postsList={messages} />}
             <FooterChat
                 title="messages"
                 isPlay={true}

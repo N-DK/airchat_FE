@@ -35,8 +35,12 @@ export function useAutoScroll(
                 audioRef.current.pause();
             }
             if (postsList[index] && postsList[index].audio) {
+                const audioUrl = postsList[index].audio.startsWith('/')
+                    ? postsList[index].audio.slice(1)
+                    : postsList[index].audio;
+
                 audioRef.current = new Audio(
-                    `https://talkie.transtechvietnam.com/${postsList[index].audio}`,
+                    `https://talkie.transtechvietnam.com/${audioUrl}`,
                 );
                 audioRef.current.playbackRate = isRunSpeed; // Adjust playback speed based on isRunSpeed
                 audioRef.current.play();

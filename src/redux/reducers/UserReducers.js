@@ -291,7 +291,7 @@ export const userFollowReducer = (state = {}, action) => {
         case USER_FOLLOW_SUCCESS:
             return {
                 loading: false,
-                isSuccess: true,
+                isSuccess: action.results,
                 stranger_id: action.payload,
             };
         case USER_FOLLOW_FAIL:

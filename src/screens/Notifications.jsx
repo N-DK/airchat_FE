@@ -39,7 +39,8 @@ const NotificationItem = ({ item }) => {
                         />
                     </figure>
                     <p className="dark:text-white">
-                        {item?.name} {item?.content}
+                        {item?.name}{' '}
+                        {item?.['content_' + language.split('-')[0]]}
                         <span className="text-gray-500 ml-2 dark:text-gray-400">
                             {moment
                                 .unix(item?.created_at)

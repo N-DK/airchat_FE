@@ -23,7 +23,10 @@ import { useAutoScroll } from '../hooks/useAutoScroll';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import { barMenu, listPost, setPostActive } from '../redux/actions/PostActions';
 import { profile } from '../redux/actions/UserActions';
-import { USER_PROFILE_SUCCESS } from '../redux/constants/UserConstants';
+import {
+    USER_FOLLOW_SUCCESS,
+    USER_PROFILE_SUCCESS,
+} from '../redux/constants/UserConstants';
 import {
     connectSocket,
     disconnectSocket,
@@ -240,7 +243,27 @@ export default function Chatting() {
 
     useEffect(() => {
         if (isSuccessFollow) {
-            dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
+            if (redirect === 'see-all') {
+                navigate('/seeall');
+            } else if (redirect?.includes('group-channel')) {
+                const channel_id = redirect?.split('/')[1];
+                dispatch(
+                    listPost(
+                        redirect?.split('/')[0],
+                        INITIAL_LIMIT,
+                        INITIAL_OFFSET,
+                        channel_id,
+                        1,
+                    ),
+                );
+            } else if (redirect !== 'see-all') {
+                dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
+            }
+            dispatch({
+                type: USER_FOLLOW_SUCCESS,
+                payload: null,
+                results: false,
+            });
         }
     }, [isSuccessFollow, dispatch, redirect]);
 
