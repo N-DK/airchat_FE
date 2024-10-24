@@ -301,7 +301,7 @@ export default function Chatting() {
             }
         };
 
-        filterPostsWithAudio();
+        // filterPostsWithAudio();
     }, [postListData]);
 
     useEffect(() => {
@@ -401,7 +401,7 @@ export default function Chatting() {
 
             <AddChannel />
             <RecordModal />
-            {isFullScreen && <ScreenFull postsList={filteredPostList} />}
+            {isFullScreen && <ScreenFull postsList={postListData} />}
 
             <div
                 onClick={modalHandle}

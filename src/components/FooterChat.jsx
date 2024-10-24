@@ -392,6 +392,7 @@ export default function FooterChat({
 
         if (audio) {
             audio.playbackRate = isRunSpeed;
+            audio.volume = 1;
 
             audio.onended = () => {
                 handleScroll(object);
@@ -399,9 +400,9 @@ export default function FooterChat({
 
             try {
                 await audio.play().then(() => {
-                    alert('Đã phát audio');
+                    messageApi.success('Đã phát audio');
+                    dispatch(setObjectAudioCurrent(audio));
                 });
-                dispatch(setObjectAudioCurrent(audio));
             } catch (error) {
                 console.error('Error playing audio:', error);
             }
@@ -430,8 +431,10 @@ export default function FooterChat({
             };
 
             try {
-                await video.play();
-                dispatch(setObjectVideoCurrent(video));
+                await video.play().then(() => {
+                    messageApi.success('Đã phát video');
+                    dispatch(setObjectVideoCurrent(video));
+                });
             } catch (error) {
                 console.error('Error playing video:', error);
             }

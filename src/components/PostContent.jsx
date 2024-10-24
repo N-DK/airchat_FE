@@ -300,19 +300,19 @@ function PostContent({ item, contentsChattingRef }) {
             {
                 threshold: [0.1],
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.15,
+                    window.innerHeight * 0.1,
                     100,
                 )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
         );
 
         if (divRef?.current) {
-            observer.observe(divRef?.current);
+            observer.observe(divRef.current);
         }
 
         return () => {
             if (divRef?.current) {
-                observer.unobserve(divRef?.current);
+                observer.unobserve(divRef.current);
             }
         };
     }, []);

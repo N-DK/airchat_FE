@@ -260,23 +260,22 @@ export default function Profile() {
     }, [userInfo, showActions]);
 
     useEffect(() => {
-        if (isVisible && listPostUserProfile?.length > 0) {
-            // if (navigator.vibrate) {
-            //     navigator.vibrate(100); // Rung 200ms
-            // } else {
-            //     console.log('Thiết bị không hỗ trợ rung.');
-            // }
+        if (isVisible) {
             dispatch(setPostActive(null));
-            dispatch(
-                setObjectActive({
-                    post: null,
-                    audio: null,
-                    element: divRef?.current ?? divBookmarkRef?.current,
-                    parent: refProfile?.current,
-                    video: null,
-                    bonus: -120,
-                }),
-            );
+            if (listPostUserProfile?.length > 0) {
+                dispatch(
+                    setObjectActive({
+                        post: null,
+                        audio: null,
+                        element: divRef?.current ?? divBookmarkRef?.current,
+                        parent: refProfile?.current,
+                        video: null,
+                        bonus: -120,
+                    }),
+                );
+            } else {
+                dispatch(setObjectActive(null));
+            }
         }
     }, [
         isVisible,

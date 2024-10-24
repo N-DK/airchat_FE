@@ -276,7 +276,7 @@ function PostItem({
     }, [targetElement]);
 
     useEffect(() => {
-        if (isVisible) {
+        if (isVisible && document.getElementById(`post-item-${data?.id}`)) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
             } else {

@@ -244,7 +244,10 @@ function MessageItem({
     }, [data?.id, data?.reply]);
 
     useEffect(() => {
-        if (isVisible) {
+        if (
+            isVisible &&
+            document.getElementById(`post-item-reply-${data?.id}`)
+        ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
             } else {
