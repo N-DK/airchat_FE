@@ -28,6 +28,7 @@ import { LANGUAGE } from '../constants/language.constant';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import ScreenFull from '../components/ScreenFull';
+import { CHANNEL_POSTS_RESET } from '../redux/constants/ChannelConstants';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
 
@@ -117,6 +118,7 @@ export default function PostsChannel() {
     useEffect(() => {
         if (posts) {
             setPostList(posts);
+            dispatch({ type: CHANNEL_POSTS_RESET });
         }
     }, [posts]);
 

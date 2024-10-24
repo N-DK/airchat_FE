@@ -235,7 +235,7 @@ export const getReplyAll = (post_id) => async (dispatch, getState) => {
         );
         dispatch({
             type: POST_REPLY_ALL_SUCCESS,
-            payload: data?.data?.[0],
+            payload: data?.data?.[0] ?? [],
         });
     } catch (error) {
         dispatch({

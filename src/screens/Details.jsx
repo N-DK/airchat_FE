@@ -14,7 +14,7 @@ import { TbUpload } from 'react-icons/tb';
 import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
-import { debounce } from 'lodash';
+import { debounce, isArray } from 'lodash';
 
 import { AppContext } from '../AppContext';
 import {
@@ -104,7 +104,7 @@ export default function Details() {
     const pressTimer = useRef();
     const [initialLoad, setInitialLoad] = useState(true);
     const [rect, setRect] = useState(null);
-
+    const [isEmptyData, setIsEmptyData] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const contentsChattingRef = useRef(null);
     const divRef = useRef(null);
@@ -124,8 +124,11 @@ export default function Details() {
     // const userId = new URLSearchParams(location.search).get('userId') || null;
 
     useEffect(() => {
-        if (post) {
+        if (isArray(post)) {
+            setIsEmptyData(true);
+        } else if (post) {
             setData(post);
+            setIsEmptyData(false);
             dispatch({ type: POST_REPLY_ALL_RESET });
         }
     }, [post]);
@@ -568,7 +571,7 @@ export default function Details() {
                 {renderHeader()}
                 <div
                     ref={contentsChattingRef}
-                    className="absolute top-0 left-0 pb-[630px] max-h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
+                    className="absolute top-0 left-0 pb-[630px] max-h-screen h-full w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
                 >
                     {loading ? (
                         <div className="mt-[120px]">
@@ -602,17 +605,19 @@ export default function Details() {
                             )}
                         </>
                     ) : (
-                        <div className="flex appear-animation duration-300 h-screen py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
-                            <div className="flex flex-col items-center justify-center h-full w-full">
-                                <BsEmojiFrown
-                                    size={54}
-                                    className="text-gray-500 dark:text-gray-400 mb-3"
-                                />
-                                <p className="text-center dark:text-gray-400 text-xl">
-                                    {LANGUAGE[language].NOT_FOUND_POST}
-                                </p>
+                        isEmptyData && (
+                            <div className="flex appear-animation duration-300 h-screen py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
+                                <div className="flex flex-col items-center justify-center h-full w-full">
+                                    <BsEmojiFrown
+                                        size={54}
+                                        className="text-gray-500 dark:text-gray-400 mb-3"
+                                    />
+                                    <p className="text-center dark:text-gray-400 text-xl">
+                                        {LANGUAGE[language].NOT_FOUND_POST}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )
                     )}
                 </div>
                 <RecordModal />

@@ -45,9 +45,13 @@ import DrawerFollower from '../components/DrawerFollower';
 import Webcam from 'react-webcam';
 import { BsEmojiFrown } from 'react-icons/bs';
 import { LANGUAGE } from '../constants/language.constant';
-import { debounce } from 'lodash';
+import { debounce, isArray } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import ScreenFull from '../components/ScreenFull';
+import {
+    USER_PROFILE_RESET,
+    USER_PROFILE_STRANGER_RESET,
+} from '../redux/constants/UserConstants';
 const ACTIONS = [
     {
         id: 'posts',
@@ -142,7 +146,9 @@ export default function Profile() {
     const { post } = useSelector((state) => state.setPostActive);
     const { language } = useSelector((state) => state.userLanguage);
     const divRef = useRef(null);
+    const divBookmarkRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
+    const [isEmptyData, setIsEmptyData] = useState(false);
 
     const modalHandle = () => {
         if (isEditProfile) toggleIsEditProfile();
@@ -239,33 +245,47 @@ export default function Profile() {
             observer.observe(divRef.current);
         }
 
+        if (divBookmarkRef?.current) {
+            observer.observe(divBookmarkRef.current);
+        }
+
         return () => {
             if (divRef?.current) {
                 observer.unobserve(divRef.current);
             }
+            if (divBookmarkRef?.current) {
+                observer.unobserve(divBookmarkRef.current);
+            }
         };
-    }, [userInfo]);
+    }, [userInfo, showActions]);
 
     useEffect(() => {
-        if (isVisible) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100); // Rung 200ms
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
+        if (isVisible && listPostUserProfile?.length > 0) {
+            // if (navigator.vibrate) {
+            //     navigator.vibrate(100); // Rung 200ms
+            // } else {
+            //     console.log('Thiết bị không hỗ trợ rung.');
+            // }
             dispatch(setPostActive(null));
             dispatch(
                 setObjectActive({
                     post: null,
                     audio: null,
-                    element: divRef.current,
+                    element: divRef?.current ?? divBookmarkRef?.current,
                     parent: refProfile?.current,
                     video: null,
-                    bonus: -150,
+                    bonus: -120,
                 }),
             );
         }
-    }, [isVisible, refProfile]);
+    }, [
+        isVisible,
+        refProfile,
+        listPostUserProfile,
+        showActions,
+        divRef,
+        divBookmarkRef,
+    ]);
 
     useEffect(() => {
         if (stranger_id) dispatch(getProfileStranger(stranger_id));
@@ -341,10 +361,19 @@ export default function Profile() {
     }, [isSuccessDeletePost, postIdDelete]);
 
     useEffect(() => {
-        if (!loadingProfile && !loadingStranger) {
-            setUserInfo(stranger_id ? userInfoStranger : userInfoProfile);
+        if (userInfoProfile && !stranger_id) {
+            setUserInfo(userInfoProfile);
         }
-    }, [loadingProfile, loadingStranger, stranger_id]);
+
+        if (isArray(userInfoStranger)) {
+            setIsEmptyData(true);
+        } else {
+            if (userInfoStranger && stranger_id) {
+                setUserInfo(userInfoStranger);
+                setIsEmptyData(false);
+            }
+        }
+    }, [userInfoProfile, userInfoStranger, stranger_id]);
 
     useEffect(() => {
         setListPostUserProfile(
@@ -426,7 +455,7 @@ export default function Profile() {
         if (listPostUserProfile?.length > 0) {
             return stranger_id ? (
                 <ListPostItems
-                    postsList={listPostStranger}
+                    postsList={listPostUserProfile}
                     isTurnOnCamera={isTurnOnCameraReply}
                     contentsChattingRef={refProfile}
                     bonusHeight={-70}
@@ -517,7 +546,7 @@ export default function Profile() {
         );
     };
 
-    if (!userInfoStranger && !loadingStranger && stranger_id) {
+    if (!userInfo && isEmptyData && !loadingStranger && stranger_id) {
         return (
             <div className="h-screen flex flex-col">
                 <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
@@ -549,7 +578,14 @@ export default function Profile() {
                     className="overflow-auto scrollbar-none pb-[410px]"
                 >
                     <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
-                        <button onClick={() => navigate(-1)}>
+                        <button
+                            onClick={() => {
+                                navigate(-1);
+                                dispatch({
+                                    type: USER_PROFILE_STRANGER_RESET,
+                                });
+                            }}
+                        >
                             <FaAngleLeft className="text-lg md:text-[22px]" />
                         </button>
                         <h5 className="md:text-2xl">{userInfo?.username}</h5>
@@ -626,7 +662,7 @@ export default function Profile() {
                         </div>
 
                         <div
-                            ref={divRef}
+                            ref={divBookmarkRef}
                             className="sticky top-[90px] left-0 z-30 bg-white dark:bg-darkPrimary px-6 md:px-10 flex pt-4 md:pt-6 gap-4"
                         >
                             {ACTIONS.filter((item) =>

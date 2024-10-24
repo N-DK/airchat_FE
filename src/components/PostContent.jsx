@@ -300,7 +300,7 @@ function PostContent({ item, contentsChattingRef }) {
             {
                 threshold: [0.1],
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.1,
+                    window.innerHeight * 0.15,
                     100,
                 )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
@@ -340,6 +340,7 @@ function PostContent({ item, contentsChattingRef }) {
                     ),
                     parent: contentsChattingRef?.current,
                     video: videoRef.current,
+                    bonus: -70,
                 }),
             );
         }

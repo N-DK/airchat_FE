@@ -398,7 +398,9 @@ export default function FooterChat({
             };
 
             try {
-                await audio.play();
+                await audio.play().then(() => {
+                    alert('Đã phát audio');
+                });
                 dispatch(setObjectAudioCurrent(audio));
             } catch (error) {
                 console.error('Error playing audio:', error);

@@ -16,6 +16,7 @@ import {
     CHANNEL_DELETE_FAIL,
     CHANNEL_DELETE_RESET,
     CHANNEL_ADD_RESET,
+    CHANNEL_POSTS_RESET,
 } from '../constants/ChannelConstants';
 
 export const channelListReducer = (state = { channels: [] }, action) => {
@@ -44,6 +45,8 @@ export const channelPostsReducer = (state = { posts: [] }, action) => {
                 posts: action.payload,
                 owner: action.owner,
             };
+        case CHANNEL_POSTS_RESET:
+            return { posts: null };
         case CHANNEL_POSTS_FAIL:
             return { loading: false, error: action.payload };
         default:

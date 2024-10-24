@@ -481,7 +481,7 @@ export const getProfileStranger =
             );
             dispatch({
                 type: USER_PROFILE_STRANGER_SUCCESS,
-                payload: data.data[0],
+                payload: data.data[0] ?? [],
             });
         } catch (error) {
             dispatch({

@@ -110,6 +110,7 @@ import {
     USER_LOGIN_ERROR_RESET,
     USER_PROFILE_RESET,
     USER_LANGUAGE_SUCCESS,
+    USER_PROFILE_STRANGER_RESET,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -275,6 +276,8 @@ export const userProfileStrangerReducer = (state = {}, action) => {
     switch (action.type) {
         case USER_PROFILE_STRANGER_REQUEST:
             return { loading: true };
+        case USER_PROFILE_STRANGER_RESET:
+            return {};
         case USER_PROFILE_STRANGER_SUCCESS:
             return { loading: false, userInfo: action.payload };
         case USER_PROFILE_STRANGER_FAIL:
