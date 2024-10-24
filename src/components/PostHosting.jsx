@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar } from 'antd';
@@ -34,7 +40,7 @@ import ModalDelete from './ModalDelete';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
-import { heart } from '../redux/actions/PostActions';
+import { addViewPost } from '../redux/actions/UserActions';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -83,9 +89,12 @@ const PostActions = ({ item, position, handleLike }) => {
         <div
             className={`absolute items-center bottom-[-22px] ${
                 position === 'right' ? 'right-0' : 'left-0'
-            } border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+            } border-[5px] border-grayPrimary dark:border-darkPrimary flex gap-4 bg-slatePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
         >
-            <div onClick={handleLike} className="flex items-center text-white">
+            <div
+                onClick={handleLike}
+                className="flex items-center dark:text-white"
+            >
                 {isHeart ? (
                     <FaHeart className="text-red-500" />
                 ) : (
@@ -93,19 +102,19 @@ const PostActions = ({ item, position, handleLike }) => {
                 )}
                 <span className="ml-2 text-sm font-medium">{likeCount}</span>
             </div>
-            <div className="flex items-center text-white">
+            {/* <div className="flex items-center dark:text-white">
                 <PiArrowsClockwiseBold />
+                <span className="ml-2 text-sm font-medium">
+                    {item.number_share}
+                </span>
+            </div> */}
+            <div className="flex items-center dark:text-white">
+                <FaChartLine />
                 <span className="ml-2 text-sm font-medium">
                     {item.number_view}
                 </span>
             </div>
-            <div className="flex items-center text-white">
-                <FaChartLine />
-                <span className="ml-2 text-sm font-medium">
-                    {item.number_share}
-                </span>
-            </div>
-            <HiMiniArrowUpTray className="text-white" />
+            <HiMiniArrowUpTray className="dark:text-white" />
         </div>
     );
 };
@@ -119,7 +128,7 @@ const PostHeader = ({ item, position }) => {
                 position === 'left' ? 'justify-end' : 'justify-start'
             }`}
         >
-            <h5 className="line-clamp-1 md:text-xl text-white dark:text-white">
+            <h5 className="line-clamp-1 md:text-xl dark:text-white">
                 {item.name}
             </h5>
             {item.name_channel && <span className="text-gray-300">in</span>}
@@ -195,13 +204,15 @@ function PostHosting({
         return URL.createObjectURL(selectedFile);
     };
 
-    const handleNavigate = (item) => {
-        const userId =
-            item?.reply?.length > 0
-                ? `/?userId=${item?.reply[0]?.user_id}`
-                : '';
-        navigate(`/posts/details/${item?.id}${userId}`);
-    };
+    const postDetailsUrl = useMemo(() => {
+        const baseUrl = `/posts/details/${data?.id}`;
+        return baseUrl;
+    }, [data?.id]);
+
+    const handleNavigate = useCallback(() => {
+        dispatch(addViewPost(data?.id));
+        navigate(postDetailsUrl);
+    }, [dispatch, data?.id, navigate, postDetailsUrl]);
 
     const handleAction = (action, id, callback) => {
         dispatch(action(id));
@@ -377,7 +388,7 @@ function PostHosting({
                 <div
                     ref={divRef}
                     id={`post-item-profile-${data?.id}`}
-                    className={`relative bg-bluePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
+                    className={`relative bg-slatePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
                         isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
                     }`}
                     onTouchStart={() => {
@@ -389,9 +400,9 @@ function PostHosting({
                         id={'hidden'}
                         className={`absolute top-[-22px] ${
                             position === 'right' ? 'right-0' : 'left-0'
-                        } border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                        } border-[5px] border-grayPrimary dark:border-darkPrimary flex items-center gap-4 bg-slatePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
                     >
-                        <FaRegStar className="text-white" />
+                        <FaRegStar className="dark:text-white" />
                         {isBookMark ? (
                             <FaBookmark
                                 className="text-purple-700 text-[0.9rem]"
@@ -399,7 +410,7 @@ function PostHosting({
                             />
                         ) : (
                             <FaRegBookmark
-                                className="text-white text-[0.9rem]"
+                                className="dark:text-white text-[0.9rem]"
                                 onClick={handleBookMark}
                             />
                         )}
@@ -407,13 +418,13 @@ function PostHosting({
                             onClick={() => {
                                 setIsOpen(true);
                             }}
-                            className="text-white"
+                            className="dark:text-white"
                         />
                     </div>
                     <div onClick={() => handleNavigate(data)}>
                         <PostHeader item={data} position={position} />
                         <p
-                            className={`text-left line-clamp-5 md:text-lg text-white dark:text-white ${
+                            className={`text-left line-clamp-5 md:text-lg dark:text-white ${
                                 position === 'left' ? 'text-right' : 'text-left'
                             }`}
                         >
@@ -423,7 +434,7 @@ function PostHosting({
                             <div className="flex flex-wrap">
                                 {tagsUser?.map((tag, i) => (
                                     <span
-                                        className={`font-semibold dark:text-white text-white mr-2`}
+                                        className={`font-semibold dark:text-white  mr-2`}
                                         key={i}
                                     >
                                         {tag?.name}
@@ -473,7 +484,7 @@ function PostHosting({
                                     handleUploadAvatar(data.id);
                                 }}
                             >
-                                <LuImagePlus className="dark:text-white text-white mr-2" />
+                                <LuImagePlus className="dark:text-white mr-2" />
                             </button>
                             <button
                                 onClick={(e) => {
@@ -482,7 +493,7 @@ function PostHosting({
                                 }}
                             >
                                 <IoMdLink
-                                    className="dark:text-white text-white mr-2"
+                                    className="dark:text-white mr-2"
                                     size={20}
                                 />
                             </button>
@@ -492,7 +503,7 @@ function PostHosting({
                                     handleToggleSearch(data.id);
                                 }}
                             >
-                                <GoMention className="dark:text-white text-white mr-2" />
+                                <GoMention className="dark:text-white  mr-2" />
                             </button>
                         </div>
                         {isShowSearch && (

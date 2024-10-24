@@ -26,13 +26,17 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
     const { toggleIsAddChannel, language } = useContext(AppContext);
 
     useEffect(() => {
-        const channelId = redirect.includes('group-channel')
-            ? redirect.split('/')[1]
-            : null;
-        if (!menus?.some((menu) => menu.channel_id == channelId)) {
-            navigate(`/chatting`);
+        if (menus) {
+            if (redirect && redirect.includes('group-channel')) {
+                const channelId = redirect.includes('group-channel')
+                    ? redirect.split('/')[1]
+                    : null;
+                if (!menus?.some((menu) => menu.channel_id == channelId)) {
+                    navigate(`/chatting`);
+                }
+            }
         }
-    }, [menus]);
+    }, [menus, redirect]);
 
     const Dropdown = ({ item, i }) => {
         const btnRef = useRef();

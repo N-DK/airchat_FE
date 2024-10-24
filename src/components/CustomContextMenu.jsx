@@ -237,6 +237,7 @@ const CustomContextMenu = ({
                         style={{
                             position: 'absolute',
                             ...elementPosition,
+                            color: 'black !important',
                         }}
                     >
                         <div className="dark:bg-darkPrimary w-[250px] bg-white rounded-lg p-2 mb-3">

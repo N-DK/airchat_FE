@@ -2,6 +2,7 @@ import React, {
     useCallback,
     useContext,
     useEffect,
+    useMemo,
     useRef,
     useState,
 } from 'react';
@@ -39,6 +40,7 @@ import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { AppContext } from '../AppContext';
 import { BASE_URL } from '../constants/api.constant';
+import { addViewPost } from '../redux/actions/UserActions';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -112,16 +114,16 @@ const renderPostActions = (item) => {
                 )}
                 <span className="ml-2 text-sm font-medium">{likeCount}</span>
             </div>
-            <div className="flex items-center text-white">
+            {/* <div className="flex items-center text-white">
                 <PiArrowsClockwiseBold />
                 <span className="ml-2 text-sm font-medium">
-                    {item.number_view}
+                    {item.number_share}
                 </span>
-            </div>
+            </div> */}
             <div className="flex items-center text-white">
                 <FaChartLine />
                 <span className="ml-2 text-sm font-medium">
-                    {item.number_share}
+                    {item.number_view}
                 </span>
             </div>
             <HiMiniArrowUpTray className="text-white" />
@@ -186,13 +188,15 @@ function PostContent({ item, contentsChattingRef }) {
         return URL.createObjectURL(selectedFile);
     };
 
-    const handleNavigate = (item) => {
-        const userId =
-            item?.reply?.length > 0
-                ? `/?userId=${item?.reply[0]?.user_id}`
-                : '';
-        navigate(`/posts/details/${item?.id}${userId}`);
-    };
+    const postDetailsUrl = useMemo(() => {
+        const baseUrl = `/posts/details/${data?.id}`;
+        return baseUrl;
+    }, [data?.id]);
+
+    const handleNavigate = useCallback(() => {
+        dispatch(addViewPost(data?.id));
+        navigate(postDetailsUrl);
+    }, [dispatch, data?.id, navigate, postDetailsUrl]);
 
     const handleToggleBookMark = () => {
         handleAction(bookMark, item.id, () => {
