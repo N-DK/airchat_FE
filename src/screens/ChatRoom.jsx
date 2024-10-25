@@ -139,7 +139,7 @@ const ChatRoom = () => {
                 });
                 if (userInfo?.id != id) {
                     setMessages((prev) => {
-                        const blob = base64ToBlob(audio, 'audio/wav');
+                        const blob = base64ToBlob(audio, 'audio/mp3');
                         const audioURL = URL.createObjectURL(blob);
 
                         return [

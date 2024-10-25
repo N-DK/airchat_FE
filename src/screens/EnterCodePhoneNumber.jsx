@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { CHECK_NUMBER_PHONE_RESET } from '../redux/constants/UserConstants';
-import { login } from '../redux/actions/UserActions';
 import LoadingSpinner from '../components/LoadingSpinner';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';

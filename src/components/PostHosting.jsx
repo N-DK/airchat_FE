@@ -41,6 +41,7 @@ import { HiMiniArrowUpTray } from 'react-icons/hi2';
 import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { addViewPost } from '../redux/actions/UserActions';
+import { Howl, Howler } from 'howler';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -338,9 +339,12 @@ function PostHosting({
                 setObjectActive({
                     post: data,
                     audio: data?.audio
-                        ? new Audio(
-                              `https://talkie.transtechvietnam.com/${data?.audio}`,
-                          )
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
                         : null,
                     element: document.getElementById(
                         `post-item-profile-${data?.id}`,
@@ -350,7 +354,7 @@ function PostHosting({
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef]);
+    }, [isVisible, contentsChattingRef, videoRef, data]);
 
     useEffect(() => {
         if (debouncedSearch) {

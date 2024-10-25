@@ -230,17 +230,16 @@ export const checkUserAccount = (email) => async (dispatch) => {
 };
 
 export const checkUserNumberPhone =
-    (numberphone, isSuccess = false) =>
+    (phone, isSuccess = false) =>
     async (dispatch) => {
         try {
             dispatch({
                 type: CHECK_NUMBER_PHONE_REQUEST,
             });
             const { data } = await axios.post(
-                `https://talkie.transtechvietnam.com/users/checknumberphone`,
+                `https://talkie.transtechvietnam.com/check-phone`,
                 {
-                    numberphone,
-                    isSuccess,
+                    phone,
                 },
             );
             dispatch({

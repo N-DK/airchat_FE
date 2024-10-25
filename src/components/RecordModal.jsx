@@ -24,6 +24,7 @@ import Webcam from 'react-webcam';
 import { useLocation } from 'react-router-dom';
 import { listChannel } from '../redux/actions/ChannelActions';
 import { LANGUAGE } from '../constants/language.constant';
+import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -34,7 +35,7 @@ export default function RecordModal({ handle }) {
     const { post } = useSelector((state) => state.setPostActive);
     const { menus } = useSelector((state) => state.menuBar);
 
-    const { loading } = postSubmit;
+    const { loading, success: newPost } = postSubmit;
     const [permission, setPermission] = useState(false);
     const [audio, setAudio] = useState(null);
     const [video, setVideo] = useState(null);
@@ -61,8 +62,8 @@ export default function RecordModal({ handle }) {
         let audioFile = null;
         let videoFile = null;
         if (recordOption === 'audio') {
-            audioFile = new File([blob], 'audio-recording.wav', {
-                type: 'audio/wav',
+            audioFile = new File([blob], 'audio-recording.mp3', {
+                type: 'audio/mp3',
             });
         } else {
             videoFile = new File([blob], 'video-recording.webm', {
@@ -239,10 +240,11 @@ export default function RecordModal({ handle }) {
     }, [isRecord]);
 
     useEffect(() => {
-        if (!loading) {
+        if (newPost && newPost?.id) {
             if (isRecord) toggleIsRecord();
+            dispatch({ type: POST_SUBMIT_RESET });
         }
-    }, [loading]);
+    }, [newPost, isRecord, toggleIsRecord, dispatch]);
 
     useEffect(() => {
         if (audio) {

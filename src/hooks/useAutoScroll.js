@@ -39,14 +39,15 @@ export function useAutoScroll(
                     ? postsList[index].audio.slice(1)
                     : postsList[index].audio;
 
-                audioRef.current = new Audio(
-                    `https://talkie.transtechvietnam.com/${audioUrl}`,
-                );
-                audioRef.current.playbackRate = isRunSpeed; // Adjust playback speed based on isRunSpeed
+                audioRef.current = new Howl({
+                    src: [`https://talkie.transtechvietnam.com/${audioUrl}`],
+                    html5: true,
+                });
+                audioRef.current.rate(isRunSpeed);
                 audioRef.current.play();
-                audioRef.current.onended = () => {
+                audioRef.current.on('end', () => {
                     autoScrollToNextItem(index + 1);
-                };
+                });
             } else {
                 autoScrollToNextItem(index + 1);
             }

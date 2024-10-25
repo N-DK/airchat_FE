@@ -23,7 +23,9 @@ import React from 'react';
 import ChatRoom from './screens/ChatRoom';
 import SearchScreen from './screens/SearchScreen';
 import PrivacyModal from './components/ModalPolicy';
+import 'react-phone-input-2/lib/style.css';
 import './App.css';
+
 import 'moment/locale/vi';
 
 function App() {

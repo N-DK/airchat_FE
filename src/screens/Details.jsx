@@ -45,6 +45,7 @@ import { LANGUAGE } from '../constants/language.constant';
 import ModalDelete from '../components/ModalDelete';
 import PostHosting from '../components/PostHosting';
 import ScreenFull from '../components/ScreenFull';
+import { Howl } from 'howler';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -120,6 +121,9 @@ export default function Details() {
     const { success: newPost } = useSelector((state) => state.postSubmit);
     const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const { language } = useSelector((state) => state.userLanguage);
+    const { success: isSuccessDeletePost, post_id: postIdDelete } = useSelector(
+        (state) => state.userDeletePost,
+    );
 
     // const userId = new URLSearchParams(location.search).get('userId') || null;
 
@@ -185,7 +189,10 @@ export default function Details() {
     }, [reportSuccess]);
 
     useEffect(() => {
-        if (isVisible && document.getElementById(`post-item-${data?.id}`)) {
+        if (
+            isVisible &&
+            document.getElementById(`post-item-reply-${data?.id}`)
+        ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
             } else {
@@ -196,9 +203,12 @@ export default function Details() {
                 setObjectActive({
                     post: data,
                     audio: data?.audio
-                        ? new Audio(
-                              `https://talkie.transtechvietnam.com/${data?.audio}`,
-                          )
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
                         : null,
                     element: document.getElementById(
                         `post-item-reply-${data?.id}`,
@@ -214,6 +224,25 @@ export default function Details() {
     useEffect(() => {
         if (data && !isHeart) setInitialLoad(false);
     }, [isHeart, data]);
+
+    useEffect(() => {
+        if (isSuccessDeletePost) {
+            setData((prev) => {
+                if (prev?.id === postIdDelete) {
+                    return {};
+                }
+
+                const newReply = prev?.reply?.filter(
+                    (post) => post?.id !== postIdDelete,
+                );
+
+                return {
+                    ...prev,
+                    reply: newReply,
+                };
+            });
+        }
+    }, [isSuccessDeletePost, postIdDelete]);
 
     useEffect(() => {
         if (newPost?.reply_post && newPost?.reply_post === data?.id) {
@@ -232,10 +261,8 @@ export default function Details() {
                 }
                 return post;
             });
-            if (isRecord) toggleIsRecord();
-            dispatch({ type: POST_SUBMIT_RESET });
         }
-    }, [newPost]);
+    }, [newPost, dispatch]);
 
     useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());

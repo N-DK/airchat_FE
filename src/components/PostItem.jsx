@@ -39,6 +39,7 @@ import 'moment/locale/vi';
 import ModalDelete from './ModalDelete';
 import PostContent from './PostContent';
 import PostHosting from './PostHosting';
+import { Howl, Howler } from 'howler';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -194,9 +195,6 @@ function PostItem({
                     });
                     return newPosts;
                 });
-
-                if (isRecord) toggleIsRecord();
-                dispatch({ type: POST_SUBMIT_RESET });
             } else if (!newPost?.reply_post) {
                 setList((prev) => {
                     if (!prev.some((post) => post.id === newPost.id)) {
@@ -206,17 +204,15 @@ function PostItem({
                     }
                     return prev;
                 });
-                if (isRecord) toggleIsRecord();
-                dispatch({ type: POST_SUBMIT_RESET });
             }
         }
-    }, [newPost, setList, isRecord, toggleIsRecord, dispatch]);
+    }, [newPost, setList, dispatch]);
 
     useEffect(() => {
         if (isSuccessDeletePost) {
             setList((prev) => {
-                const newPosts = prev.filter(
-                    (post) => post.id !== postIdDelete,
+                const newPosts = prev?.filter(
+                    (post) => post?.id !== postIdDelete,
                 );
 
                 return newPosts.map((post) => ({
@@ -287,9 +283,12 @@ function PostItem({
                 setObjectActive({
                     post: data,
                     audio: data?.audio
-                        ? new Audio(
-                              `https://talkie.transtechvietnam.com/${data?.audio}`,
-                          )
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
                         : null,
                     element: document.getElementById(`post-item-${data?.id}`),
                     parent: contentsChattingRef?.current,

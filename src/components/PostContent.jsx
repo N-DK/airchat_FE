@@ -41,6 +41,7 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { AppContext } from '../AppContext';
 import { BASE_URL } from '../constants/api.constant';
 import { addViewPost } from '../redux/actions/UserActions';
+import { Howl, Howler } from 'howler';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -193,6 +194,10 @@ function PostContent({ item, contentsChattingRef }) {
         return baseUrl;
     }, [data?.id]);
 
+    useEffect(() => {
+        if (item) setData(item);
+    }, [item]);
+
     const handleNavigate = useCallback(() => {
         dispatch(addViewPost(data?.id));
         navigate(postDetailsUrl);
@@ -322,7 +327,10 @@ function PostContent({ item, contentsChattingRef }) {
     }, []);
 
     useEffect(() => {
-        if (isVisible) {
+        if (
+            isVisible &&
+            document.getElementById(`post-item-profile-${data?.id}`)
+        ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100);
             } else {
@@ -335,9 +343,12 @@ function PostContent({ item, contentsChattingRef }) {
                 setObjectActive({
                     post: data,
                     audio: data?.audio
-                        ? new Audio(
-                              `https://talkie.transtechvietnam.com/${data?.audio}`,
-                          )
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
                         : null,
                     element: document.getElementById(
                         `post-item-profile-${data?.id}`,
@@ -348,12 +359,16 @@ function PostContent({ item, contentsChattingRef }) {
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef]);
+    }, [isVisible, contentsChattingRef, videoRef, data]);
 
     return (
         <>
             <div className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
-                <div className="relative h-10 md:h-12 min-w-10 md:min-w-12">
+                <div
+                    className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
+                        isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
+                    }`}
+                >
                     {data?.video && isVisible && isRunAuto ? (
                         <div className="w-full h-full">
                             <video
@@ -380,7 +395,7 @@ function PostContent({ item, contentsChattingRef }) {
                         }`}
                     ></div>
                 </div>
-                <div className="w-full">
+                <div className="flex-1">
                     <div
                         ref={divRef}
                         className={`relative bg-bluePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
@@ -413,6 +428,14 @@ function PostContent({ item, contentsChattingRef }) {
                                 <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
                                     {data.content}
                                 </p>
+                                {/* {data?.audio && (
+                                    <div className="mt-2">
+                                        <audio
+                                            controls
+                                            src={`https://talkie.transtechvietnam.com/${data?.audio}`}
+                                        />
+                                    </div>
+                                )} */}
                                 {(data?.tag_user || tagsUser?.length > 0) && (
                                     <div className="flex flex-wrap">
                                         {tagsUser?.map((tag, i) => (
@@ -425,6 +448,7 @@ function PostContent({ item, contentsChattingRef }) {
                                         ))}
                                     </div>
                                 )}
+
                                 {(data?.img || file) && (
                                     <figure
                                         onTouchStart={(e) => {

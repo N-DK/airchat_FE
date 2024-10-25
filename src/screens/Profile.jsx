@@ -97,12 +97,15 @@ export default function Profile() {
     const {
         isEditProfile,
         isRecord,
+        isRunAuto,
         showDrawerFollow,
         toggleIsRecord,
         toggleIsEditProfile,
+        toggleIsRunAuto,
         toggleShowInviteFriend,
         toggleShowDrawerFollow,
         isFullScreen,
+        newMessageFromFooter,
     } = useContext(AppContext);
 
     const userProfile = useSelector((state) => state.userProfile);
@@ -318,23 +321,15 @@ export default function Profile() {
 
     useEffect(() => {
         if (newPost && newPost?.id) {
-            // Chỉ cập nhật state của `Profile`
             setListPostUserProfile((prev) => {
                 if (!prev.some((post) => post.id === newPost.id)) {
                     const newPosts = [newPost, ...prev];
-                    console.log('newPosts', isRecord);
                     return newPosts;
                 }
                 return prev;
             });
-
-            if (isRecord) {
-                toggleIsRecord();
-            }
-
-            dispatch({ type: POST_SUBMIT_RESET });
         }
-    }, [newPost, dispatch, isRecord, toggleIsRecord]);
+    }, [newPost, dispatch]);
 
     // useEffect(() => {
     //     if (isSuccessDeletePost) {
@@ -549,7 +544,12 @@ export default function Profile() {
         return (
             <div className="h-screen flex flex-col">
                 <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
-                    <button onClick={() => navigate(-1)}>
+                    <button
+                        onClick={() => {
+                            if (isRunAuto) toggleIsRunAuto();
+                            navigate(-1);
+                        }}
+                    >
                         <FaAngleLeft className="text-lg md:text-[22px]" />
                     </button>
                 </div>
@@ -733,10 +733,9 @@ export default function Profile() {
                                         {userInfo?.name}
                                     </h5>
                                     <button className="text-gray-400">
-                                        {
+                                        {newMessageFromFooter ||
                                             LANGUAGE[language]
-                                                .NEW_POST_TO_FOLLOWERS
-                                        }
+                                                .NEW_POST_TO_FOLLOWERS}
                                     </button>
                                 </div>
                             </div>

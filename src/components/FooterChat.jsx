@@ -22,7 +22,8 @@ import {
     setObjectVideoCurrent,
 } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
-
+import useDebounce from '../hooks/useDebounce';
+import { debounce } from 'lodash';
 export default function FooterChat({
     isSwiping,
     title,
@@ -85,6 +86,7 @@ export default function FooterChat({
     const recognitionRef = useRef(null);
     const { post } = useSelector((state) => state.setPostActive);
     const { object } = useSelector((state) => state.setObjectActive);
+    const objectDebounce = useDebounce(object, 200);
     const { audioCurrent } = useSelector(
         (state) => state.setObjectAudioCurrent,
     );
@@ -99,6 +101,7 @@ export default function FooterChat({
             toggleIsRecord();
         } else {
             if (name !== 'mic') {
+                if (isRunAuto) toggleIsRunAuto();
                 navigate(`/${name}`);
             }
         }
@@ -167,7 +170,7 @@ export default function FooterChat({
                         type:
                             recordOption === 'video'
                                 ? 'video/webm'
-                                : 'audio/wav', // Thiết lập loại blob
+                                : 'audio/mp3', // Thiết lập loại blob
                     });
                     const reader = new FileReader();
                     reader.readAsDataURL(audioBlob); // Đọc blob dưới dạng URL
@@ -217,6 +220,22 @@ export default function FooterChat({
         return new Blob([ab], { type: mimeType });
     };
 
+    function playWavFile(url) {
+        fetch(url)
+            .then((response) => response.arrayBuffer())
+            .then((arrayBuffer) => {
+                const audioContext = new (window.AudioContext ||
+                    window.webkitAudioContext)();
+                audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination);
+                    source.start(0);
+                });
+            })
+            .catch((error) => console.error('Error playing WAV file:', error));
+    }
+
     useEffect(() => {
         if (isStartRecord) {
             console.log('IS START RECORD');
@@ -240,9 +259,9 @@ export default function FooterChat({
                 let audioFile = null;
                 let videoFile = null;
                 if (audio) {
-                    const audioBlob = base64ToBlob(audio, 'audio/wav');
-                    audioFile = new File([audioBlob], 'audio-recording.wav', {
-                        type: 'audio/wav',
+                    const audioBlob = base64ToBlob(audio, 'audio/mp3');
+                    audioFile = new File([audioBlob], 'audio-recording.mp3', {
+                        type: 'audio/mp3',
                     });
                 } else if (video) {
                     const videoBlob = base64ToBlob(video, 'video/webm');
@@ -267,6 +286,10 @@ export default function FooterChat({
                     ),
                 );
             }
+            setAudio(null);
+            setNewMessage('');
+            setNewMessageFromFooter('');
+        } else if (touchStartX < 120) {
             setAudio(null);
             setNewMessage('');
             setNewMessageFromFooter('');
@@ -316,7 +339,7 @@ export default function FooterChat({
     useEffect(() => {
         if (!isRunAuto || isFullScreen) {
             if (
-                (audioCurrent && !audioCurrent.paused) ||
+                (audioCurrent && audioCurrent.playing()) ||
                 (videoCurrent && !videoCurrent.paused)
             ) {
                 audioCurrent?.pause();
@@ -325,7 +348,7 @@ export default function FooterChat({
         } else if (isRunAuto && !isFullScreen && object) {
             if (object?.audio) {
                 if (object?.audio === audioCurrent) {
-                    if (audioCurrent?.paused) {
+                    if (!audioCurrent.playing()) {
                         audioCurrent.play();
                     }
                 } else {
@@ -347,7 +370,7 @@ export default function FooterChat({
 
     useEffect(() => {
         if (audioCurrent) {
-            audioCurrent.playbackRate = isRunSpeed;
+            audioCurrent.rate(isRunSpeed);
         } else if (videoCurrent) {
             videoCurrent.playbackRate = isRunSpeed;
         }
@@ -378,38 +401,36 @@ export default function FooterChat({
         }
     };
 
-    async function handleAudioPlayback(object) {
-        if (audioCurrent && !audioCurrent.paused) {
+    const handleAudioPlayback = async (object) => {
+        if (audioCurrent && audioCurrent.playing()) {
             await new Promise((resolve) => {
-                audioCurrent.onpause = () => {
+                audioCurrent.once('stop', () => {
                     resolve();
-                };
-                audioCurrent.pause();
+                });
+                audioCurrent.stop();
             });
         }
 
         const audio = object?.audio;
 
         if (audio) {
-            audio.playbackRate = isRunSpeed;
-            audio.volume = 1;
+            audio.volume(1);
+            audio.rate(isRunSpeed);
 
-            audio.onended = () => {
+            audio.off('end');
+            audio.on('end', () => {
                 handleScroll(object);
-            };
+            });
 
-            try {
-                await audio.play().then(() => {
-                    messageApi.success('Đã phát audio');
-                    dispatch(setObjectAudioCurrent(audio));
-                });
-            } catch (error) {
-                console.error('Error playing audio:', error);
-            }
+            audio.play();
+
+            audio.once('play', () => {
+                dispatch(setObjectAudioCurrent(audio));
+            });
         } else {
             console.error('Audio object is undefined');
         }
-    }
+    };
 
     const handleVideoPlayback = async (object) => {
         if (videoCurrent && !videoCurrent.paused) {
@@ -430,14 +451,14 @@ export default function FooterChat({
                 handleScroll(object);
             };
 
-            try {
-                await video.play().then(() => {
-                    messageApi.success('Đã phát video');
+            video
+                .play()
+                .then(() => {
                     dispatch(setObjectVideoCurrent(video));
+                })
+                .catch((error) => {
+                    console.error('Error playing video:', error);
                 });
-            } catch (error) {
-                console.error('Error playing video:', error);
-            }
         } else {
             console.error('Video object is undefined');
         }

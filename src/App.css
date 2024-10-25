@@ -35,6 +35,20 @@ body {
     animation: appear 0.5s ease-out forwards !important;
 }
 
+/* styles.css */
+.react-tel-input .country-list .country.highlight {
+    color: black;
+}
+
+.react-tel-input .selected-flag:hover,
+.react-tel-input .selected-flag:focus {
+    background: transparent !important;
+}
+
+.react-tel-input .flag-dropdown.open .selected-flag {
+    background-color: transparent !important;
+}
+
 @keyframes appear {
     from {
         opacity: 0;

@@ -38,7 +38,7 @@ import HiddenPostComponent from './HiddenPostComponent';
 import { FaRegBookmark } from 'react-icons/fa';
 import ModalDelete from './ModalDelete';
 import PostHosting from './PostHosting';
-
+import { Howl } from 'howler';
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 function MessageItem({
@@ -260,9 +260,12 @@ function MessageItem({
                 setObjectActive({
                     post: data,
                     audio: data?.audio
-                        ? new Audio(
-                              `https://talkie.transtechvietnam.com/${data?.audio}`,
-                          )
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
                         : null,
                     element: document.getElementById(
                         `post-item-reply-${data?.id}`,
