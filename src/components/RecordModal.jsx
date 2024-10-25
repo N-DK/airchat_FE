@@ -8,7 +8,7 @@ import { submitPost } from '../redux/actions/PostActions';
 import { useDispatch, useSelector } from 'react-redux';
 import LoadingSpinner from './LoadingSpinner';
 import { HiPause } from 'react-icons/hi2';
-import { FaArrowUp } from 'react-icons/fa6';
+import { FaArrowUp, FaRegCirclePlay } from 'react-icons/fa6';
 import RecordRTC from 'recordrtc';
 import React from 'react';
 import ModalDelete from './ModalDelete';
@@ -25,6 +25,8 @@ import { useLocation } from 'react-router-dom';
 import { listChannel } from '../redux/actions/ChannelActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+import WavesurferPlayer from '@wavesurfer/react';
+import { FaRegPauseCircle } from 'react-icons/fa';
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -45,17 +47,21 @@ export default function RecordModal({ handle }) {
     const [recognition, setRecognition] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [isAllow, setIsAllow] = useState(false);
-    const [duration, setDuration] = useState(0);
+    const [duration, setDuration] = useState('');
     const [file, setFile] = useState(null);
     const [isOpenLink, setIsOpenLink] = useState(false);
     const [isOpenDeletePhoto, setIsOpenDeletePhoto] = useState(false);
-    const { channels } = useSelector((state) => state.channelList);
-
+    const [wavesurfer, setWavesurfer] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [result, setResult] = useState([]);
     const [url, setUrl] = useState('');
+
     const debouncedSearch = useDebounce(searchText, 500);
+    const userTheme = useSelector((state) => state.userTheme);
+    const { channels } = useSelector((state) => state.channelList);
     const { language } = useSelector((state) => state.userLanguage);
+    const { theme } = userTheme;
 
     const submitRecordHandle = () => {
         const blob = recorder.getBlob();
@@ -173,6 +179,27 @@ export default function RecordModal({ handle }) {
         });
     }, []);
 
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes.toString().padStart(2, '0')}:${secs
+            .toString()
+            .padStart(2, '0')}`;
+    };
+
+    const onReady = (ws) => {
+        setWavesurfer(ws);
+        setIsPlaying(false);
+    };
+
+    const onAudioprocess = (ws) => {
+        setDuration(formatTime(ws.getCurrentTime()));
+    };
+
+    const onPlayPause = () => {
+        wavesurfer && wavesurfer.playPause();
+    };
+
     useEffect(() => {
         if (permission) {
             startRecordingHandle();
@@ -180,6 +207,10 @@ export default function RecordModal({ handle }) {
             stopRecordingHandle();
         }
     }, [permission]);
+
+    useEffect(() => {
+        if (wavesurfer) setDuration(formatTime(wavesurfer?.getDuration()));
+    }, [wavesurfer]);
 
     useEffect(() => {
         if (debouncedSearch) {
@@ -247,44 +278,34 @@ export default function RecordModal({ handle }) {
     }, [newPost, isRecord, toggleIsRecord, dispatch]);
 
     useEffect(() => {
-        if (audio) {
-            const audioElement = new Audio(audio);
-
-            // Xử lý sự kiện khi metadata được tải thành công
-            const handleLoadedMetadata = () => {
-                setDuration(audioElement.duration); // Cập nhật duration khi metadata có sẵn
-                setAudio(audioElement);
-            };
-
-            // Lắng nghe sự kiện 'loadedmetadata'
-            audioElement.addEventListener(
-                'loadedmetadata',
-                handleLoadedMetadata,
-            );
-
-            // Xử lý lỗi nếu tệp âm thanh không hợp lệ
-            audioElement.addEventListener('error', () => {
-                console.error("Audio file couldn't be loaded.");
-            });
-
-            // Cleanup sự kiện khi component unmount
-            return () => {
-                audioElement.removeEventListener(
-                    'loadedmetadata',
-                    handleLoadedMetadata,
-                );
-            };
-        }
+        // if (audio) {
+        //     const audioElement = new Audio(audio);
+        //     // Xử lý sự kiện khi metadata được tải thành công
+        //     const handleLoadedMetadata = () => {
+        //         setDuration(audioElement.duration); // Cập nhật duration khi metadata có sẵn
+        //         setAudio(audioElement);
+        //     };
+        //     // Lắng nghe sự kiện 'loadedmetadata'
+        //     audioElement.addEventListener(
+        //         'loadedmetadata',
+        //         handleLoadedMetadata,
+        //     );
+        //     // Xử lý lỗi nếu tệp âm thanh không hợp lệ
+        //     audioElement.addEventListener('error', () => {
+        //         console.error("Audio file couldn't be loaded.");
+        //     });
+        //     // Cleanup sự kiện khi component unmount
+        //     return () => {
+        //         audioElement.removeEventListener(
+        //             'loadedmetadata',
+        //             handleLoadedMetadata,
+        //         );
+        //     };
+        // }
     }, [audio]);
 
     const convertObjectURL = (selectedFile) => {
         return selectedFile ? URL.createObjectURL(selectedFile) : null;
-    };
-
-    const formatTime = (lengthInSeconds) => {
-        const minutes = Math.floor(lengthInSeconds / 60);
-        const seconds = lengthInSeconds % 60;
-        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
     const handleUploadAvatar = () => {
@@ -474,21 +495,62 @@ export default function RecordModal({ handle }) {
                     </div>
                 </div>
 
-                <div className={`flex justify-center items-center gap-5`}>
+                <div
+                    className={`flex ${
+                        (audio || video) && recordContents
+                            ? ''
+                            : 'justify-center'
+                    } items-center gap-5`}
+                >
                     <div
                         className={`${
                             (audio || video) && recordContents && !permission
                                 ? 'md:w-full opacity-100'
                                 : 'w-0 opacity-0'
-                        } transition-all flex justify-end duration-500`}
+                        } transition-all flex ${
+                            (audio || video) && recordContents ? 'flex-1' : ''
+                        } justify-end duration-500`}
                     >
-                        {audio && (
+                        {audio && recordContents && (
                             <div className="relative w-full">
-                                <SoundWave play={true} color="white" />
-                                {/* <span className="absolute -top-8 left-0 text-bluePrimary text-lg">
-                                    {formatTime(duration)} Actions
-                                </span> */}
+                                <div className="flex items-center mb-4">
+                                    {duration && (
+                                        <span className="text-bluePrimary mr-4">
+                                            {duration}
+                                        </span>
+                                    )}
+                                    <button
+                                        onClick={onPlayPause}
+                                        className=" text-bluePrimary"
+                                    >
+                                        {isPlaying ? (
+                                            <FaRegPauseCircle size={40} />
+                                        ) : (
+                                            <FaRegCirclePlay size={40} />
+                                        )}
+                                    </button>
+                                </div>
+                                <WavesurferPlayer
+                                    progressColor={'#3186FE'}
+                                    cursorWidth={2}
+                                    height={80}
+                                    width={'100%'}
+                                    waveColor={'white'}
+                                    url={audio}
+                                    normalize={true}
+                                    backend="WebAudio"
+                                    barWidth={2}
+                                    barGap={3}
+                                    cursorColor="transparent"
+                                    onReady={onReady}
+                                    onAudioprocess={onAudioprocess}
+                                    onPlay={() => setIsPlaying(true)}
+                                    onPause={() => setIsPlaying(false)}
+                                />
                             </div>
+                            // <div className="flex-1 items-center">
+
+                            // </div>
                         )}
                         {video && (
                             <video

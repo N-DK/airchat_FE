@@ -74,7 +74,7 @@ export const postListReducer = (state = { posts: [] }, action) => {
                 posts: action.payload,
             };
         case POST_LIST_RESET:
-            return { posts: [] };
+            return { posts: null };
         case POST_LIST_FAIL:
             return { loading: false, error: action.payload };
         default:

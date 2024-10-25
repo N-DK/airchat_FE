@@ -195,18 +195,18 @@ function PostItem({
                     });
                     return newPosts;
                 });
-            } else if (!newPost?.reply_post) {
+            } else if (newPost?.id && !newPost?.reply_post) {
                 setList((prev) => {
-                    if (!prev.some((post) => post.id === newPost.id)) {
+                    if (!prev.some((post) => post?.id === newPost?.id)) {
                         const newPosts = [newPost, ...prev];
-
                         return newPosts;
                     }
+
                     return prev;
                 });
             }
         }
-    }, [newPost, setList, dispatch]);
+    }, [newPost, setList]);
 
     useEffect(() => {
         if (isSuccessDeletePost) {

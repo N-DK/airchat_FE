@@ -36,6 +36,7 @@ import Webcam from 'react-webcam';
 import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
+import { POST_LIST_RESET } from '../redux/constants/PostConstants';
 
 const INITIAL_LIMIT = 25;
 const INITIAL_OFFSET = 0;
@@ -63,6 +64,7 @@ export default function Chatting() {
     const [notifyMessage, setNotifyMessage] = useState('');
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
+    const [postListData, setPostListData] = useState([]);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { search } = useLocation();
@@ -77,11 +79,7 @@ export default function Chatting() {
     );
 
     const { channel, error } = useSelector((state) => state.channelAdd);
-    const {
-        posts: postListData,
-        pages,
-        loading,
-    } = useSelector((state) => state.postList);
+    const { posts, pages, loading } = useSelector((state) => state.postList);
 
     const {
         isAddChannel,
@@ -145,14 +143,19 @@ export default function Chatting() {
     );
 
     useEffect(() => {
+        if (posts) {
+            setPostListData(posts);
+            dispatch({ type: POST_LIST_RESET });
+        }
+    }, [posts, dispatch]);
+
+    useEffect(() => {
         const observer = new IntersectionObserver(
             debounce(([entry]) => {
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                // threshold: 0.45,
-                // rootMargin: '-100px 0px -610px 0px',
-                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                threshold: [0.3],
                 rootMargin: `-${Math.max(
                     window.innerHeight * 0.1,
                     100,
@@ -318,7 +321,7 @@ export default function Chatting() {
         }
     }, [channel, error]);
 
-    if (!postListData) return null;
+    // if (!postListData) return null;
 
     return (
         <div className="relative flex flex-col justify-between h-screen overflow-hidden">
@@ -384,13 +387,11 @@ export default function Chatting() {
                 </div>
 
                 <div className="relative bg-gray-200">
-                    {postListData.length > 0 && (
-                        <ListPostItems
-                            postsList={postListData}
-                            contentsChattingRef={contentsChattingRef}
-                            isTurnOnCamera={isTurnOnCameraReply}
-                        />
-                    )}
+                    <ListPostItems
+                        postsList={postListData}
+                        contentsChattingRef={contentsChattingRef}
+                        isTurnOnCamera={isTurnOnCameraReply}
+                    />
                     {loading && (
                         <div className="absolute bottom-[-450px] md:bottom-[-520px] left-0 w-full">
                             <LoaderSkeletonPosts />
