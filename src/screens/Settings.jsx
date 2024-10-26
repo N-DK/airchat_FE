@@ -7,6 +7,7 @@ import {
     deleteAccount,
     languageUser,
     logout,
+    profile,
     themeDarkUser,
     themeResetUser,
 } from '../redux/actions/UserActions';
@@ -61,10 +62,20 @@ export default function Settings() {
         if (showDrawerNotification) toggleShowDrawerNotification();
     }, [window.location.pathname]);
 
+    useEffect(() => {
+        if (!userInfo) dispatch(profile());
+    }, [dispatch]);
+
     const logoutHandle = () => dispatch(logout());
 
     const handleDeleteAccount = () => {
-        dispatch(deleteAccount({ email: userInfo.email }));
+        dispatch(
+            deleteAccount(
+                userInfo?.email
+                    ? { email: userInfo?.email }
+                    : { phoneNumber: userInfo?.phone },
+            ),
+        );
     };
 
     return (

@@ -196,6 +196,13 @@ export const LANGUAGE = {
         CHANNEL_CREATED: 'Kênh đã được tạo',
         ERROR_CHANNEL: 'Đã có lỗi xảy ra',
         USERNAME_EXIST: 'Tên đăng nhập đã tồn tại',
+        SEND_OTP_SUCCESS: 'OTP đã gửi thành công',
+        SEND_OTP_FAILED: 'Gửi OTP thất bại',
+        ENTER_OTP: 'Nhập mã OTP của bạn',
+        VERIFY: 'Xác nhận',
+        PHONE_NUMBER: 'Số điện thoại',
+        PASSWORD: 'Mật khẩu',
+        VERIFY_OTP_FAILED: 'Xác nhận OTP thất bại',
     },
     'en-US': {
         AUDIO: 'Audio',
@@ -396,6 +403,13 @@ export const LANGUAGE = {
         CHANNEL_CREATED: 'Channel created',
         ERROR_CHANNEL: 'Something went wrong',
         USERNAME_EXIST: 'Username already exists',
+        SEND_OTP_SUCCESS: 'OTP sent successfully',
+        SEND_OTP_FAILED: 'Failed to send OTP',
+        ENTER_OTP: 'Enter your OTP',
+        VERIFY: 'Verify',
+        PHONE_NUMBER: 'Phone number',
+        PASSWORD: 'Password',
+        VERIFY_OTP_FAILED: 'Failed to verify OTP',
     },
 };
 

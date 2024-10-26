@@ -10,6 +10,7 @@ import {
 } from '../redux/constants/UserConstants';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
+import { CgSpinner } from 'react-icons/cg';
 
 export default function EnterCodeEmail() {
     const inputRef = useRef(null);
@@ -117,18 +118,21 @@ export default function EnterCodeEmail() {
                     {LANGUAGE[language].SEND_AGAIN}
                 </h5>
                 <button
+                    disabled={loading}
                     onClick={() => isContinue && verifyOTP()}
-                    className={`mt-4 text-xl font-medium w-full md:w-2/3 lg:w-1/3 rounded-full py-4 ${
+                    className={`mt-4 text-xl relative disabled:opacity-50 font-medium w-full md:w-2/3 lg:w-1/3 rounded-full py-4 ${
                         isContinue
                             ? 'text-white dark:text-darkPrimary bg-black dark:bg-white'
                             : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                     }`}
                 >
-                    {loading ? (
-                        <LoadingSpinner />
-                    ) : (
-                        <span>{LANGUAGE[language].CONTINUE}</span>
+                    {loading && (
+                        <CgSpinner
+                            size={32}
+                            className="animate-spin absolute left-1/2 -ml-[95px]"
+                        />
                     )}
+                    <span>{LANGUAGE[language].CONTINUE}</span>
                 </button>
             </div>
         </div>

@@ -36,7 +36,7 @@ export default function HomeScreen() {
     }, [userInfo?.token]);
 
     useEffect(() => {
-        if (account && userInfoProfile) {
+        if (account?.results === 1 && userInfoProfile) {
             setTimeout(() => {
                 setIsLoading(false);
             }, 1000);
@@ -50,7 +50,13 @@ export default function HomeScreen() {
 
     useEffect(() => {
         if (userInfoProfile) {
-            dispatch(checkUserAccount(userInfoProfile?.email));
+            dispatch(
+                checkUserAccount(
+                    userInfoProfile?.email
+                        ? { email: userInfoProfile?.email }
+                        : { phone: userInfoProfile?.phone },
+                ),
+            );
         }
     }, [userInfoProfile]);
 

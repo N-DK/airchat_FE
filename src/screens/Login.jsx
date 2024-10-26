@@ -10,6 +10,7 @@ import { login } from '../redux/actions/UserActions';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { CgSpinner } from 'react-icons/cg';
 
 export default function Login() {
     const inputRef = useRef(null);
@@ -19,7 +20,7 @@ export default function Login() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const userEmail = useSelector((state) => state.userEmail);
-    const { emailTemporary } = userEmail;
+    const { emailTemporary, numberPhoneTemporary } = userEmail;
     const userLogin = useSelector((state) => state.userLogin);
     const { userInfo, loading, error: errorLogin } = userLogin;
     const { language } = useSelector((state) => state.userLanguage);
@@ -33,11 +34,17 @@ export default function Login() {
         dispatch({
             type: CHECK_ACCOUNT_RESET,
         });
-        navigate('/login/email');
+        navigate(-1);
     };
 
     const loginHandle = () => {
-        dispatch(login(emailTemporary, password));
+        dispatch(
+            login(
+                emailTemporary
+                    ? { email: emailTemporary, password }
+                    : { phone: numberPhoneTemporary, password },
+            ),
+        );
     };
 
     useEffect(() => {
@@ -83,15 +90,18 @@ export default function Login() {
                 </div>
 
                 <div className="flex justify-center items-center mt-28 ">
-                    <div className="w-full md:w-2/3 lg:w-1/3 flex gap-3 md:gap-12 bg-grayPrimary dark:bg-dark2Primary items-center rounded-full px-10 md:px-16 py-4">
+                    <div className="relative w-full md:w-2/3 lg:w-1/3 flex gap-3 md:gap-12 bg-grayPrimary dark:bg-dark2Primary items-center rounded-full px-10 md:px-16 py-4">
                         <button className="flex items-center">
                             <span className="font-medium text-lg text-black dark:text-white">
-                                Email:
+                                {emailTemporary
+                                    ? 'Email'
+                                    : LANGUAGE[language].PHONE_NUMBER}
+                                :
                             </span>
                         </button>
                         <input
-                            className=" text-black dark:text-white bg-inherit w-full border-none outline-none text-[17px] font-medium"
-                            value={emailTemporary}
+                            className=" text-black flex-1 dark:text-white w-[85%] bg-inherit border-none outline-none text-[17px] font-medium"
+                            value={emailTemporary || numberPhoneTemporary}
                             readOnly
                         />
                     </div>
@@ -101,11 +111,11 @@ export default function Login() {
                     <div className="relative w-full md:w-2/3 lg:w-1/3 flex gap-3 md:gap-12 bg-grayPrimary dark:bg-dark2Primary items-center rounded-full px-10 md:px-16 py-4">
                         <button className="flex items-center">
                             <span className="font-medium text-lg text-black dark:text-white">
-                                Password:
+                                {LANGUAGE[language].PASSWORD}:
                             </span>
                         </button>
                         <input
-                            className=" text-black dark:text-white bg-inherit w-[85%] border-none outline-none text-[17px] font-medium"
+                            className=" text-black flex-1 dark:text-white bg-inherit w-[85%] border-none outline-none text-[17px] font-medium"
                             placeholder={LANGUAGE[language].ENTER_YOUR_PASSWORD}
                             ref={inputRef}
                             type={showPassword ? 'text' : 'password'}
@@ -137,18 +147,21 @@ export default function Login() {
 
             <div className="flex flex-col items-center px-6 mb-9">
                 <button
+                    disabled={loading}
                     onClick={() => isContinue && loginHandle()}
-                    className={`mt-4 text-xl font-medium w-full md:w-2/3 lg:w-1/3 rounded-full py-4 ${
+                    className={`mt-4 text-xl font-medium disabled:opacity-50 relative w-full md:w-2/3 lg:w-1/3 rounded-full py-4 ${
                         isContinue
                             ? 'text-white dark:text-darkPrimary bg-black dark:bg-white'
                             : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                     }`}
                 >
-                    {loading ? (
-                        <span>{LANGUAGE[language].LOADING}</span>
-                    ) : (
-                        <span>{LANGUAGE[language].CONTINUE}</span>
+                    {loading && (
+                        <CgSpinner
+                            size={32}
+                            className="animate-spin absolute left-1/2 -ml-[95px]"
+                        />
                     )}
+                    <span>{LANGUAGE[language].CONTINUE}</span>
                 </button>
             </div>
         </div>

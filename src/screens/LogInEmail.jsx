@@ -9,6 +9,7 @@ import {
 import { SAVE_USER_EMAIL_TEMPORARY } from '../redux/constants/UserConstants';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
+import { CgSpinner } from 'react-icons/cg';
 
 export default function LogInEmail() {
     const [email, setEmail] = useState('');
@@ -27,11 +28,11 @@ export default function LogInEmail() {
     const { language } = useSelector((state) => state.userLanguage);
 
     const submitEmailHandle = () => {
-        dispatch(checkUserAccount(email));
+        dispatch(checkUserAccount({ email }));
     };
 
     useEffect(() => {
-        if (account && email) {
+        if (account?.results === 1 && email) {
             if (account.login == 1) {
                 navigate('/login');
                 if (email) {
@@ -110,18 +111,21 @@ export default function LogInEmail() {
 
             <div className="flex justify-center px-6 mb-9">
                 <button
+                    disabled={loadingAccount || loadingEmail}
                     onClick={() => isContinue && submitEmailHandle()}
-                    className={`text-xl font-medium w-full md:w-2/3 lg:w-1/3 rounded-full py-4 ${
+                    className={`text-xl font-medium w-full disabled:opacity-50 relative md:w-2/3 lg:w-1/3 rounded-full py-4 ${
                         isContinue
                             ? 'text-white dark:text-darkPrimary bg-black dark:bg-white'
                             : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                     }`}
                 >
-                    {loadingAccount || loadingEmail ? (
-                        <span>{LANGUAGE[language].LOADING}</span>
-                    ) : (
-                        <span>{LANGUAGE[language].CONTINUE}</span>
+                    {(loadingAccount || loadingEmail) && (
+                        <CgSpinner
+                            size={32}
+                            className="animate-spin absolute left-1/2 -ml-[95px]"
+                        />
                     )}
+                    <span>{LANGUAGE[language].CONTINUE}</span>
                 </button>
             </div>
         </div>

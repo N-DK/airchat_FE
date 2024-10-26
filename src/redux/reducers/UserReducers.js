@@ -111,6 +111,7 @@ import {
     USER_PROFILE_RESET,
     USER_LANGUAGE_SUCCESS,
     USER_PROFILE_STRANGER_RESET,
+    SAVE_USER_NUMBER_PHONE_TEMPORARY,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -160,6 +161,8 @@ export const userCheckAccountReducer = (state = {}, action) => {
         case CHECK_ACCOUNT_FAIL:
             return { loading: false, error: action.payload };
         case CHECK_ACCOUNT_RESET:
+            console.log('CHECK_ACCOUNT_RESET');
+
             return {};
         default:
             return state;
@@ -200,6 +203,10 @@ export const userEmailReducer = (state = {}, action) => {
         case SAVE_USER_EMAIL_TEMPORARY:
             return {
                 emailTemporary: action.payload,
+            };
+        case SAVE_USER_NUMBER_PHONE_TEMPORARY:
+            return {
+                numberPhoneTemporary: action.payload,
             };
         default:
             return state;

@@ -6,6 +6,7 @@ import { RiAddLine } from 'react-icons/ri';
 import { uploadAvatar } from '../redux/actions/UserActions';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { LANGUAGE } from '../constants/language.constant';
+import { CgSpinner } from 'react-icons/cg';
 
 export default function SelectAvatar() {
     const [isContinue, setIsContinue] = useState(false);
@@ -101,18 +102,21 @@ export default function SelectAvatar() {
 
             <div className="flex justify-center px-6 mb-9">
                 <button
+                    disabled={loading}
                     onClick={navigateHandle}
-                    className={`text-xl font-medium w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4 ${
+                    className={`text-xl font-medium disabled:opacity-50 relative w-full md:w-2/3 lg:w-1/3 rounded-full px-8 py-4 ${
                         isContinue
                             ? 'text-white dark:text-darkPrimary bg-black dark:bg-white'
                             : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                     }`}
                 >
-                    {loading ? (
-                        <LoadingSpinner />
-                    ) : (
-                        <span>{LANGUAGE[language].CONTINUE}</span>
+                    {loading && (
+                        <CgSpinner
+                            size={32}
+                            className="animate-spin absolute left-1/2 -ml-[95px]"
+                        />
                     )}
+                    <span>{LANGUAGE[language].CONTINUE}</span>
                 </button>
             </div>
         </div>

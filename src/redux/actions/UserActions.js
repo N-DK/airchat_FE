@@ -112,7 +112,7 @@ import axios from 'axios';
 const preset_key = 'hu9yg0hm';
 const cloud_name = 'dfavmxigs';
 
-export const login = (email, password) => async (dispatch) => {
+export const login = (__data) => async (dispatch) => {
     try {
         dispatch({
             type: USER_LOGIN_REQUEST,
@@ -124,7 +124,7 @@ export const login = (email, password) => async (dispatch) => {
         };
         const { data } = await axios.post(
             'https://talkie.transtechvietnam.com/login',
-            { email, password },
+            __data,
             config,
         );
 
@@ -149,22 +149,21 @@ export const login = (email, password) => async (dispatch) => {
 export const logout = () => (dispatch) => {
     localStorage.removeItem('userInfo');
     dispatch({
+        type: CHECK_ACCOUNT_RESET,
+    });
+    dispatch({
         type: USER_LOGOUT,
     });
-    // dispatch({
-    //     type: USER_PROFILE_RESET,
-    // });
     dispatch({
-        type: USER_CODE_RESET,
+        type: USER_PROFILE_RESET,
     });
     dispatch({
-        type: CHECK_ACCOUNT_RESET,
+        type: USER_CODE_RESET,
     });
 };
 
 export const updateUserProfile = (user) => async (dispatch, getState) => {
     try {
-        console.log('UPDATE USER');
         dispatch({
             type: USER_UPDATE_PROFILE_REQUEST,
         });
@@ -187,7 +186,7 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
         });
         dispatch({
             type: USER_LOGIN_SUCCESS,
-            payload: data,
+            payload: data?.results,
         });
         localStorage.setItem('userInfo', JSON.stringify(data));
     } catch (error) {
@@ -205,14 +204,14 @@ export const updateUserProfile = (user) => async (dispatch, getState) => {
     }
 };
 
-export const checkUserAccount = (email) => async (dispatch) => {
+export const checkUserAccount = (__data) => async (dispatch) => {
     try {
         dispatch({
             type: CHECK_ACCOUNT_REQUEST,
         });
         const { data } = await axios.post(
             `https://talkie.transtechvietnam.com/check-account`,
-            { email },
+            __data,
         );
         dispatch({
             type: CHECK_ACCOUNT_SUCCESS,
@@ -302,15 +301,33 @@ export const checkUserCode = (email, otp) => async (dispatch) => {
             },
         );
 
-        // await axios.post(
-        //     'https://talkie.transtechvietnam.com/update-user',
-        //     { password: '000000' },
-        //     {
-        //         headers: {
-        //             'x-cypher-token': data.token,
-        //         },
-        //     },
-        // );
+        dispatch({
+            type: USER_CODE_SUCCESS,
+            payload: data,
+        });
+
+        localStorage.setItem('userInfo', JSON.stringify(data));
+    } catch (error) {
+        dispatch({
+            type: USER_CODE_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const verifyOTP = (uid, token) => async (dispatch) => {
+    try {
+        dispatch({
+            type: USER_CODE_REQUEST,
+        });
+
+        const { data } = await axios.post(
+            `https://talkie.transtechvietnam.com/verify-otp`,
+            { uid, token },
+        );
 
         dispatch({
             type: USER_CODE_SUCCESS,

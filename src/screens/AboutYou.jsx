@@ -7,6 +7,7 @@ import { USER_UPDATE_PROFILE_RESET } from '../redux/constants/UserConstants';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { CgSpinner } from 'react-icons/cg';
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -101,7 +102,7 @@ export default function AboutYou() {
     }, [isSuccess]);
 
     useEffect(() => {
-        if (!isSuccess && isSubmit) {
+        if (isSuccess === 0 && isSubmit) {
             setNotifyMessage(LANGUAGE[language].USERNAME_EXIST);
             setShowNotify(true);
             setTimeout(() => setShowNotify(false), 1200);
@@ -218,18 +219,21 @@ export default function AboutYou() {
 
                 <div className="flex flex-col items-center px-6 mb-9">
                     <button
+                        disabled={loading}
                         onClick={() => navigateSelectAvatarHandle()}
-                        className={`mt-4 text-xl font-medium w-full md:w-2/3 lg:w-1/3 rounded-full py-4 ${
+                        className={`mt-4 text-xl relative disabled:opacity-50 font-medium w-full md:w-2/3 lg:w-1/3 rounded-full py-4 ${
                             isContinue
                                 ? 'text-white dark:text-darkPrimary bg-black dark:bg-white'
                                 : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                         }`}
                     >
-                        {loading ? (
-                            <LoadingSpinner />
-                        ) : (
-                            <span>{LANGUAGE[language].CONTINUE}</span>
+                        {loading && (
+                            <CgSpinner
+                                size={32}
+                                className="animate-spin absolute left-1/2 -ml-[95px]"
+                            />
                         )}
+                        <span>{LANGUAGE[language].CONTINUE}</span>
                     </button>
                 </div>
                 <NotifyText show={showNotify} message={notifyMessage} />
