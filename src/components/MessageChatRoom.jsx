@@ -160,7 +160,11 @@ const MessageChatRoom = ({
                             } else {
                                 audioSrc = `https://talkie.transtechvietnam.com${message.audio}`;
                             }
-                            return new Audio(audioSrc); // Trả về đối tượng Audio
+
+                            return new Howl({
+                                src: [audioSrc],
+                                html5: true,
+                            });
                         }
 
                         return null; // Trả về null nếu không có audio
@@ -201,18 +205,21 @@ const MessageChatRoom = ({
                                 <p className="text-sm whitespace-normal text-wrap dark:text-white">
                                     {message?.message ?? 'Lorem ipsum dolor'}
                                 </p>
-                                {message?.image && (
-                                    <figure className="max-w-full relative my-2">
-                                        <Avatar
-                                            src={`${
-                                                message?.image.includes('blob')
-                                                    ? message?.image
-                                                    : `https://talkie.transtechvietnam.com/${message?.image}`
-                                            } `}
-                                            className="min-h-40 h-full w-full object-cover rounded-xl"
-                                        />
-                                    </figure>
-                                )}
+                                {message?.image != '0' &&
+                                    message?.image !== '' && (
+                                        <figure className="max-w-full relative my-2">
+                                            <Avatar
+                                                src={`${
+                                                    message?.image.includes(
+                                                        'blob',
+                                                    )
+                                                        ? message?.image
+                                                        : `https://talkie.transtechvietnam.com/${message?.image}`
+                                                } `}
+                                                className="min-h-40 h-full w-full object-cover rounded-xl"
+                                            />
+                                        </figure>
+                                    )}
                             </div>
                             <div className={messageClasses.actions}>
                                 <div

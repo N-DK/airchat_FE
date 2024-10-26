@@ -203,6 +203,11 @@ export const LANGUAGE = {
         PHONE_NUMBER: 'Số điện thoại',
         PASSWORD: 'Mật khẩu',
         VERIFY_OTP_FAILED: 'Xác nhận OTP thất bại',
+        CHANNEL_EDITED: 'Kênh đã được chỉnh sửa',
+        CHANNEL_DELETED: 'Kênh đã được xóa',
+        ERROR: 'Đã có lỗi xảy ra',
+        CHANNEL_ADDED: 'Kênh đã được tạo',
+        EXIST_CHANNEL: 'Kênh đã tồn tại',
     },
     'en-US': {
         AUDIO: 'Audio',
@@ -410,6 +415,11 @@ export const LANGUAGE = {
         PHONE_NUMBER: 'Phone number',
         PASSWORD: 'Password',
         VERIFY_OTP_FAILED: 'Failed to verify OTP',
+        CHANNEL_EDITED: 'Channel edited',
+        CHANNEL_DELETED: 'Channel deleted',
+        ERROR: 'Something went wrong',
+        CHANNEL_ADDED: 'Channel added',
+        EXIST_CHANNEL: 'Channel already exists',
     },
 };
 

@@ -308,18 +308,18 @@ export default function Chatting() {
     }, [postListData]);
 
     useEffect(() => {
-        if (channel || error) {
-            if (isAddChannel) toggleIsAddChannel();
-            setNotifyMessage(
-                channel
-                    ? LANGUAGE[language]?.CHANNEL_CREATED
-                    : LANGUAGE[language]?.ERROR_CHANNEL,
-            );
+        if (channel) {
+            if (isAddChannel && channel?.results) toggleIsAddChannel();
+            if (channel?.results) {
+                setNotifyMessage(LANGUAGE[language].CHANNEL_ADDED);
+            } else {
+                setNotifyMessage(LANGUAGE[language].EXIST_CHANNEL);
+            }
             setShowNotify(true);
-            setTimeout(() => setShowNotify(false), 500);
+            setTimeout(() => setShowNotify(false), 1200);
             dispatch({ type: CHANNEL_ADD_RESET });
         }
-    }, [channel, error]);
+    }, [channel]);
 
     // if (!postListData) return null;
 

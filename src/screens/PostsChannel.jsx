@@ -58,6 +58,7 @@ export default function PostsChannel() {
 
     const [isSwiping, setIsSwiping] = useState(false);
     const [postsList, setPostList] = useState([]);
+    const [owner, setOwner] = useState(null);
     const [isPinChannel, setIsPinChannel] = useState(false);
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
@@ -71,9 +72,11 @@ export default function PostsChannel() {
     const { userInfo } = useSelector((state) => state.userProfile);
     const { post } = useSelector((state) => state.setPostActive);
 
-    const { loading, posts, owner } = useSelector(
-        (state) => state.channelPosts,
-    );
+    const {
+        loading,
+        posts,
+        owner: ownerChannel,
+    } = useSelector((state) => state.channelPosts);
     const { menus } = useSelector((state) => state.menuBar);
     const { channel } = useSelector((state) => state.channelPin);
     const { isSuccess: isSuccessFollow } = useSelector(
@@ -116,11 +119,12 @@ export default function PostsChannel() {
     }, [dispatch, id]);
 
     useEffect(() => {
-        if (posts) {
+        if (posts && ownerChannel) {
             setPostList(posts);
+            setOwner(ownerChannel);
             dispatch({ type: CHANNEL_POSTS_RESET });
         }
-    }, [posts]);
+    }, [posts, ownerChannel]);
 
     useEffect(() => {
         const contents = contentsChattingRef.current;

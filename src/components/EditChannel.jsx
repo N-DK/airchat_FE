@@ -120,19 +120,23 @@ export default function EditChannel({ data }) {
     }, []);
 
     useEffect(() => {
-        if (channel || error) {
-            if (isEditChannel) toggleIsEditChannel();
-            setNotifyMessage(channel ? 'Channel edited' : error);
+        if (channel) {
+            if (isEditChannel && channel?.results) toggleIsEditChannel();
+            if (channel?.results) {
+                setNotifyMessage(LANGUAGE[language].CHANNEL_EDITED);
+            } else {
+                setNotifyMessage(LANGUAGE[language].EXIST_CHANNEL);
+            }
             setShowNotify(true);
             setTimeout(() => setShowNotify(false), 1200);
             dispatch({ type: CHANNEL_ADD_RESET });
         }
-    }, [channel, error]);
+    }, [channel]);
 
     useEffect(() => {
         if (isSuccess) {
             if (isEditChannel) toggleIsEditChannel();
-            setNotifyMessage('Channel deleted');
+            setNotifyMessage(LANGUAGE[language].CHANNEL_DELETED);
             setShowNotify(true);
             setTimeout(() => setShowNotify(false), 1200);
             setTimeout(() => navigate(-1), 1200);
@@ -238,7 +242,7 @@ export default function EditChannel({ data }) {
                     </button>
                 </div>
                 {(loadingDelete || loadingEdit) && (
-                    <div className="fixed w-full h-full top-0 left-0 bg-black/60 flex justify-center items-center">
+                    <div className="fixed w-full h-full top-0 left-0 bg-black/30 flex justify-center items-center">
                         <LoadingSpinner />
                     </div>
                 )}

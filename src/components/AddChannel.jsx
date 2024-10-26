@@ -162,7 +162,7 @@ export default function AddChannel() {
                     </div>
                 </div>
                 {loadingAdd && (
-                    <div className="fixed w-full h-full top-0 left-0 bg-black/60 flex justify-center items-center">
+                    <div className="fixed w-full h-full top-0 left-0 bg-black/30 flex justify-center items-center">
                         <LoadingSpinner />
                     </div>
                 )}

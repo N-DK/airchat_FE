@@ -39,10 +39,14 @@ const NotifyText = ({ message, show }) => {
 };
 
 export default function LogInPhoneNumber() {
-    const [numberPhone, setNumberPhone] = useState('');
+    const [numberPhone, setNumberPhone] = useState(
+        localStorage.getItem('phoneNumber') ?? '',
+    );
     const [isContinue, setIsContinue] = useState(false);
     const [otp, setOtp] = useState('');
-    const [showOTP, setShowOTP] = useState(false);
+    const [showOTP, setShowOTP] = useState(
+        localStorage.getItem('phoneNumber') ? true : false,
+    );
     const [showNotify, setShowNotify] = useState(false);
     const [messageNotify, setMessageNotify] = useState('');
     const [loading, setLoading] = useState(false);
@@ -102,6 +106,7 @@ export default function LogInPhoneNumber() {
                 setCountDown(TIME_COUNT_DOWN);
                 setMessageNotify(LANGUAGE[language].SEND_OTP_SUCCESS);
                 setTimeout(() => setShowNotify(false), 1200);
+                localStorage.setItem('phoneNumber', numberPhone);
             })
             .catch(function (error) {
                 console.log(error);
@@ -177,7 +182,6 @@ export default function LogInPhoneNumber() {
     }, [userPhone, numberPhone]);
 
     useEffect(() => {
-        console.log(account);
         if (account?.results === 1 && numberPhone) {
             if (account.results.login == 1) {
                 navigate('/login');
