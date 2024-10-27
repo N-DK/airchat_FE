@@ -541,14 +541,20 @@ export default function RecordModal({ handle }) {
                                     url={audio}
                                     normalize={true}
                                     backend="WebAudio"
-                                    barWidth={2}
-                                    barGap={3}
+                                    barWidth={6}
+                                    barRadius={99999999}
                                     cursorColor="transparent"
                                     onReady={onReady}
                                     onAudioprocess={onAudioprocess}
                                     onPlay={() => setIsPlaying(true)}
                                     onPause={() => setIsPlaying(false)}
                                 />
+                                {/* <SoundCloudPlayer
+                                    audio={audio}
+                                    onReady={onReady}
+                                    onAudioprocess={onAudioprocess}
+                                    setIsPlaying={setIsPlaying}
+                                /> */}
                             </div>
                             // <div className="flex-1 items-center">
 

@@ -208,6 +208,7 @@ export const LANGUAGE = {
         ERROR: 'Đã có lỗi xảy ra',
         CHANNEL_ADDED: 'Kênh đã được tạo',
         EXIST_CHANNEL: 'Kênh đã tồn tại',
+        DELETE_MESSAGE_ERROR: 'Không thể xóa tin nhắn',
     },
     'en-US': {
         AUDIO: 'Audio',
@@ -420,6 +421,7 @@ export const LANGUAGE = {
         ERROR: 'Something went wrong',
         CHANNEL_ADDED: 'Channel added',
         EXIST_CHANNEL: 'Channel already exists',
+        DELETE_MESSAGE_ERROR: 'Failed to delete message',
     },
 };
 

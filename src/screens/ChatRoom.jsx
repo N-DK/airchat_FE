@@ -30,6 +30,18 @@ import { LANGUAGE } from '../constants/language.constant';
 import { AppContext } from '../AppContext';
 import ScreenFull from '../components/ScreenFull';
 
+const NotifyText = ({ message, show }) => {
+    return (
+        <div
+            className={`bg-white z-[99999999] absolute left-1/2 transform -translate-x-1/2 w-auto dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+                show ? 'translate-y-0 mt-3' : '-translate-y-full'
+            }`}
+        >
+            <h6 className="text-black dark:text-white">{message}</h6>
+        </div>
+    );
+};
+
 const ChatRoom = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -44,6 +56,8 @@ const ChatRoom = () => {
     const refContainer = useRef(null);
     const { language } = useSelector((state) => state.userLanguage);
     const { isFullScreen, newMessageFromFooter } = useContext(AppContext);
+    const [showNotify, setShowNotify] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
 
     useEffect(() => {
         const sortedMessages = initMessages?.sort((a, b) => a?.id - b?.id);
@@ -95,15 +109,22 @@ const ChatRoom = () => {
         console.log(data);
     }, []);
 
-    const handleMessageDeleteNotification = useCallback((data) => {
-        if (data.del != 0) {
-            setMessages((prev) => {
-                return prev?.filter((message) => message?.id != data?.mess_id);
-            });
-        } else {
-            alert('Xóa không được');
-        }
-    }, []);
+    const handleMessageDeleteNotification = useCallback(
+        (data) => {
+            if (data.del != 0) {
+                setMessages((prev) => {
+                    return prev?.filter(
+                        (message) => message?.id != data?.mess_id,
+                    );
+                });
+            } else {
+                setShowNotify(true);
+                setNotifyMessage(LANGUAGE[language].DELETE_MESSAGE_ERROR);
+                setTimeout(() => setShowNotify(false), 1200);
+            }
+        },
+        [messages],
+    );
 
     const convertBase64ToBlob = (base64, mimeType) => {
         const base64Data = base64.slice(base64.indexOf('base64,') + 7);
@@ -371,6 +392,7 @@ const ChatRoom = () => {
             >
                 SEND MESSAGE
             </button> */}
+            <NotifyText message={notifyMessage} show={showNotify} />
         </div>
     );
 };
