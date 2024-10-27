@@ -240,7 +240,7 @@ export default function Chatting() {
     }, [redirect, navigate, dispatch]);
 
     useEffect(() => {
-        dispatch(profile());
+        if (!userInfo) dispatch(profile());
         dispatch(barMenu());
     }, [dispatch]);
 
@@ -382,13 +382,13 @@ export default function Chatting() {
                         <button className="text-gray-400 w-full">
                             <textarea
                                 value={
-                                    !isRecord
+                                    !isRecord && !post
                                         ? newMessageFromFooter ||
                                           LANGUAGE[language].WHAT_ON_YOUR_MIND
                                         : LANGUAGE[language].WHAT_ON_YOUR_MIND
                                 }
                                 readOnly={true}
-                                className="w-full bg-inherit text-white placeholder-white outline-none resize-none"
+                                className="w-full bg-inherit dark:text-white placeholder-white outline-none resize-none"
                                 placeholder={
                                     LANGUAGE[language].WHAT_ON_YOUR_MIND
                                 }

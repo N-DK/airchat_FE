@@ -324,13 +324,13 @@ export default function RecordModal({ handle }) {
                 <div className="text-bluePrimary flex justify-between items-center">
                     <div className="flex gap-2 items-end">
                         <div className="flex gap-2">
-                            {(post?.name || getChannelName()) && (
-                                <span className="text-xl">
-                                    {LANGUAGE[language].TO}
-                                </span>
-                            )}
+                            <span className="text-xl">
+                                {LANGUAGE[language].TO}
+                            </span>
                             <span className="text-xl font-semibold">
-                                {post?.name ?? getChannelName()}
+                                {post?.name ||
+                                    getChannelName() ||
+                                    'Just Chatting'}
                             </span>
                         </div>
                         {/* <BsChevronExpand size="1.6rem" /> */}

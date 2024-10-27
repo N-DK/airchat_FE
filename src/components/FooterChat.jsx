@@ -7,12 +7,11 @@ import { CgArrowsExpandRight } from 'react-icons/cg';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../AppContext';
-import { HiPause } from 'react-icons/hi2';
-import { HiMiniPlay } from 'react-icons/hi2';
+import { HiPause, HiMiniPlay } from 'react-icons/hi2';
 import { IoVideocam } from 'react-icons/io5';
 import React from 'react';
 import RecordCover from './RecordCover';
-import { Avatar, message } from 'antd';
+import { Avatar } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaReply } from 'react-icons/fa6';
 import { setPostActive, submitPost } from '../redux/actions/PostActions';
@@ -22,7 +21,6 @@ import {
     setObjectVideoCurrent,
 } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
-import useDebounce from '../hooks/useDebounce';
 import SpeechRecognition, {
     useSpeechRecognition,
 } from 'react-speech-recognition';
@@ -80,16 +78,12 @@ export default function FooterChat({
     const pressTimer = useRef();
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
-    // const recognitionRef = useRef(null);
-
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [touchStartX, setTouchStartX] = useState(null);
     const [isStartRecord, setIsStartRecord] = useState(false);
     const [audio, setAudio] = useState(null);
     const [video, setVideo] = useState(null);
     const [stream, setStream] = useState(null);
-    // const [transcript, setNewMessage] = useState('');
-
     const { post } = useSelector((state) => state.setPostActive);
     const { object } = useSelector((state) => state.setObjectActive);
     const { audioCurrent } = useSelector(
@@ -139,72 +133,52 @@ export default function FooterChat({
     const handleTouchEnd = useCallback(
         (e) => {
             stopRecording();
-            // if (recognitionRef.current) {
-            //     recognitionRef.current.stop();
-            // }
             clearTimeout(pressTimer.current);
             setContextMenuVisible(false);
-            // setNewMessageFromFooter('');
             if (setIsTurnOnCamera) setIsTurnOnCamera(false);
         },
-        [isStartRecord, mediaRecorderRef, stream],
+        [mediaRecorderRef, stream],
     );
 
     const startRecording = () => {
-        // if (recognitionRef.current) {
-        //     recognitionRef.current.start(); // Bắt đầu nhận diện giọng nói nếu có
-        // }
-        resetTranscript();
         startListening();
-        // Thiết lập ràng buộc cho việc ghi âm
         const mediaConstraints =
             recordOption === 'video'
-                ? { video: true, audio: true } // Nếu chọn video, ghi cả video và âm thanh
-                : { audio: true }; // Nếu chỉ chọn âm thanh, chỉ ghi âm thanh
-
-        // Lấy quyền truy cập vào thiết bị ghi âm
+                ? { video: true, audio: true }
+                : { audio: true };
         navigator.mediaDevices
             .getUserMedia(mediaConstraints)
             .then((stream) => {
                 if (stream) {
-                    setStream(stream); // Lưu trữ stream vào state
+                    setStream(stream);
                 }
-
-                mediaRecorderRef.current = new MediaRecorder(stream); // Khởi tạo MediaRecorder với stream
-
-                // Lưu trữ các đoạn âm thanh/video khi có dữ liệu
+                mediaRecorderRef.current = new MediaRecorder(stream);
                 mediaRecorderRef.current.ondataavailable = (event) => {
-                    audioChunksRef.current.push(event.data); // Thêm dữ liệu vào mảng
+                    audioChunksRef.current.push(event.data);
                 };
-
-                // Khi dừng ghi âm
                 mediaRecorderRef.current.onstop = () => {
                     const audioBlob = new Blob(audioChunksRef.current, {
                         type:
                             recordOption === 'video'
                                 ? 'video/webm'
-                                : 'audio/mp3', // Thiết lập loại blob
+                                : 'audio/mp3',
                     });
                     const reader = new FileReader();
-                    reader.readAsDataURL(audioBlob); // Đọc blob dưới dạng URL
+                    reader.readAsDataURL(audioBlob);
                     reader.onloadend = () => {
-                        const base64data = reader.result; // Lưu trữ dữ liệu base64
-
+                        const base64data = reader.result;
                         if (recordOption === 'video') {
-                            // Xử lý video nếu cần
-                            setVideo(base64data); // Lưu video vào state
+                            setVideo(base64data);
                         } else {
-                            setAudio(base64data); // Lưu âm thanh vào state
+                            setAudio(base64data);
                         }
                     };
-
-                    audioChunksRef.current = []; // Xóa mảng sau khi ghi xong
+                    audioChunksRef.current = [];
                 };
-
-                mediaRecorderRef.current.start(); // Bắt đầu ghi âm
+                mediaRecorderRef.current.start();
             })
             .catch((error) => {
-                console.error('Error accessing media devices.', error); // Xử lý lỗi nếu không thể truy cập thiết bị
+                console.error('Error accessing media devices.', error);
             });
     };
 
@@ -212,15 +186,13 @@ export default function FooterChat({
         if (stream) {
             stream.getTracks().forEach((track) => track.stop());
         }
-
         if (mediaRecorderRef.current) {
             mediaRecorderRef.current.stop();
         }
-
         SpeechRecognition.stopListening();
 
         resetTranscript();
-        setAudio(null);
+        // setAudio(null);
         setIsStartRecord(false);
     };
 
@@ -243,14 +215,11 @@ export default function FooterChat({
         if (object.element) {
             if (object.parent) {
                 const rect = object.element.getBoundingClientRect();
-
                 const parentRect = object.parent.getBoundingClientRect();
-
                 const scrollTop =
                     object.parent.scrollTop +
                     (rect.bottom - parentRect.top) +
-                    (object?.bonus || 0); // - 100
-
+                    (object?.bonus || 0);
                 object.parent.scrollTo({
                     top: scrollTop,
                     behavior: 'smooth',
@@ -273,20 +242,15 @@ export default function FooterChat({
                 audioCurrent.stop();
             });
         }
-
         const audio = object?.audio;
-
         if (audio) {
             audio.volume(1);
             audio.rate(isRunSpeed);
-
             audio.off('end');
             audio.on('end', () => {
                 handleScroll(object);
             });
-
             audio.play();
-
             audio.once('play', () => {
                 dispatch(setObjectAudioCurrent(audio));
             });
@@ -304,16 +268,12 @@ export default function FooterChat({
                 videoCurrent.pause();
             });
         }
-
         const video = object?.video;
-
         if (video) {
             video.playbackRate = isRunSpeed;
-
             video.onended = () => {
                 handleScroll(object);
             };
-
             video
                 .play()
                 .then(() => {
@@ -329,10 +289,12 @@ export default function FooterChat({
 
     useEffect(() => {
         if (isStartRecord) {
-            console.log('IS START RECORD');
             if ((recordOption == 'video' || post) && setIsTurnOnCamera) {
                 setIsTurnOnCamera(true);
             }
+            // setAudio(null);
+            // setVideo(null);
+            resetTranscript();
             startRecording();
         }
     }, [isStartRecord]);
@@ -349,7 +311,6 @@ export default function FooterChat({
             touchStartX >= 120 &&
             !isStartRecord
         ) {
-            console.log(audio, video, transcript, touchStartX, isStartRecord);
             if (handleSend) {
                 handleSend(transcript, audio);
             } else {
@@ -383,66 +344,32 @@ export default function FooterChat({
                     ),
                 );
             }
-            // setNewMessage('')
-            setAudio(null);
+            // setAudio(null);
             resetTranscript();
         }
     }, [audio, transcript, touchStartX, video, isStartRecord]);
 
     useEffect(() => {
         if (touchStartX < 120 && !isStartRecord) {
-            console.log('CLEAA');
-
             resetTranscript();
-            setAudio(null);
-            setTouchStartX(null);
+            // setAudio(null);
+            // setVideo(null);
         }
     }, [touchStartX, isStartRecord]);
 
     useEffect(() => {
         if (transcript && isStartRecord) setNewMessageFromFooter(transcript);
-        else setNewMessageFromFooter('');
+        else {
+            setNewMessageFromFooter('');
+            setAudio(null);
+            setVideo(null);
+        }
     }, [transcript, isStartRecord]);
 
     useEffect(() => {
         audioCurrent?.pause();
         videoCurrent?.pause();
     }, [useLocation(), audioCurrent, videoCurrent]);
-
-    // useEffect(() => {
-    //     if ('webkitSpeechRecognition' in window) {
-    //         const SpeechRecognition =
-    //             window.SpeechRecognition || window.webkitSpeechRecognition;
-    //         const recognition = new SpeechRecognition();
-    //         recognition.continuous = true;
-    //         recognition.interimResults = true;
-    //         recognition.lang = language; // 'vi-VN, en-US'
-    //         let newTranscript = '';
-    //         recognition.onresult = (event) => {
-    //             let interimTranscript = '';
-    //             let finalTranscript = '';
-
-    //             for (let i = event.resultIndex; i < event.results.length; ++i) {
-    //                 if (event.results[i].isFinal) {
-    //                     finalTranscript += event.results[i][0].transcript;
-    //                 } else {
-    //                     interimTranscript += event.results[i][0].transcript;
-    //                 }
-    //             }
-    //             newTranscript = finalTranscript || interimTranscript;
-    //             setNewMessageFromFooter(newTranscript);
-    //         };
-
-    //         recognition.onend = () => {
-    //             setNewMessage(newTranscript);
-    //             setNewMessageFromFooter('');
-    //         };
-
-    //         recognitionRef.current = recognition;
-    //     } else {
-    //         console.log('Web Speech API is not supported in this browser.');
-    //     }
-    // }, []);
 
     useEffect(() => {
         if (!isRunAuto || isFullScreen) {

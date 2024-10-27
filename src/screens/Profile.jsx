@@ -291,7 +291,7 @@ export default function Profile() {
 
     useEffect(() => {
         if (stranger_id) dispatch(getProfileStranger(stranger_id));
-        dispatch(profile());
+        if (!userInfoProfile) dispatch(profile());
         dispatch(listFollow());
         dispatch(listBlock());
         dispatch(listMute());
@@ -732,10 +732,26 @@ export default function Profile() {
                                     <h5 className="text-black dark:text-white">
                                         {userInfo?.name}
                                     </h5>
-                                    <button className="text-gray-400">
-                                        {newMessageFromFooter ||
-                                            LANGUAGE[language]
-                                                .NEW_POST_TO_FOLLOWERS}
+                                    <button className="text-gray-400 w-full">
+                                        <textarea
+                                            value={
+                                                !isRecord && !post
+                                                    ? newMessageFromFooter ||
+                                                      LANGUAGE[language]
+                                                          .NEW_POST_TO_FOLLOWERS
+                                                    : LANGUAGE[language]
+                                                          .NEW_POST_TO_FOLLOWERS
+                                            }
+                                            readOnly={true}
+                                            className="w-full bg-inherit dark:text-white placeholder-white outline-none resize-none"
+                                            placeholder={
+                                                LANGUAGE[language]
+                                                    .NEW_POST_TO_FOLLOWERS
+                                            }
+                                            style={{ minHeight: '20px' }}
+                                            cols="30"
+                                            rows="1"
+                                        ></textarea>
                                     </button>
                                 </div>
                             </div>

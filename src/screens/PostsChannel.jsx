@@ -119,12 +119,12 @@ export default function PostsChannel() {
     }, [dispatch, id]);
 
     useEffect(() => {
-        if (posts && ownerChannel) {
+        if (posts && (ownerChannel || id === '0')) {
             setPostList(posts);
             setOwner(ownerChannel);
             dispatch({ type: CHANNEL_POSTS_RESET });
         }
-    }, [posts, ownerChannel]);
+    }, [posts, ownerChannel, id]);
 
     useEffect(() => {
         const contents = contentsChattingRef.current;
@@ -315,9 +315,21 @@ export default function PostsChannel() {
                     <h5 className="text-black dark:text-white">
                         {userInfo?.name}
                     </h5>
-                    <button className="text-gray-400">
-                        {newMessageFromFooter ||
-                            LANGUAGE[language].WHAT_ON_YOUR_MIND}
+                    <button className="text-gray-400 w-full">
+                        <textarea
+                            value={
+                                !isRecord && !post
+                                    ? newMessageFromFooter ||
+                                      LANGUAGE[language].WHAT_ON_YOUR_MIND
+                                    : LANGUAGE[language].WHAT_ON_YOUR_MIND
+                            }
+                            readOnly={true}
+                            className="w-full bg-inherit dark:text-white placeholder-white outline-none resize-none"
+                            placeholder={LANGUAGE[language].WHAT_ON_YOUR_MIND}
+                            style={{ minHeight: '20px' }}
+                            cols="30"
+                            rows="1"
+                        ></textarea>
                     </button>
                 </div>
             </div>

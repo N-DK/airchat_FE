@@ -50,6 +50,7 @@ export default function LogInPhoneNumber() {
     const [showNotify, setShowNotify] = useState(false);
     const [messageNotify, setMessageNotify] = useState('');
     const [loading, setLoading] = useState(false);
+    const [loadingResendOTP, setLoadingResendOTP] = useState(false);
     const [countDown, setCountDown] = useState(TIME_COUNT_DOWN);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -102,6 +103,7 @@ export default function LogInPhoneNumber() {
                 setShowOTP(true);
                 setShowNotify(true);
                 setLoading(false);
+                setLoadingResendOTP(false);
                 setIsContinue(false);
                 setCountDown(TIME_COUNT_DOWN);
                 setMessageNotify(LANGUAGE[language].SEND_OTP_SUCCESS);
@@ -112,6 +114,7 @@ export default function LogInPhoneNumber() {
                 console.log(error);
                 setShowNotify(true);
                 setLoading(false);
+                setLoadingResendOTP(false);
                 dispatch({
                     type: CHECK_ACCOUNT_RESET,
                 });
@@ -183,7 +186,7 @@ export default function LogInPhoneNumber() {
 
     useEffect(() => {
         if (account?.results === 1 && numberPhone) {
-            if (account.results.login == 1) {
+            if (account.login == 1) {
                 navigate('/login');
                 if (numberPhone) {
                     dispatch({
@@ -202,6 +205,7 @@ export default function LogInPhoneNumber() {
     useEffect(() => {
         if (userInfo?.results) {
             dispatch({ type: USER_LOGIN_SUCCESS, payload: userInfo });
+            localStorage.removeItem('phoneNumber');
             navigate('/aboutyou');
         }
     }, [userInfo]);
@@ -286,13 +290,25 @@ export default function LogInPhoneNumber() {
                     {/* nếu như showOTP thì hiển thị nút gửi lại 59s */}
                     {showOTP && (
                         <button
-                            onClick={() => countDown === 0 && onSendOTP()}
+                            disabled={countDown > 0 || loadingResendOTP}
+                            onClick={() => {
+                                if (countDown === 0) {
+                                    setLoadingResendOTP(true);
+                                    onSendOTP();
+                                }
+                            }}
                             className={`text-xl mb-4 font-medium w-full relative flex items-center justify-center md:w-2/3 lg:w-1/3 rounded-full py-4 ${
                                 countDown === 0
                                     ? 'text-white dark:text-darkPrimary bg-black dark:bg-white'
                                     : 'text-stone-400 dark:text-gray-400 bg-grayPrimary dark:bg-dark2Primary'
                             }`}
                         >
+                            {loadingResendOTP && (
+                                <CgSpinner
+                                    size={32}
+                                    className="animate-spin absolute left-1/2 -ml-[95px]"
+                                />
+                            )}
                             {countDown > 0
                                 ? `Gửi lại ${countDown}s`
                                 : 'Gửi lại'}
@@ -304,7 +320,8 @@ export default function LogInPhoneNumber() {
                             loading ||
                             loadingCheckPhone ||
                             loadingVerifyOTP ||
-                            loadingAccount
+                            loadingAccount ||
+                            loadingResendOTP
                         }
                         onClick={() => isContinue && handleSendOTP()}
                         className={`text-xl font-medium w-full disabled:opacity-50 relative flex items-center justify-center md:w-2/3 lg:w-1/3 rounded-full py-4 ${
@@ -316,12 +333,13 @@ export default function LogInPhoneNumber() {
                         {(loading ||
                             loadingCheckPhone ||
                             loadingVerifyOTP ||
-                            loadingAccount) && (
-                            <CgSpinner
-                                size={32}
-                                className="animate-spin absolute left-1/2 -ml-[95px]"
-                            />
-                        )}
+                            loadingAccount) &&
+                            !loadingResendOTP && (
+                                <CgSpinner
+                                    size={32}
+                                    className="animate-spin absolute left-1/2 -ml-[95px]"
+                                />
+                            )}
                         <span>
                             {showOTP
                                 ? LANGUAGE[language].VERIFY
