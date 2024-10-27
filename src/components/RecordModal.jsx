@@ -69,7 +69,30 @@ export default function RecordModal({ handle }) {
             language: language,
         });
 
-    const submitRecordHandle = () => {
+    const cleanDataURI = (dataURI) => {
+        // Tìm vị trí của ";codecs=" và cắt bỏ đoạn sau nó nếu tồn tại
+        const cleanedURI = dataURI.replace(/;codecs=[^,]*/, '');
+        return cleanedURI;
+    };
+
+    const convertToBase64 = (file, mimeType) => {
+        if (!file) return null;
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                const base64data = mimeType
+                    ? `data:${mimeType};base64,${reader.result.split(',')[1]}`
+                    : reader.result;
+                resolve(base64data);
+            };
+            reader.onerror = (error) => {
+                reject(error);
+            };
+        });
+    };
+
+    const submitRecordHandle = async () => {
         const blob = recorder.getBlob();
         let audioFile = null;
         let videoFile = null;
@@ -78,16 +101,17 @@ export default function RecordModal({ handle }) {
                 type: 'audio/mp3',
             });
         } else {
-            videoFile = new File([blob], 'video-recording.webm', {
-                type: 'video/webm',
+            videoFile = new File([blob], 'video-recording.mp4', {
+                type: 'video/mp4',
             });
         }
         if (handle) {
             const reader = new FileReader();
             reader.readAsDataURL(blob);
-            reader.onloadend = () => {
+            reader.onloadend = async () => {
                 const base64data = reader.result;
-                handle(transcript, base64data, file);
+                const base64File = await convertToBase64(file, 'png');
+                handle(transcript, base64data, base64File);
                 if (isRecord) toggleIsRecord();
             };
         } else {
@@ -113,12 +137,15 @@ export default function RecordModal({ handle }) {
     const getMicrophonePermission = async () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             try {
-                const streamRecord = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: recordOption === 'video',
-                });
+                const streamRecord = await navigator.mediaDevices.getUserMedia(
+                    recordOption === 'video'
+                        ? { video: true, audio: true }
+                        : { audio: true },
+                );
                 const recordRTC = new RecordRTC(streamRecord, {
                     type: recordOption,
+                    mimeType:
+                        recordOption === 'video' ? 'video/mp4' : 'audio/mp3',
                 });
                 setStream(streamRecord);
                 setRecorder(recordRTC);
@@ -303,6 +330,7 @@ export default function RecordModal({ handle }) {
         }
         resetTranscript();
         // setRecordContents('');
+        setFile(null);
         setAudio(null);
         setVideo(null);
     }, [isRecord]);

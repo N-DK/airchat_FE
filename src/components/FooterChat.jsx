@@ -31,8 +31,10 @@ export default function FooterChat({
     isPlay,
     handleSend,
     setIsTurnOnCamera,
+    isInChatRoom,
 }) {
     const {
+        isRecord,
         toggleIsRecord,
         isRunAuto,
         toggleIsRunAuto,
@@ -160,7 +162,7 @@ export default function FooterChat({
                     const audioBlob = new Blob(audioChunksRef.current, {
                         type:
                             recordOption === 'video'
-                                ? 'video/webm'
+                                ? 'video/mp4'
                                 : 'audio/mp3',
                     });
                     const reader = new FileReader();
@@ -191,8 +193,9 @@ export default function FooterChat({
         }
         SpeechRecognition.stopListening();
 
-        resetTranscript();
+        // resetTranscript();
         // setAudio(null);
+        // setVideo(null);
         setIsStartRecord(false);
     };
 
@@ -289,11 +292,14 @@ export default function FooterChat({
 
     useEffect(() => {
         if (isStartRecord) {
-            if ((recordOption == 'video' || post) && setIsTurnOnCamera) {
+            if (
+                (recordOption == 'video' || post || isInChatRoom) &&
+                setIsTurnOnCamera
+            ) {
                 setIsTurnOnCamera(true);
             }
-            // setAudio(null);
-            // setVideo(null);
+            setAudio(null);
+            setVideo(null);
             resetTranscript();
             startRecording();
         }
@@ -309,10 +315,11 @@ export default function FooterChat({
             (audio || video) &&
             transcript &&
             touchStartX >= 120 &&
-            !isStartRecord
+            !isStartRecord &&
+            !isRecord
         ) {
             if (handleSend) {
-                handleSend(transcript, audio);
+                handleSend(transcript, audio ? audio : video ? video : null);
             } else {
                 let audioFile = null;
                 let videoFile = null;
@@ -322,9 +329,9 @@ export default function FooterChat({
                         type: 'audio/mp3',
                     });
                 } else if (video) {
-                    const videoBlob = base64ToBlob(video, 'video/webm');
-                    videoFile = new File([videoBlob], 'video-recording.webm', {
-                        type: 'video/webm',
+                    const videoBlob = base64ToBlob(video, 'video/mp4');
+                    videoFile = new File([videoBlob], 'video-recording.mp4', {
+                        type: 'video/mp4',
                     });
                 }
                 const channel_id = redirect.includes('group-channel')
@@ -344,16 +351,17 @@ export default function FooterChat({
                     ),
                 );
             }
-            // setAudio(null);
             resetTranscript();
+            setAudio(null);
+            setVideo(null);
         }
-    }, [audio, transcript, touchStartX, video, isStartRecord]);
+    }, [audio, transcript, touchStartX, video, isStartRecord, isRecord]);
 
     useEffect(() => {
         if (touchStartX < 120 && !isStartRecord) {
             resetTranscript();
-            // setAudio(null);
-            // setVideo(null);
+            setAudio(null);
+            setVideo(null);
         }
     }, [touchStartX, isStartRecord]);
 
@@ -401,7 +409,14 @@ export default function FooterChat({
                 handleScroll(object);
             }
         }
-    }, [object, isRunAuto, isFullScreen, audioCurrent, isRunSpeed]);
+    }, [
+        object,
+        isRunAuto,
+        isFullScreen,
+        audioCurrent,
+        isRunSpeed,
+        videoCurrent,
+    ]);
 
     useEffect(() => {
         if (audioCurrent) {

@@ -39,11 +39,11 @@ const ChatRoom = () => {
         useSelector((state) => state.detailMessage);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { socket, isConnected } = useSelector((state) => state.socket);
-    // const [minHeight, setMinHeight] = useState('100%');
+    const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [messages, setMessages] = useState(initMessages);
     const refContainer = useRef(null);
     const { language } = useSelector((state) => state.userLanguage);
-    const { isFullScreen } = useContext(AppContext);
+    const { isFullScreen, newMessageFromFooter } = useContext(AppContext);
 
     useEffect(() => {
         const sortedMessages = initMessages?.sort((a, b) => a?.id - b?.id);
@@ -80,7 +80,7 @@ const ChatRoom = () => {
                     message: message.message,
                     id: message.messageID,
                     image: message.temp_image,
-                    audio: `https://talkie.transtechvietnam.com${message.audioPath}`,
+                    audio: message.audioPath,
                     video: message.videoPath,
                     number_heart: 0,
                     created_at: Date.now() / 1000,
@@ -105,14 +105,24 @@ const ChatRoom = () => {
         }
     }, []);
 
-    const base64ToBlob = (base64, mimeType) => {
-        const byteString = atob(base64.split(',')[1]);
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
+    const convertBase64ToBlob = (base64, mimeType) => {
+        const base64Data = base64.slice(base64.indexOf('base64,') + 7);
+
+        const byteCharacters = atob(base64Data);
+
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+            const slice = byteCharacters.slice(offset, offset + 512);
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
         }
-        return new Blob([ab], { type: mimeType });
+
+        return new Blob(byteArrays, { type: mimeType });
     };
 
     const convertObjectURL = (selectedFile) => {
@@ -120,45 +130,65 @@ const ChatRoom = () => {
     };
 
     const sendNewMessage = useCallback(
-        (message, audio, file) => {
+        (message, base64, file) => {
+            const media = base64.includes('video')
+                ? { video: base64 }
+                : { audio: base64 };
+
             const newMessage = message;
 
             if (socket?.connected) {
-                // console.log('payload', {
-                //     sender: userInfo?.name,
-                //     receiver: id,
-                //     message: newMessage,
-                //     audio: audio,
-                // });
+                console.log('payload', {
+                    sender: userInfo?.name,
+                    receiver: id,
+                    message: newMessage,
+                    image: file,
+                    ...media,
+                });
+                let messageId = null;
                 sendMessage(socket, EMIT_EVENT.PRIVATE_MESSAGE, {
                     sender: userInfo?.name,
                     receiver: id,
                     message: newMessage,
-                    audio: audio,
                     image: file,
+                    ...media,
                 });
                 if (userInfo?.id != id) {
                     setMessages((prev) => {
-                        const blob = base64ToBlob(audio, 'audio/mp3');
-                        const audioURL = URL.createObjectURL(blob);
+                        const blob = convertBase64ToBlob(
+                            base64,
+                            base64.includes('video')
+                                ? 'video/mp4'
+                                : 'audio/mp3',
+                        );
 
+                        const urlMedia = convertObjectURL(blob);
+                        messageId = prev?.[prev.length - 1]?.id + 1;
                         return [
                             ...prev,
                             {
                                 ...prev?.[
                                     getMessageIndex({ sender: userInfo?.name })
                                 ],
-                                id: prev?.[prev.length - 1]?.id + 1,
+                                id: messageId,
                                 sender_id: userInfo?.id,
                                 sender_name: userInfo?.name,
                                 message: newMessage,
                                 number_heart: 0,
                                 created_at: Date.now() / 1000,
                                 sender_avt: userInfo?.image,
-                                audio: audioURL,
-                                image: convertObjectURL(file),
+                                audio: !base64.includes('video')
+                                    ? urlMedia
+                                    : null,
+                                image: file,
+                                video: base64.includes('video')
+                                    ? urlMedia
+                                    : null,
                             },
                         ];
+                    });
+                    sendMessage(socket, EMIT_EVENT.MESSAGE_READ, {
+                        messageId: [messageId],
                     });
                 }
             }
@@ -246,6 +276,18 @@ const ChatRoom = () => {
                             refContainer={refContainer}
                         />
                     ))}
+                    {isTurnOnCamera && (
+                        <MessageChatRoom
+                            position={'left'}
+                            message={{
+                                sender_name: userInfo?.name,
+                                message: newMessageFromFooter,
+                                sender_avt: userInfo?.image,
+                                created_at: Date.now() / 1000,
+                                isTurnOnCamera: true,
+                            }}
+                        />
+                    )}
                 </div>
             );
         } else if (!loadingMessage && messages?.length === 0) {
@@ -271,7 +313,14 @@ const ChatRoom = () => {
                 </div>
             );
         }
-    }, [loadingMessage, messages, userInfo, initMessages]);
+    }, [
+        loadingMessage,
+        messages,
+        userInfo,
+        initMessages,
+        isTurnOnCamera,
+        newMessageFromFooter,
+    ]);
 
     return (
         <div className="relative flex flex-col justify-between h-screen  overflow-hidden">
@@ -307,6 +356,8 @@ const ChatRoom = () => {
                 title="messages"
                 isPlay={true}
                 handleSend={sendNewMessage}
+                setIsTurnOnCamera={setIsTurnOnCamera}
+                isInChatRoom={true}
             />
             {/* <button
                 onClick={() => {
