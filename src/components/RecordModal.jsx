@@ -27,6 +27,19 @@ import { FaRegPauseCircle } from 'react-icons/fa';
 import SpeechRecognition, {
     useSpeechRecognition,
 } from 'react-speech-recognition';
+import { validateFileSize } from '../utils/validateFileSize.utils';
+
+const NotifyText = ({ message, show }) => {
+    return (
+        <div
+            className={`bg-white z-[99999999] absolute left-1/2 transform -translate-x-1/2 w-auto dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+                show ? 'translate-y-0 mt-3' : '-translate-y-full'
+            }`}
+        >
+            <h6 className="text-black dark:text-white">{message}</h6>
+        </div>
+    );
+};
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -57,6 +70,8 @@ export default function RecordModal({ handle }) {
     const [searchText, setSearchText] = useState('');
     const [result, setResult] = useState([]);
     const [url, setUrl] = useState('');
+    const [showNotify, setShowNotify] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
 
     const debouncedSearch = useDebounce(searchText, 500);
     const userTheme = useSelector((state) => state.userTheme);
@@ -95,6 +110,7 @@ export default function RecordModal({ handle }) {
         const blob = recorder.getBlob();
         let audioFile = null;
         let videoFile = null;
+
         if (recordOption === 'audio') {
             audioFile = new File([blob], 'audio-recording.mp3', {
                 type: 'audio/mp3',
@@ -104,27 +120,67 @@ export default function RecordModal({ handle }) {
                 type: 'video/mp4',
             });
         }
+
+        const showError = (message) => {
+            setShowNotify(true);
+            setNotifyMessage(message);
+            setTimeout(() => setShowNotify(false), 1200);
+        };
+
         if (handle) {
             const reader = new FileReader();
             reader.readAsDataURL(blob);
             reader.onloadend = async () => {
-                const base64data = reader.result;
-                const base64File = await convertToBase64(file, 'png');
-                handle(
-                    transcript,
+                const base64data =
                     recordOption === 'audio'
-                        ? base64data
-                        : cleanDataURI(base64data),
-                    base64File,
-                );
+                        ? reader.result
+                        : cleanDataURI(reader.result);
+
+                const base64File = await convertToBase64(file, 'png');
+
+                if (
+                    recordOption === 'audio' &&
+                    !validateBase64Size(base64data)
+                ) {
+                    showError(LANGUAGE[language].FILE_AUDIO_SIZE_ERROR);
+                    return;
+                }
+                if (
+                    recordOption === 'video' &&
+                    !validateBase64Size(base64data)
+                ) {
+                    showError(LANGUAGE[language].FILE_VIDEO_SIZE_ERROR);
+                    return;
+                }
+
+                if (file && !validateFileSize(file)) {
+                    showError(LANGUAGE[language].FILE_IMAGE_SIZE_ERROR);
+                    return;
+                }
+
+                handle(transcript, base64data, base64File);
                 if (isRecord) toggleIsRecord();
             };
         } else {
+            if (file && !validateFileSize(file)) {
+                showError(LANGUAGE[language].FILE_IMAGE_SIZE_ERROR);
+                return;
+            }
+            if (audioFile && !validateFileSize(audioFile)) {
+                showError(LANGUAGE[language].FILE_AUDIO_SIZE_ERROR);
+                return;
+            }
+            if (videoFile && !validateFileSize(videoFile)) {
+                showError(LANGUAGE[language].FILE_VIDEO_SIZE_ERROR);
+                return;
+            }
+
             const channel_id = redirect.includes('group-channel')
                 ? redirect.split('/')[1]
                 : redirect.includes('channel')
                 ? redirect.split('/')[2]
                 : null;
+
             dispatch(
                 submitPost(
                     transcript,
@@ -348,118 +404,122 @@ export default function RecordModal({ handle }) {
     }, [newPost, isRecord, toggleIsRecord, dispatch]);
 
     return (
-        <div
-            className={`absolute left-0 bottom-0 z-50 w-full h-1/2 ${
-                isRecord ? 'translate-y-0' : 'translate-y-[200vh]'
-            } transition-all duration-300`}
-        >
-            <div className="flex flex-col justify-between backdrop-blur-2xl px-6 pt-6 pb-9 md:p-10 bg-white/50 h-full rounded-t-3xl">
-                <div className="text-bluePrimary flex justify-between items-center">
-                    <div className="flex gap-2 items-end">
-                        <div className="flex gap-2">
-                            <span className="text-xl">
-                                {LANGUAGE[language].TO}
-                            </span>
-                            <span className="text-xl font-semibold">
-                                {post?.name ||
-                                    getChannelName() ||
-                                    'Just Chatting'}
-                            </span>
+        <>
+            <div
+                className={`absolute left-0 bottom-0 z-50 w-full h-1/2 ${
+                    isRecord ? 'translate-y-0' : 'translate-y-[200vh]'
+                } transition-all duration-300`}
+            >
+                <div className="flex flex-col justify-between backdrop-blur-2xl px-6 pt-6 pb-9 md:p-10 bg-white/50 h-full rounded-t-3xl">
+                    <div className="text-bluePrimary flex justify-between items-center">
+                        <div className="flex gap-2 items-end">
+                            <div className="flex gap-2">
+                                <span className="text-xl">
+                                    {LANGUAGE[language].TO}
+                                </span>
+                                <span className="text-xl font-semibold">
+                                    {post?.name ||
+                                        getChannelName() ||
+                                        'Just Chatting'}
+                                </span>
+                            </div>
+                            {/* <BsChevronExpand size="1.6rem" /> */}
                         </div>
-                        {/* <BsChevronExpand size="1.6rem" /> */}
-                    </div>
-                    <RiCloseFill onClick={() => toggleIsRecord()} size="2rem" />
-                </div>
-                {permission && recordOption === 'video' && (
-                    <div className="w-20 h-20 overflow-hidden rounded-full">
-                        <Webcam
-                            videoConstraints={{
-                                facingMode: 'user',
-                            }}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                            }}
+                        <RiCloseFill
+                            onClick={() => toggleIsRecord()}
+                            size="2rem"
                         />
                     </div>
-                )}
-                <div className="flex">
-                    <div className="bg-bluePrimary flex-1 rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
-                        <textarea
-                            value={transcript} //transcript
-                            // onChange={(e) => setRecordContents(e.target.value)}
-                            readOnly={!transcript} //transcript
-                            className="w-full bg-inherit text-white placeholder-white outline-none"
-                            placeholder={
-                                LANGUAGE[language].TAP_THE_MIC_DESCRIPTION
-                            }
-                            style={{ minHeight: '32px' }}
-                            cols="30"
-                            rows="3"
-                        ></textarea>
-                        {file && (
-                            <figure
-                                // onTouchStart={(e) => {
-                                //     e.stopPropagation();
-                                //     handleTouchStart(item);
-                                // }}
-                                // onTouchEnd={handleTouchEnd}
-                                // id={`delete-photo-${data.id}`}
-                                className="relative"
-                            >
-                                <Avatar
-                                    src={convertObjectURL(file)}
-                                    className=" w-full h-full object-cover rounded-xl"
-                                />
-                                <button
-                                    className="absolute top-3 right-3 p-1 dark:text-red-600 text-red-600"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setFile(null);
-                                    }}
+                    {permission && recordOption === 'video' && (
+                        <div className="w-20 h-20 overflow-hidden rounded-full">
+                            <Webcam
+                                videoConstraints={{
+                                    facingMode: 'user',
+                                }}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                }}
+                            />
+                        </div>
+                    )}
+                    <div className="flex">
+                        <div className="bg-bluePrimary flex-1 rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
+                            <textarea
+                                value={transcript} //transcript
+                                // onChange={(e) => setRecordContents(e.target.value)}
+                                readOnly={!transcript} //transcript
+                                className="w-full bg-inherit text-white placeholder-white outline-none"
+                                placeholder={
+                                    LANGUAGE[language].TAP_THE_MIC_DESCRIPTION
+                                }
+                                style={{ minHeight: '32px' }}
+                                cols="30"
+                                rows="3"
+                            ></textarea>
+                            {file && (
+                                <figure
+                                    // onTouchStart={(e) => {
+                                    //     e.stopPropagation();
+                                    //     handleTouchStart(item);
+                                    // }}
+                                    // onTouchEnd={handleTouchEnd}
+                                    // id={`delete-photo-${data.id}`}
+                                    className="relative"
                                 >
-                                    <IoCloseCircleOutline size={20} />
-                                </button>
-                                {/* {(loadingUpload || loadingDeletePhoto) && (
+                                    <Avatar
+                                        src={convertObjectURL(file)}
+                                        className=" w-full h-full object-cover rounded-xl"
+                                    />
+                                    <button
+                                        className="absolute top-3 right-3 p-1 dark:text-red-600 text-red-600"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setFile(null);
+                                        }}
+                                    >
+                                        <IoCloseCircleOutline size={20} />
+                                    </button>
+                                    {/* {(loadingUpload || loadingDeletePhoto) && (
                                 <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
                                     <LoadingSpinner />
                                 </div>
                             )} */}
-                            </figure>
-                        )}
-                        {url && (
-                            <div>
-                                <LinkPreviewComponent
-                                    setUrl={setUrl}
-                                    url={url}
-                                    // post_id={data.id}
-                                    // setData={setData}
-                                    // dataUrl={data.url}
-                                />
-                            </div>
-                        )}
-                        <div className="flex items-center mt-2">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleUploadAvatar();
-                                }}
-                            >
-                                <LuImagePlus className="dark:text-white text-white mr-2" />
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsOpenLink(true);
-                                }}
-                            >
-                                <IoMdLink
-                                    className="dark:text-white text-white mr-2"
-                                    size={20}
-                                />
-                            </button>
-                            {/* <button
+                                </figure>
+                            )}
+                            {url && (
+                                <div>
+                                    <LinkPreviewComponent
+                                        setUrl={setUrl}
+                                        url={url}
+                                        // post_id={data.id}
+                                        // setData={setData}
+                                        // dataUrl={data.url}
+                                    />
+                                </div>
+                            )}
+                            <div className="flex items-center mt-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleUploadAvatar();
+                                    }}
+                                >
+                                    <LuImagePlus className="dark:text-white text-white mr-2" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsOpenLink(true);
+                                    }}
+                                >
+                                    <IoMdLink
+                                        className="dark:text-white text-white mr-2"
+                                        size={20}
+                                    />
+                                </button>
+                                {/* <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 // handleToggleSearch(data.id);
@@ -467,8 +527,8 @@ export default function RecordModal({ handle }) {
                         >
                             <GoMention className="dark:text-white text-white mr-2" />
                         </button> */}
-                        </div>
-                        {/* {isShowSearch && (
+                            </div>
+                            {/* {isShowSearch && (
                         <>
                             <div className="w-[80%] flex flex-wrap gap-1 mt-2">
                                 {(result.length > 0 ? result : tagsUser)?.map(
@@ -501,126 +561,132 @@ export default function RecordModal({ handle }) {
                             </div>
                         </>
                     )} */}
+                        </div>
                     </div>
-                </div>
 
-                <div
-                    className={`flex ${
-                        (audio || video) && transcript ? '' : 'justify-center'
-                    } items-center gap-5`}
-                >
                     <div
-                        className={`${
-                            (audio || video) && transcript && !permission
-                                ? 'md:w-full opacity-100'
-                                : 'w-0 opacity-0'
-                        } transition-all flex ${
-                            (audio || video) && transcript ? 'flex-1' : ''
-                        } justify-end duration-500`}
+                        className={`flex ${
+                            (audio || video) && transcript
+                                ? ''
+                                : 'justify-center'
+                        } items-center gap-5`}
                     >
-                        {audio && transcript && (
-                            <div className="relative w-full">
-                                <div className="flex items-center mb-4">
-                                    {duration && (
-                                        <span className="text-bluePrimary mr-4">
-                                            {duration}
-                                        </span>
-                                    )}
-                                    <button
-                                        onClick={onPlayPause}
-                                        className=" text-bluePrimary"
-                                    >
-                                        {isPlaying ? (
-                                            <FaRegPauseCircle size={40} />
-                                        ) : (
-                                            <FaRegCirclePlay size={40} />
+                        <div
+                            className={`${
+                                (audio || video) && transcript && !permission
+                                    ? 'md:w-full opacity-100'
+                                    : 'w-0 opacity-0'
+                            } transition-all flex ${
+                                (audio || video) && transcript ? 'flex-1' : ''
+                            } justify-end duration-500`}
+                        >
+                            {audio && transcript && (
+                                <div className="relative w-full">
+                                    <div className="flex items-center mb-4">
+                                        {duration && (
+                                            <span className="text-bluePrimary mr-4">
+                                                {duration}
+                                            </span>
                                         )}
-                                    </button>
-                                </div>
-                                <WavesurferPlayer
-                                    progressColor={'#3186FE'}
-                                    cursorWidth={2}
-                                    height={80}
-                                    width={'100%'}
-                                    waveColor={'white'}
-                                    url={audio}
-                                    normalize={true}
-                                    backend="WebAudio"
-                                    barWidth={6}
-                                    barRadius={99999999}
-                                    cursorColor="transparent"
-                                    onReady={onReady}
-                                    onAudioprocess={onAudioprocess}
-                                    onPlay={() => setIsPlaying(true)}
-                                    onPause={() => setIsPlaying(false)}
-                                />
-                                {/* <SoundCloudPlayer
+                                        <button
+                                            onClick={onPlayPause}
+                                            className=" text-bluePrimary"
+                                        >
+                                            {isPlaying ? (
+                                                <FaRegPauseCircle size={40} />
+                                            ) : (
+                                                <FaRegCirclePlay size={40} />
+                                            )}
+                                        </button>
+                                    </div>
+                                    <WavesurferPlayer
+                                        progressColor={'#3186FE'}
+                                        cursorWidth={2}
+                                        height={80}
+                                        width={'100%'}
+                                        waveColor={'white'}
+                                        url={audio}
+                                        normalize={true}
+                                        backend="WebAudio"
+                                        barWidth={6}
+                                        barRadius={99999999}
+                                        cursorColor="transparent"
+                                        onReady={onReady}
+                                        onAudioprocess={onAudioprocess}
+                                        onPlay={() => setIsPlaying(true)}
+                                        onPause={() => setIsPlaying(false)}
+                                    />
+                                    {/* <SoundCloudPlayer
                                     audio={audio}
                                     onReady={onReady}
                                     onAudioprocess={onAudioprocess}
                                     setIsPlaying={setIsPlaying}
                                 /> */}
-                            </div>
-                            // <div className="flex-1 items-center">
+                                </div>
+                                // <div className="flex-1 items-center">
 
-                            // </div>
-                        )}
-                        {video && (
-                            <video
-                                className="w-full h-24 rounded-lg border"
-                                src={video}
-                                controls
-                            ></video>
-                        )}
+                                // </div>
+                            )}
+                            {video && (
+                                <video
+                                    className="w-full h-24 rounded-lg border"
+                                    src={video}
+                                    controls
+                                ></video>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={handleClick}
+                            className="relative flex justify-center items-center min-w-[56px] h-[56px] bg-bluePrimary text-white rounded-full shadow-md"
+                        >
+                            {loading ? (
+                                <LoadingSpinner color="white" />
+                            ) : (audio || video) &&
+                              transcript &&
+                              !permission ? (
+                                <FaArrowUp size="1.5rem" />
+                            ) : permission ? (
+                                <div className="absolute rounded-full p-5 border-[4px] border-bluePrimary">
+                                    <HiPause size="1.8rem" />
+                                </div>
+                            ) : recordOption === 'audio' ? (
+                                <IoMdMic size="1.8rem" />
+                            ) : (
+                                <IoVideocam size="1.7rem" />
+                            )}
+                        </button>
                     </div>
-
-                    <button
-                        onClick={handleClick}
-                        className="relative flex justify-center items-center min-w-[56px] h-[56px] bg-bluePrimary text-white rounded-full shadow-md"
-                    >
-                        {loading ? (
-                            <LoadingSpinner color="white" />
-                        ) : (audio || video) && transcript && !permission ? (
-                            <FaArrowUp size="1.5rem" />
-                        ) : permission ? (
-                            <div className="absolute rounded-full p-5 border-[4px] border-bluePrimary">
-                                <HiPause size="1.8rem" />
-                            </div>
-                        ) : recordOption === 'audio' ? (
-                            <IoMdMic size="1.8rem" />
-                        ) : (
-                            <IoVideocam size="1.7rem" />
-                        )}
-                    </button>
                 </div>
+                <ModalDelete
+                    isOpen={isOpen}
+                    setIsOpen={setIsOpen}
+                    title={'ALLOW_MIC_ACCESS'}
+                    subTitle={'SUBTITLE_ALLOW_MIC_ACCESS'}
+                    handle={handleAllow}
+                    buttonOKText={'ALLOW'}
+                    buttonOKColor="bg-dark2Primary"
+                />
+                <ModalDelete
+                    title="TITLE_ADD_LINK"
+                    subTitle="SUBTITLE_ADD_LINK"
+                    isOpen={isOpenLink}
+                    setIsOpen={setIsOpenLink}
+                    handle={handlePasteUrl}
+                    buttonOKText="PASTE"
+                />
+                <ModalDelete
+                    title="TITLE_DELETE_PHOTO"
+                    subTitle="SUBTITLE_DELETE_PHOTO"
+                    isOpen={isOpenDeletePhoto}
+                    setIsOpen={setIsOpenDeletePhoto}
+                    handle={() => {
+                        setFile(null);
+                        // dispatch(deletePhoto(item?.id));
+                    }}
+                />
             </div>
-            <ModalDelete
-                isOpen={isOpen}
-                setIsOpen={setIsOpen}
-                title={'ALLOW_MIC_ACCESS'}
-                subTitle={'SUBTITLE_ALLOW_MIC_ACCESS'}
-                handle={handleAllow}
-                buttonOKText={'ALLOW'}
-                buttonOKColor="bg-dark2Primary"
-            />
-            <ModalDelete
-                title="TITLE_ADD_LINK"
-                subTitle="SUBTITLE_ADD_LINK"
-                isOpen={isOpenLink}
-                setIsOpen={setIsOpenLink}
-                handle={handlePasteUrl}
-                buttonOKText="PASTE"
-            />
-            <ModalDelete
-                title="TITLE_DELETE_PHOTO"
-                subTitle="SUBTITLE_DELETE_PHOTO"
-                isOpen={isOpenDeletePhoto}
-                setIsOpen={setIsOpenDeletePhoto}
-                handle={() => {
-                    setFile(null);
-                    // dispatch(deletePhoto(item?.id));
-                }}
-            />
-        </div>
+            <NotifyText message={notifyMessage} show={showNotify} />
+        </>
     );
 }

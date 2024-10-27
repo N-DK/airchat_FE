@@ -209,6 +209,9 @@ export const LANGUAGE = {
         CHANNEL_ADDED: 'Kênh đã được tạo',
         EXIST_CHANNEL: 'Kênh đã tồn tại',
         DELETE_MESSAGE_ERROR: 'Không thể xóa tin nhắn',
+        FILE_IMAGE_SIZE_ERROR: 'Kích thước hình ảnh không hợp lệ',
+        FILE_AUDIO_SIZE_ERROR: 'Kích thước âm thanh không hợp lệ',
+        FILE_VIDEO_SIZE_ERROR: 'Kích thước video không hợp lệ',
     },
     'en-US': {
         AUDIO: 'Audio',
@@ -422,6 +425,9 @@ export const LANGUAGE = {
         CHANNEL_ADDED: 'Channel added',
         EXIST_CHANNEL: 'Channel already exists',
         DELETE_MESSAGE_ERROR: 'Failed to delete message',
+        FILE_IMAGE_SIZE_ERROR: 'Image size is not valid',
+        FILE_AUDIO_SIZE_ERROR: 'Audio size is not valid',
+        FILE_VIDEO_SIZE_ERROR: 'Video size is not valid',
     },
 };
 

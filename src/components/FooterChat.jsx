@@ -24,6 +24,20 @@ import { LANGUAGE } from '../constants/language.constant';
 import SpeechRecognition, {
     useSpeechRecognition,
 } from 'react-speech-recognition';
+import { validateFileSize } from '../utils/validateFileSize.utils';
+import { validateBase64Size } from '../utils/validateBase64Size.utils';
+
+const NotifyText = ({ message, show }) => {
+    return (
+        <div
+            className={`bg-white z-[99999999] absolute left-1/2 transform -translate-x-1/2 w-auto dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
+                show ? 'translate-y-0 mt-3' : '-translate-y-full'
+            }`}
+        >
+            <h6 className="text-black dark:text-white">{message}</h6>
+        </div>
+    );
+};
 
 export default function FooterChat({
     isSwiping,
@@ -86,6 +100,8 @@ export default function FooterChat({
     const [audio, setAudio] = useState(null);
     const [video, setVideo] = useState(null);
     const [stream, setStream] = useState(null);
+    const [showNotify, setShowNotify] = useState(false);
+    const [notifyMessage, setNotifyMessage] = useState('');
     const { post } = useSelector((state) => state.setPostActive);
     const { object } = useSelector((state) => state.setObjectActive);
     const { audioCurrent } = useSelector(
@@ -311,6 +327,12 @@ export default function FooterChat({
     }, [window.location.href, dispatch]);
 
     useEffect(() => {
+        const showError = (message) => {
+            setShowNotify(true);
+            setNotifyMessage(message);
+            setTimeout(() => setShowNotify(false), 1200);
+        };
+
         if (
             (audio || video) &&
             transcript &&
@@ -319,10 +341,20 @@ export default function FooterChat({
             !isRecord
         ) {
             if (handleSend) {
-                handleSend(transcript, audio ? audio : video ? video : null);
+                if (recordOption === 'audio' && !validateBase64Size(audio)) {
+                    showError(LANGUAGE[language].FILE_AUDIO_SIZE_ERROR);
+                } else if (
+                    recordOption === 'video' &&
+                    !validateBase64Size(video)
+                ) {
+                    showError(LANGUAGE[language].FILE_VIDEO_SIZE_ERROR);
+                } else {
+                    handleSend(transcript, audio || video || null);
+                }
             } else {
                 let audioFile = null;
                 let videoFile = null;
+
                 if (audio) {
                     const audioBlob = base64ToBlob(audio, 'audio/mp3');
                     audioFile = new File([audioBlob], 'audio-recording.mp3', {
@@ -334,23 +366,33 @@ export default function FooterChat({
                         type: 'video/mp4',
                     });
                 }
+
                 const channel_id = redirect.includes('group-channel')
                     ? redirect.split('/')[1]
                     : redirect.includes('channel')
                     ? redirect.split('/')[2]
                     : null;
-                dispatch(
-                    submitPost(
-                        transcript,
-                        audioFile,
-                        post?.id,
-                        null,
-                        null,
-                        videoFile,
-                        channel_id,
-                    ),
-                );
+
+                // Kiểm tra kích thước file `File`
+                if (audioFile && !validateFileSize(audioFile)) {
+                    showError(LANGUAGE[language].FILE_AUDIO_SIZE_ERROR);
+                } else if (videoFile && !validateFileSize(videoFile)) {
+                    showError(LANGUAGE[language].FILE_VIDEO_SIZE_ERROR);
+                } else {
+                    dispatch(
+                        submitPost(
+                            transcript,
+                            audioFile,
+                            post?.id,
+                            null,
+                            null,
+                            videoFile,
+                            channel_id,
+                        ),
+                    );
+                }
             }
+
             resetTranscript();
             setAudio(null);
             setVideo(null);
@@ -595,6 +637,7 @@ export default function FooterChat({
                     </div>
                 )}
             </div>
+            <NotifyText message={notifyMessage} show={showNotify} />
         </>
     );
 }
