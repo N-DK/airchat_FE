@@ -22,6 +22,7 @@ import { debounce } from 'lodash';
 import { BASE_URL } from '../constants/api.constant';
 import { AppContext } from '../AppContext';
 import Webcam from 'react-webcam';
+import ImageFetcher from './ImageFetcher';
 
 const MessageChatRoom = ({
     position = 'right',
@@ -303,10 +304,13 @@ const MessageChatRoom = ({
                                         //         className="min-h-40 h-full w-full object-cover rounded-xl"
                                         //     />
                                         // </figure>
-                                        <iframe
-                                            src={`https://talkie.transtechvietnam.com${message?.image}`}
-                                            width="250"
-                                            height="250"
+                                        // <iframe
+                                        //     src={`https://talkie.transtechvietnam.com${message?.image}`}
+                                        //     width="250"
+                                        //     height="250"
+                                        // />
+                                        <ImageFetcher
+                                            imageUrl={`https://talkie.transtechvietnam.com${message?.image}`}
                                         />
                                     )}
                             </div>

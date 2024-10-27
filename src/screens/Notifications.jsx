@@ -261,13 +261,12 @@ export default function Notifications() {
                         </div>
                     )}
                 </div>
+                <FooterChat
+                    title="notifications"
+                    isSwiping={false}
+                    isPlay={false}
+                />
             </div>
-
-            <FooterChat
-                title="notifications"
-                isSwiping={false}
-                isPlay={false}
-            />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import axios from 'axios';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 
-const fetchImageFromUrl = async (url) => {
+export const fetchImageFromUrl = async (url) => {
     try {
         // Make a request to the URL
         const { data } = await axios.get(url);
