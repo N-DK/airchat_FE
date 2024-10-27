@@ -23,7 +23,10 @@ import {
 } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
 import useDebounce from '../hooks/useDebounce';
-import { debounce } from 'lodash';
+import SpeechRecognition, {
+    useSpeechRecognition,
+} from 'react-speech-recognition';
+
 export default function FooterChat({
     isSwiping,
     title,
@@ -31,7 +34,6 @@ export default function FooterChat({
     handleSend,
     setIsTurnOnCamera,
 }) {
-    const navigate = useNavigate();
     const {
         toggleIsRecord,
         isRunAuto,
@@ -71,22 +73,25 @@ export default function FooterChat({
             name: 'messages',
         },
     ];
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
     const redirect = useLocation().search.split('=')[1] || 'trending';
     const pressTimer = useRef();
-    const [messageApi, contextHolder] = message.useMessage();
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+    // const recognitionRef = useRef(null);
+
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [touchStartX, setTouchStartX] = useState(null);
     const [isStartRecord, setIsStartRecord] = useState(false);
     const [audio, setAudio] = useState(null);
     const [video, setVideo] = useState(null);
     const [stream, setStream] = useState(null);
-    const [newMessage, setNewMessage] = useState('');
-    const mediaRecorderRef = useRef(null);
-    const audioChunksRef = useRef([]);
-    const recognitionRef = useRef(null);
+    // const [transcript, setNewMessage] = useState('');
+
     const { post } = useSelector((state) => state.setPostActive);
     const { object } = useSelector((state) => state.setObjectActive);
-    const objectDebounce = useDebounce(object, 200);
     const { audioCurrent } = useSelector(
         (state) => state.setObjectAudioCurrent,
     );
@@ -94,7 +99,14 @@ export default function FooterChat({
         (state) => state.setObjectVideoCurrent,
     );
     const { language } = useSelector((state) => state.userLanguage);
-    const dispatch = useDispatch();
+    const { transcript, browserSupportsSpeechRecognition, resetTranscript } =
+        useSpeechRecognition();
+
+    const startListening = () =>
+        SpeechRecognition.startListening({
+            continuous: true,
+            language,
+        });
 
     const navigateHandle = (name) => {
         if (name == 'mic' && isPlay) {
@@ -127,22 +139,23 @@ export default function FooterChat({
     const handleTouchEnd = useCallback(
         (e) => {
             stopRecording();
-            if (recognitionRef.current) {
-                recognitionRef.current.stop();
-            }
+            // if (recognitionRef.current) {
+            //     recognitionRef.current.stop();
+            // }
             clearTimeout(pressTimer.current);
-            setIsStartRecord(false);
             setContextMenuVisible(false);
+            // setNewMessageFromFooter('');
             if (setIsTurnOnCamera) setIsTurnOnCamera(false);
         },
-        [isStartRecord, recognitionRef, mediaRecorderRef, stream],
+        [isStartRecord, mediaRecorderRef, stream],
     );
 
     const startRecording = () => {
-        if (recognitionRef.current) {
-            recognitionRef.current.start(); // Bắt đầu nhận diện giọng nói nếu có
-        }
-
+        // if (recognitionRef.current) {
+        //     recognitionRef.current.start(); // Bắt đầu nhận diện giọng nói nếu có
+        // }
+        resetTranscript();
+        startListening();
         // Thiết lập ràng buộc cho việc ghi âm
         const mediaConstraints =
             recordOption === 'video'
@@ -203,6 +216,12 @@ export default function FooterChat({
         if (mediaRecorderRef.current) {
             mediaRecorderRef.current.stop();
         }
+
+        SpeechRecognition.stopListening();
+
+        resetTranscript();
+        setAudio(null);
+        setIsStartRecord(false);
     };
 
     const closeContextMenu = useCallback(
@@ -219,162 +238,6 @@ export default function FooterChat({
         }
         return new Blob([ab], { type: mimeType });
     };
-
-    function playWavFile(url) {
-        fetch(url)
-            .then((response) => response.arrayBuffer())
-            .then((arrayBuffer) => {
-                const audioContext = new (window.AudioContext ||
-                    window.webkitAudioContext)();
-                audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-                    const source = audioContext.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.connect(audioContext.destination);
-                    source.start(0);
-                });
-            })
-            .catch((error) => console.error('Error playing WAV file:', error));
-    }
-
-    useEffect(() => {
-        if (isStartRecord) {
-            console.log('IS START RECORD');
-            if ((recordOption == 'video' || post) && setIsTurnOnCamera) {
-                setIsTurnOnCamera(true);
-            }
-            startRecording();
-        }
-    }, [isStartRecord]);
-
-    useEffect(() => {
-        dispatch(setPostActive(null));
-        dispatch(setObjectActive(null));
-    }, [window.location.href, dispatch]);
-
-    useEffect(() => {
-        if ((audio || video) && newMessage && touchStartX >= 120) {
-            if (handleSend) {
-                handleSend(newMessage, audio);
-            } else {
-                let audioFile = null;
-                let videoFile = null;
-                if (audio) {
-                    const audioBlob = base64ToBlob(audio, 'audio/mp3');
-                    audioFile = new File([audioBlob], 'audio-recording.mp3', {
-                        type: 'audio/mp3',
-                    });
-                } else if (video) {
-                    const videoBlob = base64ToBlob(video, 'video/webm');
-                    videoFile = new File([videoBlob], 'video-recording.webm', {
-                        type: 'video/webm',
-                    });
-                }
-                const channel_id = redirect.includes('group-channel')
-                    ? redirect.split('/')[1]
-                    : redirect.includes('channel')
-                    ? redirect.split('/')[2]
-                    : null;
-                dispatch(
-                    submitPost(
-                        newMessage,
-                        audioFile,
-                        post?.id,
-                        null,
-                        null,
-                        videoFile,
-                        channel_id,
-                    ),
-                );
-            }
-            setAudio(null);
-            setNewMessage('');
-            setNewMessageFromFooter('');
-        } else if (touchStartX < 120) {
-            setAudio(null);
-            setNewMessage('');
-            setNewMessageFromFooter('');
-        }
-    }, [audio, newMessage, touchStartX, video]);
-
-    useEffect(() => {
-        audioCurrent?.pause();
-        videoCurrent?.pause();
-    }, [useLocation(), audioCurrent, videoCurrent]);
-
-    useEffect(() => {
-        if ('webkitSpeechRecognition' in window) {
-            const SpeechRecognition =
-                window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = language; // 'vi-VN, en-US'
-            let newTranscript = '';
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-                let finalTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-                newTranscript = finalTranscript || interimTranscript;
-                setNewMessageFromFooter(newTranscript);
-            };
-
-            recognition.onend = () => {
-                setNewMessage(newTranscript);
-                setNewMessageFromFooter('');
-            };
-
-            recognitionRef.current = recognition;
-        } else {
-            console.log('Web Speech API is not supported in this browser.');
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!isRunAuto || isFullScreen) {
-            if (
-                (audioCurrent && audioCurrent.playing()) ||
-                (videoCurrent && !videoCurrent.paused)
-            ) {
-                audioCurrent?.pause();
-                videoCurrent?.pause();
-            }
-        } else if (isRunAuto && !isFullScreen && object) {
-            if (object?.audio) {
-                if (object?.audio === audioCurrent) {
-                    if (!audioCurrent.playing()) {
-                        audioCurrent.play();
-                    }
-                } else {
-                    handleAudioPlayback(object);
-                }
-            } else if (object?.video) {
-                if (object?.video === videoCurrent) {
-                    if (videoCurrent?.paused) {
-                        videoCurrent?.play();
-                    }
-                } else {
-                    handleVideoPlayback(object);
-                }
-            } else {
-                handleScroll(object);
-            }
-        }
-    }, [object, isRunAuto, isFullScreen, audioCurrent, isRunSpeed]);
-
-    useEffect(() => {
-        if (audioCurrent) {
-            audioCurrent.rate(isRunSpeed);
-        } else if (videoCurrent) {
-            videoCurrent.playbackRate = isRunSpeed;
-        }
-    }, [audioCurrent, isRunSpeed, videoCurrent]);
 
     const handleScroll = (object) => {
         if (object.element) {
@@ -464,9 +327,165 @@ export default function FooterChat({
         }
     };
 
+    useEffect(() => {
+        if (isStartRecord) {
+            console.log('IS START RECORD');
+            if ((recordOption == 'video' || post) && setIsTurnOnCamera) {
+                setIsTurnOnCamera(true);
+            }
+            startRecording();
+        }
+    }, [isStartRecord]);
+
+    useEffect(() => {
+        dispatch(setPostActive(null));
+        dispatch(setObjectActive(null));
+    }, [window.location.href, dispatch]);
+
+    useEffect(() => {
+        if (
+            (audio || video) &&
+            transcript &&
+            touchStartX >= 120 &&
+            !isStartRecord
+        ) {
+            console.log(audio, video, transcript, touchStartX, isStartRecord);
+            if (handleSend) {
+                handleSend(transcript, audio);
+            } else {
+                let audioFile = null;
+                let videoFile = null;
+                if (audio) {
+                    const audioBlob = base64ToBlob(audio, 'audio/mp3');
+                    audioFile = new File([audioBlob], 'audio-recording.mp3', {
+                        type: 'audio/mp3',
+                    });
+                } else if (video) {
+                    const videoBlob = base64ToBlob(video, 'video/webm');
+                    videoFile = new File([videoBlob], 'video-recording.webm', {
+                        type: 'video/webm',
+                    });
+                }
+                const channel_id = redirect.includes('group-channel')
+                    ? redirect.split('/')[1]
+                    : redirect.includes('channel')
+                    ? redirect.split('/')[2]
+                    : null;
+                dispatch(
+                    submitPost(
+                        transcript,
+                        audioFile,
+                        post?.id,
+                        null,
+                        null,
+                        videoFile,
+                        channel_id,
+                    ),
+                );
+            }
+            // setNewMessage('')
+            setAudio(null);
+            resetTranscript();
+        }
+    }, [audio, transcript, touchStartX, video, isStartRecord]);
+
+    useEffect(() => {
+        if (touchStartX < 120 && !isStartRecord) {
+            console.log('CLEAA');
+
+            resetTranscript();
+            setAudio(null);
+            setTouchStartX(null);
+        }
+    }, [touchStartX, isStartRecord]);
+
+    useEffect(() => {
+        if (transcript && isStartRecord) setNewMessageFromFooter(transcript);
+        else setNewMessageFromFooter('');
+    }, [transcript, isStartRecord]);
+
+    useEffect(() => {
+        audioCurrent?.pause();
+        videoCurrent?.pause();
+    }, [useLocation(), audioCurrent, videoCurrent]);
+
+    // useEffect(() => {
+    //     if ('webkitSpeechRecognition' in window) {
+    //         const SpeechRecognition =
+    //             window.SpeechRecognition || window.webkitSpeechRecognition;
+    //         const recognition = new SpeechRecognition();
+    //         recognition.continuous = true;
+    //         recognition.interimResults = true;
+    //         recognition.lang = language; // 'vi-VN, en-US'
+    //         let newTranscript = '';
+    //         recognition.onresult = (event) => {
+    //             let interimTranscript = '';
+    //             let finalTranscript = '';
+
+    //             for (let i = event.resultIndex; i < event.results.length; ++i) {
+    //                 if (event.results[i].isFinal) {
+    //                     finalTranscript += event.results[i][0].transcript;
+    //                 } else {
+    //                     interimTranscript += event.results[i][0].transcript;
+    //                 }
+    //             }
+    //             newTranscript = finalTranscript || interimTranscript;
+    //             setNewMessageFromFooter(newTranscript);
+    //         };
+
+    //         recognition.onend = () => {
+    //             setNewMessage(newTranscript);
+    //             setNewMessageFromFooter('');
+    //         };
+
+    //         recognitionRef.current = recognition;
+    //     } else {
+    //         console.log('Web Speech API is not supported in this browser.');
+    //     }
+    // }, []);
+
+    useEffect(() => {
+        if (!isRunAuto || isFullScreen) {
+            if (
+                (audioCurrent && audioCurrent.playing()) ||
+                (videoCurrent && !videoCurrent.paused)
+            ) {
+                audioCurrent?.pause();
+                videoCurrent?.pause();
+            }
+        } else if (isRunAuto && !isFullScreen && object) {
+            if (object?.audio) {
+                if (object?.audio === audioCurrent) {
+                    if (!audioCurrent.playing()) {
+                        audioCurrent.play();
+                    }
+                } else {
+                    handleAudioPlayback(object);
+                }
+            } else if (object?.video) {
+                if (object?.video === videoCurrent) {
+                    if (videoCurrent?.paused) {
+                        videoCurrent?.play();
+                    }
+                } else {
+                    handleVideoPlayback(object);
+                }
+            } else {
+                handleScroll(object);
+            }
+        }
+    }, [object, isRunAuto, isFullScreen, audioCurrent, isRunSpeed]);
+
+    useEffect(() => {
+        if (audioCurrent) {
+            audioCurrent.rate(isRunSpeed);
+        } else if (videoCurrent) {
+            videoCurrent.playbackRate = isRunSpeed;
+        }
+    }, [audioCurrent, isRunSpeed, videoCurrent]);
+
     return (
         <>
-            {contextHolder}
             <div
                 className={`z-40 fixed bg-white bottom-0 w-full transition-all duration-500 ${
                     isSwiping

@@ -2,8 +2,6 @@ import { RiCloseFill } from 'react-icons/ri';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../AppContext';
 import { IoMdLink, IoMdMic } from 'react-icons/io';
-import { BsChevronExpand } from 'react-icons/bs';
-// import { useLocation } from "react-router-dom";
 import { submitPost } from '../redux/actions/PostActions';
 import { useDispatch, useSelector } from 'react-redux';
 import LoadingSpinner from './LoadingSpinner';
@@ -12,7 +10,6 @@ import { FaArrowUp, FaRegCirclePlay } from 'react-icons/fa6';
 import RecordRTC from 'recordrtc';
 import React from 'react';
 import ModalDelete from './ModalDelete';
-import SoundWave from './SoundWave';
 import { LuImagePlus } from 'react-icons/lu';
 import LinkPreviewComponent from './LinkPreviewComponent';
 import useDebounce from '../hooks/useDebounce';
@@ -27,6 +24,9 @@ import { LANGUAGE } from '../constants/language.constant';
 import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import WavesurferPlayer from '@wavesurfer/react';
 import { FaRegPauseCircle } from 'react-icons/fa';
+import SpeechRecognition, {
+    useSpeechRecognition,
+} from 'react-speech-recognition';
 
 export default function RecordModal({ handle }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
@@ -35,13 +35,14 @@ export default function RecordModal({ handle }) {
     const dispatch = useDispatch();
     const postSubmit = useSelector((state) => state.postSubmit);
     const { post } = useSelector((state) => state.setPostActive);
-    const { menus } = useSelector((state) => state.menuBar);
-
     const { loading, success: newPost } = postSubmit;
+    const { transcript, browserSupportsSpeechRecognition, resetTranscript } =
+        useSpeechRecognition();
+
     const [permission, setPermission] = useState(false);
     const [audio, setAudio] = useState(null);
     const [video, setVideo] = useState(null);
-    const [recordContents, setRecordContents] = useState('');
+    // const [transcript, setRecordContents] = useState('');
     const [recorder, setRecorder] = useState(null);
     const [stream, setStream] = useState(null);
     const [recognition, setRecognition] = useState(null);
@@ -61,7 +62,12 @@ export default function RecordModal({ handle }) {
     const userTheme = useSelector((state) => state.userTheme);
     const { channels } = useSelector((state) => state.channelList);
     const { language } = useSelector((state) => state.userLanguage);
-    const { theme } = userTheme;
+
+    const startListening = () =>
+        SpeechRecognition.startListening({
+            continuous: true,
+            language: language,
+        });
 
     const submitRecordHandle = () => {
         const blob = recorder.getBlob();
@@ -81,7 +87,7 @@ export default function RecordModal({ handle }) {
             reader.readAsDataURL(blob);
             reader.onloadend = () => {
                 const base64data = reader.result;
-                handle(recordContents, base64data, file);
+                handle(transcript, base64data, file);
                 if (isRecord) toggleIsRecord();
             };
         } else {
@@ -92,7 +98,7 @@ export default function RecordModal({ handle }) {
                 : null;
             dispatch(
                 submitPost(
-                    recordContents,
+                    transcript,
                     audioFile,
                     post?.id,
                     file,
@@ -129,9 +135,10 @@ export default function RecordModal({ handle }) {
         if (recorder) {
             recorder?.startRecording();
         }
-        if (recognition) {
-            recognition?.start();
-        }
+        // if (recognition) {
+        //     recognition?.start();
+        // }
+        startListening();
     };
 
     const stopRecordingHandle = () => {
@@ -150,9 +157,10 @@ export default function RecordModal({ handle }) {
         if (stream) {
             stream.getTracks().forEach((track) => track.stop());
         }
-        if (recognition) {
-            recognition.stop();
-        }
+        // if (recognition) {
+        //     recognition.stop();
+        // }
+        SpeechRecognition.stopListening();
     };
 
     const handleAllow = () => {
@@ -161,7 +169,7 @@ export default function RecordModal({ handle }) {
 
     const handleClick = () => {
         if (isAllow) {
-            if ((audio || video) && recordContents && !permission) {
+            if ((audio || video) && transcript && !permission) {
                 submitRecordHandle();
             } else if (permission) {
                 setPermission(!permission);
@@ -200,110 +208,6 @@ export default function RecordModal({ handle }) {
         wavesurfer && wavesurfer.playPause();
     };
 
-    useEffect(() => {
-        if (permission) {
-            startRecordingHandle();
-        } else {
-            stopRecordingHandle();
-        }
-    }, [permission]);
-
-    useEffect(() => {
-        if (wavesurfer) setDuration(formatTime(wavesurfer?.getDuration()));
-    }, [wavesurfer]);
-
-    useEffect(() => {
-        if (debouncedSearch) {
-            dispatch(searchUser(debouncedSearch));
-        } else {
-            setResult([]);
-            dispatch({ type: SEARCH_USER_SUCCESS, payload: [] });
-        }
-    }, [debouncedSearch]);
-
-    useEffect(() => {
-        // const channelId = redirect.includes('group-channel')
-        //     ? redirect.split('/')[1]
-        //     : redirect.includes('channel')
-        //     ? redirect.split('/')[2]
-        //     : null;
-        // if (menus?.findIndex((item) => item.channel_id == channelId) < 0)
-        dispatch(listChannel());
-    }, [dispatch]);
-
-    useEffect(() => {
-        if (isAllow) handleClick();
-    }, [isAllow]);
-
-    useEffect(() => {
-        if ('webkitSpeechRecognition' in window) {
-            const SpeechRecognition =
-                window.SpeechRecognition || window.webkitSpeechRecognition;
-            const rec = new SpeechRecognition();
-            rec.continuous = true;
-            rec.interimResults = true;
-            rec.lang = language;
-            rec.onresult = (event) => {
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcriptPart = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        finalTranscript += transcriptPart + ' ';
-                    } else {
-                        finalTranscript += transcriptPart;
-                    }
-                }
-                setRecordContents(finalTranscript);
-            };
-            setRecognition(rec);
-        } else {
-            alert('Web Speech API is not supported in your browser. ');
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!isRecord) {
-            setPermission(false);
-        }
-        setRecordContents('');
-        setAudio(null);
-        setVideo(null);
-    }, [isRecord]);
-
-    useEffect(() => {
-        if (newPost && newPost?.id) {
-            if (isRecord) toggleIsRecord();
-            dispatch({ type: POST_SUBMIT_RESET });
-        }
-    }, [newPost, isRecord, toggleIsRecord, dispatch]);
-
-    useEffect(() => {
-        // if (audio) {
-        //     const audioElement = new Audio(audio);
-        //     // Xử lý sự kiện khi metadata được tải thành công
-        //     const handleLoadedMetadata = () => {
-        //         setDuration(audioElement.duration); // Cập nhật duration khi metadata có sẵn
-        //         setAudio(audioElement);
-        //     };
-        //     // Lắng nghe sự kiện 'loadedmetadata'
-        //     audioElement.addEventListener(
-        //         'loadedmetadata',
-        //         handleLoadedMetadata,
-        //     );
-        //     // Xử lý lỗi nếu tệp âm thanh không hợp lệ
-        //     audioElement.addEventListener('error', () => {
-        //         console.error("Audio file couldn't be loaded.");
-        //     });
-        //     // Cleanup sự kiện khi component unmount
-        //     return () => {
-        //         audioElement.removeEventListener(
-        //             'loadedmetadata',
-        //             handleLoadedMetadata,
-        //         );
-        //     };
-        // }
-    }, [audio]);
-
     const convertObjectURL = (selectedFile) => {
         return selectedFile ? URL.createObjectURL(selectedFile) : null;
     };
@@ -337,6 +241,78 @@ export default function RecordModal({ handle }) {
             findChannelName(channels?.trending);
         return channelName;
     }, [channels, redirect]);
+
+    useEffect(() => {
+        if (permission) {
+            startRecordingHandle();
+        } else {
+            stopRecordingHandle();
+        }
+    }, [permission]);
+
+    useEffect(() => {
+        if (wavesurfer) setDuration(formatTime(wavesurfer?.getDuration()));
+    }, [wavesurfer]);
+
+    useEffect(() => {
+        if (debouncedSearch) {
+            dispatch(searchUser(debouncedSearch));
+        } else {
+            setResult([]);
+            dispatch({ type: SEARCH_USER_SUCCESS, payload: [] });
+        }
+    }, [debouncedSearch]);
+
+    useEffect(() => {
+        dispatch(listChannel());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (isAllow) handleClick();
+    }, [isAllow]);
+
+    // useEffect(() => {
+    //     if ('webkitSpeechRecognition' in window) {
+    //         const SpeechRecognition =
+    //             window.SpeechRecognition || window.webkitSpeechRecognition;
+    //         const rec = new SpeechRecognition();
+    //         rec.continuous = true;
+    //         rec.interimResults = true;
+    //         rec.lang = language;
+    //         rec.onresult = (event) => {
+    //             let finalTranscript = '';
+    //             for (let i = event.resultIndex; i < event.results.length; i++) {
+    //                 const transcriptPart = event.results[i][0].transcript;
+    //                 if (event.results[i].isFinal) {
+    //                     finalTranscript += transcriptPart + ' ';
+    //                 } else {
+    //                     finalTranscript += transcriptPart;
+    //                 }
+    //             }
+    //             setRecordContents(finalTranscript);
+    //         };
+    //         setRecognition(rec);
+    //     } else {
+    //         alert('Web Speech API is not supported in your browser. ');
+    //     }
+    // }, []);
+
+    useEffect(() => {
+        if (!isRecord) {
+            setPermission(false);
+        }
+        resetTranscript();
+        // setRecordContents('');
+        setAudio(null);
+        setVideo(null);
+    }, [isRecord]);
+
+    useEffect(() => {
+        if (newPost && newPost?.id) {
+            if (isRecord) toggleIsRecord();
+            dispatch({ type: POST_SUBMIT_RESET });
+        }
+    }, [newPost, isRecord, toggleIsRecord, dispatch]);
 
     return (
         <div
@@ -378,9 +354,9 @@ export default function RecordModal({ handle }) {
                 <div className="flex">
                     <div className="bg-bluePrimary flex-1 rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
                         <textarea
-                            value={recordContents}
-                            onChange={(e) => setRecordContents(e.target.value)}
-                            readOnly={!recordContents}
+                            value={transcript} //transcript
+                            // onChange={(e) => setRecordContents(e.target.value)}
+                            readOnly={!transcript} //transcript
                             className="w-full bg-inherit text-white placeholder-white outline-none"
                             placeholder={
                                 LANGUAGE[language].TAP_THE_MIC_DESCRIPTION
@@ -497,21 +473,19 @@ export default function RecordModal({ handle }) {
 
                 <div
                     className={`flex ${
-                        (audio || video) && recordContents
-                            ? ''
-                            : 'justify-center'
+                        (audio || video) && transcript ? '' : 'justify-center'
                     } items-center gap-5`}
                 >
                     <div
                         className={`${
-                            (audio || video) && recordContents && !permission
+                            (audio || video) && transcript && !permission
                                 ? 'md:w-full opacity-100'
                                 : 'w-0 opacity-0'
                         } transition-all flex ${
-                            (audio || video) && recordContents ? 'flex-1' : ''
+                            (audio || video) && transcript ? 'flex-1' : ''
                         } justify-end duration-500`}
                     >
-                        {audio && recordContents && (
+                        {audio && transcript && (
                             <div className="relative w-full">
                                 <div className="flex items-center mb-4">
                                     {duration && (
@@ -567,9 +541,7 @@ export default function RecordModal({ handle }) {
                     >
                         {loading ? (
                             <LoadingSpinner color="white" />
-                        ) : (audio || video) &&
-                          recordContents &&
-                          !permission ? (
+                        ) : (audio || video) && transcript && !permission ? (
                             <FaArrowUp size="1.5rem" />
                         ) : permission ? (
                             <div className="absolute rounded-full p-5 border-[4px] border-bluePrimary">

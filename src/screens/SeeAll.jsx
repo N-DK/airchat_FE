@@ -164,54 +164,42 @@ export default function SeeAll() {
                     </div>
                 ) : (
                     <div className="mx-5">
-                        {channels?.hosting?.length > 0 && (
-                            <div className="mt-8">
-                                <h5 className="font-bold text-black dark:text-white">
-                                    {LANGUAGE[language].HOSTING}
-                                </h5>
-                                {loading ? (
-                                    <LoaderSkeletonChannels />
-                                ) : (
-                                    <div className="mt-4 flex flex-col gap-6">
-                                        {channels?.hosting?.map(
-                                            renderChannelItem,
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        {channels?.recent?.length > 0 && (
-                            <div className="mt-8">
-                                <h5 className="font-bold text-black dark:text-white">
-                                    {LANGUAGE[language].RECENTLY_ACTIVE}
-                                </h5>
-                                {loading ? (
-                                    <LoaderSkeletonChannels />
-                                ) : (
-                                    <div className="mt-4 flex flex-col gap-6">
-                                        {channels?.recent?.map(
-                                            renderChannelItem,
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                        {channels?.trending?.length > 0 && (
-                            <div className="mt-8">
-                                <h5 className="font-bold text-black dark:text-white">
-                                    {LANGUAGE[language].TRENDING}
-                                </h5>
-                                {loading ? (
-                                    <LoaderSkeletonChannels />
-                                ) : (
-                                    <div className="mt-4 flex flex-col gap-6">
-                                        {channels?.trending?.map(
-                                            renderChannelItem,
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        <div className="mt-8">
+                            <h5 className="font-bold text-black dark:text-white">
+                                {LANGUAGE[language].HOSTING}
+                            </h5>
+                            {loading ? (
+                                <LoaderSkeletonChannels />
+                            ) : (
+                                <div className="mt-4 flex flex-col gap-6">
+                                    {channels?.hosting?.map(renderChannelItem)}
+                                </div>
+                            )}
+                        </div>
+                        <div className="mt-8">
+                            <h5 className="font-bold text-black dark:text-white">
+                                {LANGUAGE[language].RECENTLY_ACTIVE}
+                            </h5>
+                            {loading ? (
+                                <LoaderSkeletonChannels />
+                            ) : (
+                                <div className="mt-4 flex flex-col gap-6">
+                                    {channels?.recent?.map(renderChannelItem)}
+                                </div>
+                            )}
+                        </div>
+                        <div className="mt-8">
+                            <h5 className="font-bold text-black dark:text-white">
+                                {LANGUAGE[language].TRENDING}
+                            </h5>
+                            {loading ? (
+                                <LoaderSkeletonChannels />
+                            ) : (
+                                <div className="mt-4 flex flex-col gap-6">
+                                    {channels?.trending?.map(renderChannelItem)}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

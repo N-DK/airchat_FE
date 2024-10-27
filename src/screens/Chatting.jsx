@@ -379,9 +379,23 @@ export default function Chatting() {
                         <h5 className="text-black dark:text-white">
                             {userInfo?.name}
                         </h5>
-                        <button className="text-gray-400">
-                            {newMessageFromFooter ||
-                                LANGUAGE[language].WHAT_ON_YOUR_MIND}
+                        <button className="text-gray-400 w-full">
+                            <textarea
+                                value={
+                                    !isRecord
+                                        ? newMessageFromFooter ||
+                                          LANGUAGE[language].WHAT_ON_YOUR_MIND
+                                        : LANGUAGE[language].WHAT_ON_YOUR_MIND
+                                }
+                                readOnly={true}
+                                className="w-full bg-inherit text-white placeholder-white outline-none resize-none"
+                                placeholder={
+                                    LANGUAGE[language].WHAT_ON_YOUR_MIND
+                                }
+                                style={{ minHeight: '20px' }}
+                                cols="30"
+                                rows="1"
+                            ></textarea>
                         </button>
                     </div>
                 </div>

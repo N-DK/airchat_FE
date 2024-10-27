@@ -216,6 +216,7 @@ export default function LogInPhoneNumber() {
                                 dispatch({
                                     type: CHECK_ACCOUNT_RESET,
                                 });
+                                localStorage.removeItem('phoneNumber');
                                 navigate('/');
                             }}
                             className="absolute left-7 h-7 md:ml-6 md:h-10 w-7 md:w-10 flex items-center justify-center bg-grayPrimary dark:bg-dark2Primary rounded-full"
