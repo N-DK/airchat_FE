@@ -70,8 +70,7 @@ export default function RecordModal({ handle }) {
         });
 
     const cleanDataURI = (dataURI) => {
-        // Tìm vị trí của ";codecs=" và cắt bỏ đoạn sau nó nếu tồn tại
-        const cleanedURI = dataURI.replace(/;codecs=[^,]*/, '');
+        const cleanedURI = dataURI.replace(/;codecs=[^;]*/, '');
         return cleanedURI;
     };
 
@@ -111,7 +110,13 @@ export default function RecordModal({ handle }) {
             reader.onloadend = async () => {
                 const base64data = reader.result;
                 const base64File = await convertToBase64(file, 'png');
-                handle(transcript, base64data, base64File);
+                handle(
+                    transcript,
+                    recordOption === 'audio'
+                        ? base64data
+                        : cleanDataURI(base64data),
+                    base64File,
+                );
                 if (isRecord) toggleIsRecord();
             };
         } else {

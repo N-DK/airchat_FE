@@ -191,7 +191,10 @@ export default function Details() {
     useEffect(() => {
         if (
             isVisible &&
-            document.getElementById(`post-item-reply-${data?.id}`)
+            document.getElementById(`post-item-reply-${data?.id}`) &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio)
         ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
@@ -219,7 +222,7 @@ export default function Details() {
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef]);
+    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
 
     useEffect(() => {
         if (data && !isHeart) setInitialLoad(false);
@@ -567,6 +570,7 @@ export default function Details() {
                         handleLike={handleHeart}
                         handleSharePost={handleSharePost}
                         handleBookMark={handleBookMark}
+                        videoRef={videoRef}
                     />
                 )}
 

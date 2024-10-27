@@ -246,7 +246,10 @@ function MessageItem({
     useEffect(() => {
         if (
             isVisible &&
-            document.getElementById(`post-item-reply-${data?.id}`)
+            document.getElementById(`post-item-reply-${data?.id}`) &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio)
         ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
@@ -275,7 +278,7 @@ function MessageItem({
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef]);
+    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
 
     useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());
@@ -379,6 +382,7 @@ function MessageItem({
                                     handleLike={handleHeart}
                                     handleSharePost={handleSharePost}
                                     handleBookMark={handleBookMark}
+                                    videoRef={videoRef}
                                 />
                             ) : (
                                 <div

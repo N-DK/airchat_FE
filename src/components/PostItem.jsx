@@ -272,7 +272,13 @@ function PostItem({
     }, [targetElement]);
 
     useEffect(() => {
-        if (isVisible && document.getElementById(`post-item-${data?.id}`)) {
+        if (
+            isVisible &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio) &&
+            document.getElementById(`post-item-${data?.id}`)
+        ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
             } else {
@@ -299,7 +305,7 @@ function PostItem({
         } else {
             dispatch(setPostActive(null));
         }
-    }, [isVisible, contentsChattingRef, videoRef]);
+    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
 
     const handleLike = useCallback(() => {
         dispatch(heart(data?.id));
@@ -444,6 +450,7 @@ function PostItem({
                                     handleLike={handleLike}
                                     handleSharePost={handleSharePost}
                                     handleBookMark={handleBookMark}
+                                    videoRef={videoRef}
                                 />
                             ) : (
                                 <div

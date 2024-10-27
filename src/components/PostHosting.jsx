@@ -1,5 +1,6 @@
 import React, {
     useCallback,
+    useContext,
     useEffect,
     useMemo,
     useRef,
@@ -42,6 +43,7 @@ import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { addViewPost } from '../redux/actions/UserActions';
 import { Howl, Howler } from 'howler';
+import { AppContext } from '../AppContext';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -156,6 +158,7 @@ function PostHosting({
     handleLike,
     handleSharePost,
     handleBookMark,
+    videoRef,
 }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -189,8 +192,10 @@ function PostHosting({
 
     const { users, loading } = useSelector((state) => state.searchUser);
 
+    const { isRunAuto } = useContext(AppContext);
+
     const [isVisible, setIsVisible] = useState(false);
-    const videoRef = useRef(null);
+    // const videoRef = useRef(null);
     const divRef = useRef(null);
 
     const handleToggleSearch = (itemId) => {
@@ -328,7 +333,12 @@ function PostHosting({
     }, []);
 
     useEffect(() => {
-        if (isVisible) {
+        if (
+            isVisible &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio)
+        ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100);
             } else {
@@ -354,7 +364,7 @@ function PostHosting({
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef, data]);
+    }, [isVisible, contentsChattingRef, videoRef?.current, data, isRunAuto]);
 
     useEffect(() => {
         if (debouncedSearch) {

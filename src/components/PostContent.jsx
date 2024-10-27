@@ -329,7 +329,10 @@ function PostContent({ item, contentsChattingRef }) {
     useEffect(() => {
         if (
             isVisible &&
-            document.getElementById(`post-item-profile-${data?.id}`)
+            document.getElementById(`post-item-profile-${data?.id}`) &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio)
         ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100);
@@ -359,7 +362,7 @@ function PostContent({ item, contentsChattingRef }) {
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef, data]);
+    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
 
     return (
         <>

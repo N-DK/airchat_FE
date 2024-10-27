@@ -115,11 +115,11 @@ const MessageChatRoom = ({
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                threshold: [0.25],
+                threshold: [0.1],
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.15,
+                    window.innerHeight * 0.18,
                     100,
-                )}px 0px -${Math.max(window.innerHeight * 0.77, 400)}px 0px`,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
         );
 
@@ -159,7 +159,10 @@ const MessageChatRoom = ({
     }, [position, isVisible]);
 
     useEffect(() => {
-        if (isVisible) {
+        if (
+            isVisible &&
+            (message?.video != '0' ? videoRef?.current : message?.audio)
+        ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
             } else {
@@ -195,7 +198,7 @@ const MessageChatRoom = ({
                 }),
             );
         }
-    }, [isVisible, refContainer?.current, videoRef]);
+    }, [isVisible, refContainer?.current, videoRef, isRunAuto, message]);
 
     return (
         <>
@@ -251,18 +254,20 @@ const MessageChatRoom = ({
                                 alt="icon"
                             />
                         )}
-                        <div
-                            className={`absolute top-0 left-0 bg-red-300 md:h-12 md:w-12  ${
-                                isVisible &&
-                                isRunAuto &&
-                                message?.video &&
-                                message?.video != 0
-                                    ? 'h-16 w-16'
-                                    : 'w-10 h-10'
-                            }  rounded-full ${
-                                isVisible && isRunAuto ? 'animate-ping' : ''
-                            }`}
-                        ></div>
+                        {!message?.isTurnOnCamera && (
+                            <div
+                                className={`absolute top-0 left-0 bg-red-300 md:h-12 md:w-12  ${
+                                    isVisible &&
+                                    isRunAuto &&
+                                    message?.video &&
+                                    message?.video != 0
+                                        ? 'h-16 w-16'
+                                        : 'w-10 h-10'
+                                }  rounded-full ${
+                                    isVisible && isRunAuto ? 'animate-ping' : ''
+                                }`}
+                            ></div>
+                        )}
                     </div>
                     <div
                         className={` flex-1 flex ${
@@ -292,12 +297,17 @@ const MessageChatRoom = ({
                                 {message?.image !== '' &&
                                     message?.image != '0' &&
                                     message?.image && (
-                                        <figure className="max-w-full relative my-2">
-                                            <Avatar
-                                                src={message?.image}
-                                                className="min-h-40 h-full w-full object-cover rounded-xl"
-                                            />
-                                        </figure>
+                                        // <figure className="max-w-full relative my-2">
+                                        //     <Avatar
+                                        //         src={message?.image}
+                                        //         className="min-h-40 h-full w-full object-cover rounded-xl"
+                                        //     />
+                                        // </figure>
+                                        <iframe
+                                            src={`https://talkie.transtechvietnam.com${message?.image}`}
+                                            width="250"
+                                            height="250"
+                                        />
                                     )}
                             </div>
                             <div className={messageClasses.actions}>
