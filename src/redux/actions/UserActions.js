@@ -217,7 +217,13 @@ export const checkUserAccount = (__data) => async (dispatch) => {
             type: CHECK_ACCOUNT_SUCCESS,
             payload: data,
         });
-        localStorage.setItem('userInfo', JSON.stringify(data));
+        if (data?.login === 2) {
+            dispatch({
+                type: USER_LOGIN_SUCCESS,
+                payload: data,
+            });
+            localStorage.setItem('userInfo', JSON.stringify(data));
+        }
     } catch (error) {
         dispatch({
             type: CHECK_ACCOUNT_FAIL,

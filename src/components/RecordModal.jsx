@@ -569,10 +569,10 @@ export default function RecordModal({ handle }) {
                             (audio || video) && transcript
                                 ? ''
                                 : 'justify-center'
-                        } items-center gap-5`}
+                        } items-center`}
                     >
                         <div
-                            className={`${
+                            className={`mr-3 ${
                                 (audio || video) && transcript && !permission
                                     ? 'md:w-full opacity-100'
                                     : 'w-0 opacity-0'

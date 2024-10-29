@@ -36,17 +36,17 @@ export default function HomeScreen() {
     }, [userInfo?.token]);
 
     useEffect(() => {
-        if (account?.results === 1 && userInfoProfile) {
+        if (account?.results === 1) {
             setTimeout(() => {
                 setIsLoading(false);
             }, 1000);
             if (account.login == 1 && userInfo?.token) {
                 navigate('/chatting');
-            } else if (account.login == 2) {
+            } else if (account.login == 2 && userInfo?.token) {
                 navigate('/aboutyou');
             }
         }
-    }, [account, userInfoProfile, userInfo]);
+    }, [account, userInfo]);
 
     useEffect(() => {
         if (userInfoProfile) {
