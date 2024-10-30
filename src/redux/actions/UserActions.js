@@ -106,6 +106,9 @@ import {
     USER_CODE_RESET,
     USER_PROFILE_RESET,
     USER_LANGUAGE_SUCCESS,
+    USER_BLOCKED_YOU_REQUEST,
+    USER_BLOCKED_YOU_SUCCESS,
+    USER_BLOCKED_YOU_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -643,7 +646,8 @@ export const block = (block_id, type) => async (dispatch, getState) => {
         );
         dispatch({
             type: USER_BLOCK_SUCCESS,
-            payload: data,
+            payload: data?.results,
+            message: data?.message,
         });
     } catch (error) {
         dispatch({
@@ -1299,6 +1303,39 @@ export const changePassword = (data) => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: USER_CHANGE_PASSWORD_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const getBlockedYou = () => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_BLOCKED_YOU_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.get(
+            'https://talkie.transtechvietnam.com/blocked-you',
+            config,
+        );
+        dispatch({
+            type: USER_BLOCKED_YOU_SUCCESS,
+            payload: data?.data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_BLOCKED_YOU_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

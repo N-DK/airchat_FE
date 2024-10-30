@@ -23,7 +23,11 @@ import {
     removeListener,
     sendMessage,
 } from '../services/socket.service';
-import { profile } from '../redux/actions/UserActions';
+import {
+    getBlockedYou,
+    listBlock,
+    profile,
+} from '../redux/actions/UserActions';
 import LoaderSkeletonMessageItem from '../components/LoaderSkeletonMessageItem';
 import { LANGUAGE } from '../constants/language.constant';
 
@@ -98,9 +102,31 @@ export default function Messages() {
     const { showDrawerNewDirect, toggleShowDrawerNewDirect } =
         useContext(AppContext);
     const { socket, isConnected } = useSelector((state) => state.socket);
+    const { language } = useSelector((state) => state.userLanguage);
+    const { block: blocks } = useSelector((state) => state.userListBlock);
+    const { isSuccess: isSuccessBlock, loading: loadingBlock } = useSelector(
+        (state) => state.userBlock,
+    );
+    const { blocked_you: blockedYou, loading: loadingBlockedYou } = useSelector(
+        (state) => state.userBlockedYou,
+    );
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredMessages, setFilteredMessages] = useState([]);
-    const { language } = useSelector((state) => state.userLanguage);
+
+    const isBlock = useCallback(
+        (id) => {
+            return blocks?.some((item) => item.blocked_id === parseInt(id));
+        },
+        [blocks],
+    );
+
+    const isBlockedYou = useCallback(
+        (id) => {
+            return blockedYou?.some((item) => item.user_block === parseInt(id));
+        },
+        [blockedYou],
+    );
 
     const handleReadMessage = useCallback(
         (message) => {
@@ -115,25 +141,38 @@ export default function Messages() {
                         ? message?.friend_id_2
                         : message?.friend_id_1
                     : message?.friend_id_1;
+            console.log(message);
 
-            navigate(`/messages/t/${recipientId}`, {
-                state: {
-                    user: {
-                        image:
-                            message?.receiver_id === userInfo?.id
-                                ? message?.sender_avatar
-                                : message?.receiver_avatar,
+            if (!loadingBlock && !loadingBlockedYou) {
+                navigate(`/messages/t/${recipientId}`, {
+                    state: {
+                        user: {
+                            image:
+                                message?.receiver_id === userInfo?.id
+                                    ? message?.sender_avatar
+                                    : message?.receiver_avatar,
+                            user_name:
+                                message?.receiver_id === userInfo?.id
+                                    ? message?.sender_name
+                                    : message?.receiver_name,
+                            id: recipientId,
+                        },
+                        isBlock: isBlock(recipientId),
+                        isBlockedYou: isBlockedYou(recipientId),
                     },
-                },
-            });
+                });
+            }
         },
-        [isConnected, socket, navigate, userInfo?.id, socket?.connected],
+        [
+            isConnected,
+            socket,
+            navigate,
+            userInfo?.id,
+            socket?.connected,
+            loadingBlock,
+            loadingBlockedYou,
+        ],
     );
-
-    useEffect(() => {
-        dispatch({ type: POST_LIST_RESET });
-        dispatch(listMessageRecent());
-    }, [dispatch]);
 
     const handleNewMessage = useCallback(
         (data) => {
@@ -170,6 +209,20 @@ export default function Messages() {
         },
         [filteredMessages, setFilteredMessages],
     );
+
+    useEffect(() => {
+        if (isSuccessBlock) {
+            dispatch(listBlock());
+            dispatch(getBlockedYou());
+        }
+    }, [isSuccessBlock, dispatch]);
+
+    useEffect(() => {
+        dispatch({ type: POST_LIST_RESET });
+        dispatch(listMessageRecent());
+        if (!blocks) dispatch(listBlock());
+        if (!blockedYou) dispatch(getBlockedYou());
+    }, [dispatch]);
 
     useEffect(() => {
         const setupSocketListeners = () => {

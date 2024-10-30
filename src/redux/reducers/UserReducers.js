@@ -112,6 +112,10 @@ import {
     USER_LANGUAGE_SUCCESS,
     USER_PROFILE_STRANGER_RESET,
     SAVE_USER_NUMBER_PHONE_TEMPORARY,
+    USER_REPORT_ACC_RESET,
+    USER_BLOCKED_YOU_REQUEST,
+    USER_BLOCKED_YOU_SUCCESS,
+    USER_BLOCKED_YOU_FAIL,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -342,7 +346,11 @@ export const userBlockReducer = (state = {}, action) => {
         case USER_BLOCK_REQUEST:
             return { loading: true };
         case USER_BLOCK_SUCCESS:
-            return { loading: false, isSuccess: true };
+            return {
+                loading: false,
+                isSuccess: action.payload,
+                message: action.message,
+            };
         case USER_BLOCK_FAIL:
             return { loading: false, error: action.payload };
         default:
@@ -486,6 +494,8 @@ export const userReportAccReducer = (state = {}, action) => {
             return { loading: true };
         case USER_REPORT_ACC_SUCCESS:
             return { loading: false, report_acc: action.payload };
+        case USER_REPORT_ACC_RESET:
+            return {};
         case USER_REPORT_ACC_FAIL:
             return { loading: false, error: action.payload };
         default:
@@ -608,6 +618,19 @@ export const listNotificationReducer = (state = {}, action) => {
                 key: action.key,
             };
         case USER_LIST_NOTIFICATION_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userBlockedYouReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_BLOCKED_YOU_REQUEST:
+            return { loading: true };
+        case USER_BLOCKED_YOU_SUCCESS:
+            return { loading: false, blocked_you: action.payload };
+        case USER_BLOCKED_YOU_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

@@ -29,6 +29,7 @@ import { getProfileStranger, profile } from '../redux/actions/UserActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { AppContext } from '../AppContext';
 import ScreenFull from '../components/ScreenFull';
+import BlockedChat from '../components/BlockedChat';
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -58,6 +59,9 @@ const ChatRoom = () => {
     const { isFullScreen, newMessageFromFooter } = useContext(AppContext);
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
+    const { isSuccess: isSuccessBlock, message: messageBlock } = useSelector(
+        (state) => state.userBlock,
+    );
 
     useEffect(() => {
         const sortedMessages = initMessages?.sort((a, b) => a?.id - b?.id);
@@ -373,13 +377,21 @@ const ChatRoom = () => {
             </div>
             <RecordModal handle={sendNewMessage} />
             {isFullScreen && <ScreenFull postsList={messages} />}
-            <FooterChat
-                title="messages"
-                isPlay={true}
-                handleSend={sendNewMessage}
-                setIsTurnOnCamera={setIsTurnOnCamera}
-                isInChatRoom={true}
-            />
+            {(state?.isBlock || state?.isBlockedYou) &&
+            messageBlock !== 'unblockAcc success' ? (
+                <BlockedChat
+                    user={state?.user}
+                    isBlockYou={state?.isBlockedYou}
+                />
+            ) : (
+                <FooterChat
+                    title="messages"
+                    isPlay={true}
+                    handleSend={sendNewMessage}
+                    setIsTurnOnCamera={setIsTurnOnCamera}
+                    isInChatRoom={true}
+                />
+            )}
             {/* <button
                 onClick={() => {
                     console.log('alo');

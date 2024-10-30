@@ -37,6 +37,7 @@ import {
     userChangePasswordReducer,
     listNotificationReducer,
     userLanguageReducer,
+    userBlockedYouReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -138,6 +139,7 @@ const reducer = combineReducers({
     postReplyAll: postReplyAllReducer,
     setObjectVideoCurrent: setObjectVideoCurrentReducer,
     unReportPost: unReportPostReducer,
+    userBlockedYou: userBlockedYouReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

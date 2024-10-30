@@ -212,6 +212,11 @@ export const LANGUAGE = {
         FILE_IMAGE_SIZE_ERROR: 'Kích thước hình ảnh không hợp lệ',
         FILE_AUDIO_SIZE_ERROR: 'Kích thước âm thanh không hợp lệ',
         FILE_VIDEO_SIZE_ERROR: 'Kích thước video không hợp lệ',
+        YOU_HAVE_BLOCKED: 'Bạn đã chặn',
+        YOU_CANNOT_MESSAGE:
+            'Bạn không thể nhắn tin với họ trong cuộc trò chuyện này và cũng sẽ không nhận được tin nhắn từ họ.',
+        REPORT_SUCCESS: 'Báo cáo thành công',
+        YOU_HAVE_BEEN_BLOCKED: 'Bạn đã bị chặn bởi',
     },
     'en-US': {
         AUDIO: 'Audio',
@@ -428,6 +433,11 @@ export const LANGUAGE = {
         FILE_IMAGE_SIZE_ERROR: 'Image size is not valid',
         FILE_AUDIO_SIZE_ERROR: 'Audio size is not valid',
         FILE_VIDEO_SIZE_ERROR: 'Video size is not valid',
+        YOU_HAVE_BLOCKED: 'You have blocked',
+        YOU_CANNOT_MESSAGE:
+            "You can't message them in this chat, and you won't receive their messages",
+        REPORT_SUCCESS: 'Report success',
+        YOU_HAVE_BEEN_BLOCKED: 'You have been blocked by',
     },
 };
 
