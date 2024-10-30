@@ -289,10 +289,14 @@ export default function FooterChat({
         }
         const video = object?.video;
         if (video) {
+            video.controls = false;
             video.playbackRate = isRunSpeed;
+            video.playsInline = true;
+
             video.onended = () => {
                 handleScroll(object);
             };
+
             video
                 .play()
                 .then(() => {

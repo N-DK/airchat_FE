@@ -28,6 +28,8 @@ import SpeechRecognition, {
     useSpeechRecognition,
 } from 'react-speech-recognition';
 import { validateFileSize } from '../utils/validateFileSize.utils';
+import { validateBase64Size } from '../utils/validateBase64Size.utils';
+import SoundWave from './SoundWave';
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -423,7 +425,6 @@ export default function RecordModal({ handle }) {
                                         'Just Chatting'}
                                 </span>
                             </div>
-                            {/* <BsChevronExpand size="1.6rem" /> */}
                         </div>
                         <RiCloseFill
                             onClick={() => toggleIsRecord()}
@@ -447,9 +448,8 @@ export default function RecordModal({ handle }) {
                     <div className="flex">
                         <div className="bg-bluePrimary flex-1 rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
                             <textarea
-                                value={transcript} //transcript
-                                // onChange={(e) => setRecordContents(e.target.value)}
-                                readOnly={!transcript} //transcript
+                                value={transcript}
+                                readOnly={!transcript}
                                 className="w-full bg-inherit text-white placeholder-white outline-none"
                                 placeholder={
                                     LANGUAGE[language].TAP_THE_MIC_DESCRIPTION
@@ -459,15 +459,7 @@ export default function RecordModal({ handle }) {
                                 rows="3"
                             ></textarea>
                             {file && (
-                                <figure
-                                    // onTouchStart={(e) => {
-                                    //     e.stopPropagation();
-                                    //     handleTouchStart(item);
-                                    // }}
-                                    // onTouchEnd={handleTouchEnd}
-                                    // id={`delete-photo-${data.id}`}
-                                    className="relative"
-                                >
+                                <figure className="relative">
                                     <Avatar
                                         src={convertObjectURL(file)}
                                         className=" w-full h-full object-cover rounded-xl"
@@ -481,11 +473,6 @@ export default function RecordModal({ handle }) {
                                     >
                                         <IoCloseCircleOutline size={20} />
                                     </button>
-                                    {/* {(loadingUpload || loadingDeletePhoto) && (
-                                <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
-                                    <LoadingSpinner />
-                                </div>
-                            )} */}
                                 </figure>
                             )}
                             {url && (
@@ -493,9 +480,6 @@ export default function RecordModal({ handle }) {
                                     <LinkPreviewComponent
                                         setUrl={setUrl}
                                         url={url}
-                                        // post_id={data.id}
-                                        // setData={setData}
-                                        // dataUrl={data.url}
                                     />
                                 </div>
                             )}
@@ -519,144 +503,115 @@ export default function RecordModal({ handle }) {
                                         size={20}
                                     />
                                 </button>
-                                {/* <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                // handleToggleSearch(data.id);
-                            }}
-                        >
-                            <GoMention className="dark:text-white text-white mr-2" />
-                        </button> */}
                             </div>
-                            {/* {isShowSearch && (
-                        <>
-                            <div className="w-[80%] flex flex-wrap gap-1 mt-2">
-                                {(result.length > 0 ? result : tagsUser)?.map(
-                                    (user, i) => (
-                                        <MentionsItem
-                                            key={i}
-                                            user={user}
-                                            handle={(e) => {
-                                                e.stopPropagation();
-                                                handleMentions(user);
-                                            }}
-                                            isMentions={isMentions(user?.id)}
-                                        />
-                                    ),
-                                )}
-                            </div>
-                            <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%] bg-white">
-                                <input
-                                    onChange={(e) =>
-                                        setSearchText(e.target.value)
-                                    }
-                                    onClick={(e) => e.stopPropagation()}
-                                    placeholder="Search"
-                                    className="border-none outline-none bg-transparent w-full dark:text-white dark:placeholder-gray-400"
-                                />
-                                <RiSearch2Line className="dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
-                                {loading && (
-                                    <PiSpinnerBold className="dark:text-white absolute right-1 top-1/2 -translate-y-1/2 spinner" />
-                                )}
-                            </div>
-                        </>
-                    )} */}
                         </div>
                     </div>
-
-                    <div
-                        className={`flex ${
-                            (audio || video) && transcript
-                                ? ''
-                                : 'justify-center'
-                        } items-center`}
-                    >
-                        <div
-                            className={`mr-3 ${
-                                (audio || video) && transcript && !permission
-                                    ? 'md:w-full opacity-100'
-                                    : 'w-0 opacity-0'
-                            } transition-all flex ${
-                                (audio || video) && transcript ? 'flex-1' : ''
-                            } justify-end duration-500`}
-                        >
-                            {audio && transcript && (
-                                <div className="relative w-full">
-                                    <div className="flex items-center mb-4">
-                                        {duration && (
-                                            <span className="text-bluePrimary mr-4">
-                                                {duration}
-                                            </span>
-                                        )}
-                                        <button
-                                            onClick={onPlayPause}
-                                            className=" text-bluePrimary"
-                                        >
-                                            {isPlaying ? (
-                                                <FaRegPauseCircle size={40} />
-                                            ) : (
-                                                <FaRegCirclePlay size={40} />
+                    {audio || video ? (
+                        <div className="flex items-center">
+                            <div
+                                className={`${
+                                    (audio || video) &&
+                                    transcript &&
+                                    !permission
+                                        ? 'flex-1 opacity-100'
+                                        : 'w-0 opacity-0'
+                                } transition-all flex justify-end duration-500`}
+                            >
+                                {audio && transcript && (
+                                    <div className="w-full flex flex-col mr-4">
+                                        <div className="flex items-center mb-4">
+                                            {duration && (
+                                                <span className="text-bluePrimary mr-4">
+                                                    {duration}
+                                                </span>
                                             )}
-                                        </button>
+                                            <button
+                                                onClick={onPlayPause}
+                                                className="text-bluePrimary"
+                                            >
+                                                {isPlaying ? (
+                                                    <FaRegPauseCircle
+                                                        size={40}
+                                                    />
+                                                ) : (
+                                                    <FaRegCirclePlay
+                                                        size={40}
+                                                    />
+                                                )}
+                                            </button>
+                                        </div>
+                                        <WavesurferPlayer
+                                            progressColor="#3186FE"
+                                            cursorWidth={2}
+                                            height={80}
+                                            width="100%"
+                                            waveColor="white"
+                                            url={audio}
+                                            normalize={true}
+                                            backend="WebAudio"
+                                            barWidth={6}
+                                            barRadius={99999999}
+                                            cursorColor="transparent"
+                                            onReady={onReady}
+                                            onAudioprocess={onAudioprocess}
+                                            onPlay={() => setIsPlaying(true)}
+                                            onPause={() => setIsPlaying(false)}
+                                        />
                                     </div>
-                                    <WavesurferPlayer
-                                        progressColor={'#3186FE'}
-                                        cursorWidth={2}
-                                        height={80}
-                                        width={'100%'}
-                                        waveColor={'white'}
-                                        url={audio}
-                                        normalize={true}
-                                        backend="WebAudio"
-                                        barWidth={6}
-                                        barRadius={99999999}
-                                        cursorColor="transparent"
-                                        onReady={onReady}
-                                        onAudioprocess={onAudioprocess}
-                                        onPlay={() => setIsPlaying(true)}
-                                        onPause={() => setIsPlaying(false)}
-                                    />
-                                    {/* <SoundCloudPlayer
-                                    audio={audio}
-                                    onReady={onReady}
-                                    onAudioprocess={onAudioprocess}
-                                    setIsPlaying={setIsPlaying}
-                                /> */}
-                                </div>
-                                // <div className="flex-1 items-center">
-
-                                // </div>
-                            )}
-                            {video && (
-                                <video
-                                    className="w-full h-24 rounded-lg border"
-                                    src={video}
-                                    controls
-                                ></video>
-                            )}
+                                )}
+                                {video && (
+                                    <video
+                                        className="w-full h-24 rounded-lg border"
+                                        src={video}
+                                        controls
+                                    ></video>
+                                )}
+                            </div>
+                            <button
+                                onClick={handleClick}
+                                className="relative flex justify-center items-center min-w-[56px] h-[56px] bg-bluePrimary text-white rounded-full shadow-md"
+                            >
+                                {loading ? (
+                                    <LoadingSpinner color="white" />
+                                ) : (audio || video) &&
+                                  transcript &&
+                                  !permission ? (
+                                    <FaArrowUp size="1.5rem" />
+                                ) : permission ? (
+                                    <div className="absolute rounded-full p-5 border-[4px] border-bluePrimary">
+                                        <HiPause size="1.8rem" />
+                                    </div>
+                                ) : recordOption === 'audio' ? (
+                                    <IoMdMic size="1.8rem" />
+                                ) : (
+                                    <IoVideocam size="1.7rem" />
+                                )}
+                            </button>
                         </div>
-
-                        <button
-                            onClick={handleClick}
-                            className="relative flex justify-center items-center min-w-[56px] h-[56px] bg-bluePrimary text-white rounded-full shadow-md"
-                        >
-                            {loading ? (
-                                <LoadingSpinner color="white" />
-                            ) : (audio || video) &&
-                              transcript &&
-                              !permission ? (
-                                <FaArrowUp size="1.5rem" />
-                            ) : permission ? (
-                                <div className="absolute rounded-full p-5 border-[4px] border-bluePrimary">
-                                    <HiPause size="1.8rem" />
-                                </div>
-                            ) : recordOption === 'audio' ? (
-                                <IoMdMic size="1.8rem" />
-                            ) : (
-                                <IoVideocam size="1.7rem" />
-                            )}
-                        </button>
-                    </div>
+                    ) : (
+                        <div className="flex justify-center items-center gap-5">
+                            <button
+                                onClick={handleClick}
+                                className="relative flex justify-center items-center min-w-[56px] h-[56px] bg-bluePrimary text-white rounded-full shadow-md"
+                            >
+                                {loading ? (
+                                    <LoadingSpinner color="white" />
+                                ) : (audio || video) &&
+                                  transcript &&
+                                  !permission ? (
+                                    <FaArrowUp size="1.5rem" />
+                                ) : permission ? (
+                                    <div className="absolute rounded-full p-5 border-[4px] border-bluePrimary">
+                                        <HiPause size="1.8rem" />
+                                    </div>
+                                ) : recordOption === 'audio' ? (
+                                    <IoMdMic size="1.8rem" />
+                                ) : (
+                                    <IoVideocam size="1.7rem" />
+                                )}
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <ModalDelete
                     isOpen={isOpen}

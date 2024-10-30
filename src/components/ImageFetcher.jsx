@@ -22,7 +22,7 @@ const ImageFetcher = ({ imageUrl }) => {
                     alt="Fetched from URL"
                 />
             ) : (
-                <div className="animate-pulse w-[300px] h-[175px] rounded-xl bg-gray-300 dark:bg-darkPrimary" />
+                <div className="animate-pulse w-[200px] h-[85px] rounded-xl bg-gray-300 dark:bg-grayPrimary" />
             )}
         </div>
     );

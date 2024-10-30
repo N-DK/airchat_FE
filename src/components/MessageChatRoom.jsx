@@ -220,6 +220,7 @@ const MessageChatRoom = ({
                         isVisible &&
                         isRunAuto ? (
                             <video
+                                // playsInline
                                 ref={videoRef}
                                 className="transition-all w-[60px] h-[60px] duration-300 z-10 rounded-full object-cover"
                                 src={
