@@ -134,6 +134,7 @@ export const listPost =
             dispatch({
                 type: POST_LIST_SUCCESS,
                 payload: data.data,
+                results: data.results,
             });
         } catch (error) {
             dispatch({

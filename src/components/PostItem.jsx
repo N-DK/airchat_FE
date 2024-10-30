@@ -261,7 +261,7 @@ function PostItem({
                 observer.unobserve(divRef.current);
             }
         };
-    }, []);
+    }, [data?.report]);
 
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);

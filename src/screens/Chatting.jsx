@@ -38,7 +38,7 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
 
-const INITIAL_LIMIT = 25;
+const INITIAL_LIMIT = 2;
 const INITIAL_OFFSET = 0;
 
 const NotifyPinChannel = ({ message, show }) => (
@@ -57,21 +57,22 @@ export default function Chatting() {
     const contentsChattingRef = useRef(null);
     const postRefs = useRef([]);
     const [isSwiping, setIsSwiping] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const [page, setPage] = useState(1);
-    const [filteredPostList, setFilteredPostList] = useState([]);
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
     const [postListData, setPostListData] = useState([]);
+    const [isBottom, setIsBottom] = useState(false);
+    const [limit, setLimit] = useState(INITIAL_LIMIT);
+    const [offset, setOffset] = useState(INITIAL_OFFSET);
+    const [hasMore, setHasMore] = useState(false);
+    const [isEndPost, setIsEndPost] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { search } = useLocation();
     const redirect = search.split('=')[1] || 'for-you';
     const divRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
-
     const { post } = useSelector((state) => state.setPostActive);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { isSuccess: isSuccessFollow } = useSelector(
@@ -79,7 +80,7 @@ export default function Chatting() {
     );
 
     const { channel, error } = useSelector((state) => state.channelAdd);
-    const { posts, pages, loading } = useSelector((state) => state.postList);
+    const { posts, loading, results } = useSelector((state) => state.postList);
 
     const {
         isAddChannel,
@@ -112,23 +113,12 @@ export default function Chatting() {
         if (isRecord) toggleIsRecord();
     }, [isAddChannel, isRecord, toggleIsAddChannel, toggleIsRecord]);
 
-    const handleScroll = useCallback(() => {
-        const contents = contentsChattingRef?.current;
-        if (!contents || !hasMore) return;
-
-        const { scrollTop, clientHeight, scrollHeight } = contents;
-        setIsSwiping(scrollTop > contents.lastScrollTop);
-        contents.lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-
-        if (scrollTop + clientHeight >= scrollHeight - 1) {
-            setPage((prevPage) => prevPage + 1);
-        }
-    }, [hasMore]);
-
     const handleAction = useCallback(
         (type, channel_id) => {
             const intType = type === 'trending' ? 1 : 0;
-
+            handleResetLimit();
+            setIsEndPost(false);
+            setHasMore(false);
             dispatch(
                 listPost(
                     redirect.split('/')[0],
@@ -142,12 +132,72 @@ export default function Chatting() {
         [redirect],
     );
 
+    const handleScroll = useCallback(() => {
+        const scrollTop =
+            contentsChattingRef?.current?.scrollTop ||
+            contentsChattingRef?.current?.documentElement?.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight =
+            contentsChattingRef?.current?.scrollHeight ||
+            contentsChattingRef?.current?.documentElement?.scrollHeight;
+
+        if (scrollTop + windowHeight >= documentHeight - 300) {
+            setIsBottom(true);
+        } else {
+            setIsBottom(false);
+        }
+    }, [contentsChattingRef]);
+
+    const handleResetLimit = useCallback(() => {
+        setLimit(INITIAL_LIMIT);
+        setOffset(INITIAL_OFFSET);
+    }, []);
+
     useEffect(() => {
-        if (posts) {
-            setPostListData(posts);
+        if (redirect) {
+            handleResetLimit();
+            setPostListData([]);
+            setIsEndPost(false);
+            setHasMore(false);
+            contentsChattingRef?.current?.scrollTo({ top: 0 });
+        }
+    }, [redirect, handleResetLimit, contentsChattingRef]);
+
+    useEffect(() => {
+        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
+        return () => {
+            contentsChattingRef?.current?.removeEventListener(
+                'scroll',
+                handleScroll,
+            );
+        };
+    }, [contentsChattingRef]);
+
+    useEffect(() => {
+        if (isBottom && !isEndPost) {
+            setOffset((prev) => prev + INITIAL_LIMIT);
+            setHasMore(true);
+        } else {
+            setHasMore(false);
+        }
+    }, [isBottom, isEndPost]);
+
+    useEffect(() => {
+        if (posts && results === 1) {
+            if (hasMore) {
+                setPostListData((prev) => [...prev, ...posts]);
+            } else {
+                setPostListData(posts);
+            }
             dispatch({ type: POST_LIST_RESET });
         }
-    }, [posts, dispatch]);
+    }, [posts, dispatch, hasMore, results]);
+
+    useEffect(() => {
+        if (results === 1 && posts?.length === 0) {
+            setIsEndPost(true);
+        }
+    }, [results, posts]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -176,11 +226,6 @@ export default function Chatting() {
 
     useEffect(() => {
         if (isVisible) {
-            // if (navigator.vibrate) {
-            //     navigator.vibrate(100); // Rung 200ms
-            // } else {
-            //     console.log('Thiết bị không hỗ trợ rung.');
-            // }
             dispatch(setPostActive(null));
             dispatch(
                 setObjectActive({
@@ -196,48 +241,17 @@ export default function Chatting() {
     }, [isVisible, contentsChattingRef, redirect]);
 
     useEffect(() => {
-        const contents = contentsChattingRef?.current;
-        if (loading || !contents) return;
-
-        contents.addEventListener('scroll', handleScroll);
-        return () => contents.removeEventListener('scroll', handleScroll);
-    }, [loading, handleScroll]);
-
-    useEffect(() => {
-        if (pages && page !== 1) {
-            dispatch(
-                listPost(redirect, INITIAL_LIMIT, (page - 1) * INITIAL_LIMIT),
-            );
-            if (page >= pages) {
-                setHasMore(false);
-            }
-        }
-    }, [page, pages, redirect, dispatch]);
-
-    useEffect(() => {
-        const contents = contentsChattingRef?.current;
-        if (contents) contents?.scrollTo({ top: 0 });
-
-        setPage(1);
-        setHasMore(true);
-
         if (redirect === 'see-all') {
             navigate('/seeall');
         } else if (redirect?.includes('group-channel')) {
             const channel_id = redirect?.split('/')[1];
             dispatch(
-                listPost(
-                    redirect?.split('/')[0],
-                    INITIAL_LIMIT,
-                    INITIAL_OFFSET,
-                    channel_id,
-                    1,
-                ),
+                listPost(redirect?.split('/')[0], limit, offset, channel_id, 1),
             );
         } else if (redirect !== 'see-all') {
-            dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
+            dispatch(listPost(redirect, limit, offset));
         }
-    }, [redirect, navigate, dispatch]);
+    }, [redirect, navigate, dispatch, limit, offset]);
 
     useEffect(() => {
         if (!userInfo) dispatch(profile());
@@ -253,14 +267,14 @@ export default function Chatting() {
                 dispatch(
                     listPost(
                         redirect?.split('/')[0],
-                        INITIAL_LIMIT,
-                        INITIAL_OFFSET,
+                        limit,
+                        offset,
                         channel_id,
                         1,
                     ),
                 );
             } else if (redirect !== 'see-all') {
-                dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
+                dispatch(listPost(redirect, limit, offset));
             }
             dispatch({
                 type: USER_FOLLOW_SUCCESS,
@@ -268,44 +282,7 @@ export default function Chatting() {
                 results: false,
             });
         }
-    }, [isSuccessFollow, dispatch, redirect]);
-
-    useEffect(() => {
-        const filterPostsWithAudio = async () => {
-            try {
-                const filteredPosts = await Promise.all(
-                    postListData?.map(async (item) => {
-                        if (!item?.audio) return null;
-                        try {
-                            const audio = new Audio(
-                                `https://talkie.transtechvietnam.com/${item?.audio}`,
-                            );
-                            await new Promise((resolve, reject) => {
-                                audio.oncanplaythrough = resolve;
-                                audio.onerror = reject;
-                                audio.load();
-                            });
-                            return item;
-                        } catch (error) {
-                            // console.error('Error loading audio:', error);
-                            return null;
-                        }
-                    }),
-                );
-
-                setFilteredPostList(
-                    filteredPosts
-                        .filter(Boolean)
-                        .filter((item) => !item?.report),
-                );
-            } catch (error) {
-                dispatch({ type: USER_PROFILE_SUCCESS, payload: null });
-                // navigate('/');
-            }
-        };
-
-        // filterPostsWithAudio();
-    }, [postListData]);
+    }, [isSuccessFollow, dispatch, redirect, limit, offset]);
 
     useEffect(() => {
         if (channel) {
@@ -320,8 +297,6 @@ export default function Chatting() {
             dispatch({ type: CHANNEL_ADD_RESET });
         }
     }, [channel]);
-
-    // if (!postListData) return null;
 
     return (
         <div className="relative flex flex-col justify-between h-screen overflow-hidden">

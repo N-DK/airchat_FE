@@ -118,7 +118,7 @@ function MessageItem({
                 observer.unobserve(messageRef?.current);
             }
         };
-    }, []);
+    }, [data?.report]);
 
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);

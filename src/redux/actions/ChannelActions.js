@@ -76,6 +76,7 @@ export const postsChannel =
                 type: CHANNEL_POSTS_SUCCESS,
                 payload: data.data,
                 owner: data?.owner,
+                results: data?.results,
             });
         } catch (error) {
             dispatch({

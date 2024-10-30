@@ -32,6 +32,9 @@ import { CHANNEL_POSTS_RESET } from '../redux/constants/ChannelConstants';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
 
+const INITIAL_LIMIT = 2;
+const INITIAL_OFFSET = 0;
+
 const NotifyPinChannel = ({ message, show }) => (
     <div
         className={`bg-white absolute left-1/2 transform -translate-x-1/2 w-auto z-50 dark:bg-dark2Primary shadow-2xl rounded-2xl p-3 md:p-5 transition-all duration-500 ${
@@ -54,7 +57,6 @@ export default function PostsChannel() {
         toggleIsEditChannel,
         isFullScreen,
     } = useContext(AppContext);
-    // const { isEditChannel,  } = useContext(AppContext);
 
     const [isSwiping, setIsSwiping] = useState(false);
     const [postsList, setPostList] = useState([]);
@@ -64,9 +66,14 @@ export default function PostsChannel() {
     const [notifyMessage, setNotifyMessage] = useState('');
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
-    const divRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
+    const [limit, setLimit] = useState(INITIAL_LIMIT);
+    const [offset, setOffset] = useState(INITIAL_OFFSET);
+    const [isBottom, setIsBottom] = useState(false);
+    const [hasMore, setHasMore] = useState(false);
+    const [isEndPost, setIsEndPost] = useState(false);
 
+    const divRef = useRef(null);
     const contentsChattingRef = useRef(null);
 
     const { userInfo } = useSelector((state) => state.userProfile);
@@ -76,6 +83,7 @@ export default function PostsChannel() {
         loading,
         posts,
         owner: ownerChannel,
+        results,
     } = useSelector((state) => state.channelPosts);
     const { menus } = useSelector((state) => state.menuBar);
     const { channel } = useSelector((state) => state.channelPin);
@@ -83,6 +91,22 @@ export default function PostsChannel() {
         (state) => state.userFollow,
     );
     const { language } = useSelector((state) => state.userLanguage);
+
+    const handleScroll = useCallback(() => {
+        const scrollTop =
+            contentsChattingRef?.current?.scrollTop ||
+            contentsChattingRef?.current?.documentElement?.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight =
+            contentsChattingRef?.current?.scrollHeight ||
+            contentsChattingRef?.current?.documentElement?.scrollHeight;
+
+        if (scrollTop + windowHeight >= documentHeight - 300) {
+            setIsBottom(true);
+        } else {
+            setIsBottom(false);
+        }
+    }, [contentsChattingRef]);
 
     const handlePinChannel = useCallback(() => {
         dispatch(pinChannel(id));
@@ -115,16 +139,45 @@ export default function PostsChannel() {
     }, [menus, state?.channelData]);
 
     useEffect(() => {
-        dispatch(postsChannel(id));
-    }, [dispatch, id]);
+        dispatch(postsChannel(id, limit, offset));
+    }, [dispatch, id, limit, offset]);
 
     useEffect(() => {
-        if (posts && (ownerChannel || id === '0')) {
-            setPostList(posts);
+        if (results === 1 && posts?.length === 0) {
+            setIsEndPost(true);
+        }
+    }, [results, posts]);
+
+    useEffect(() => {
+        if (posts && (ownerChannel || id === '0') && results === 1) {
+            if (hasMore) {
+                setPostList((prev) => [...prev, ...posts]);
+            } else {
+                setPostList(posts);
+            }
             setOwner(ownerChannel);
             dispatch({ type: CHANNEL_POSTS_RESET });
         }
-    }, [posts, ownerChannel, id]);
+    }, [posts, ownerChannel, id, results, hasMore]);
+
+    useEffect(() => {
+        if (isBottom && !isEndPost) {
+            setOffset((prev) => prev + INITIAL_LIMIT);
+            setHasMore(true);
+        } else {
+            setHasMore(false);
+        }
+    }, [isBottom, isEndPost]);
+
+    useEffect(() => {
+        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
+        return () => {
+            contentsChattingRef?.current?.removeEventListener(
+                'scroll',
+                handleScroll,
+            );
+        };
+    }, [contentsChattingRef]);
 
     useEffect(() => {
         const contents = contentsChattingRef.current;
@@ -169,11 +222,11 @@ export default function PostsChannel() {
 
     useEffect(() => {
         if (isVisible) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100); // Rung 200ms
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
+            // if (navigator.vibrate) {
+            //     navigator.vibrate(100); // Rung 200ms
+            // } else {
+            //     console.log('Thiết bị không hỗ trợ rung.');
+            // }
             dispatch(setPostActive(null));
             dispatch(
                 setObjectActive({
@@ -272,11 +325,11 @@ export default function PostsChannel() {
     const renderContent = () => (
         <div
             ref={contentsChattingRef}
-            className="flex flex-col absolute top-0 pt-32 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
+            className="flex  flex-col absolute top-0 pt-32 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
         >
             <div
                 ref={divRef}
-                className="border-b-[6px] border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6"
+                className="border-b-[6px]  border-gray-200 dark:border-dark2Primary flex items-center pb-4 md:pb-5 px-3 md:px-6 gap-3 md:gap-6"
             >
                 <figure>
                     <div
@@ -334,15 +387,18 @@ export default function PostsChannel() {
                 </div>
             </div>
 
-            {loading ? (
-                <LoaderSkeletonPosts />
-            ) : (
+            <div className="relative bg-gray-200">
                 <ListPostItems
                     postsList={postsList}
                     isTurnOnCamera={isTurnOnCameraReply}
                     contentsChattingRef={contentsChattingRef}
                 />
-            )}
+                {loading && (
+                    <div className="absolute bottom-[-450px] md:bottom-[-520px] left-0 w-full">
+                        <LoaderSkeletonPosts />
+                    </div>
+                )}
+            </div>
         </div>
     );
 

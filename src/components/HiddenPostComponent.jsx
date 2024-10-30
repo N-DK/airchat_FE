@@ -59,7 +59,7 @@ function HiddenPostComponent({
                     element: divRef.current,
                     parent: contentsChattingRef?.current,
                     video: null,
-                    bonus: 0,
+                    bonus: -100,
                 }),
             );
         }

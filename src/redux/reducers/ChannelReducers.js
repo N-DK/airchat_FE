@@ -44,6 +44,7 @@ export const channelPostsReducer = (state = { posts: [] }, action) => {
                 loading: false,
                 posts: action.payload,
                 owner: action.owner,
+                results: action.results,
             };
         case CHANNEL_POSTS_RESET:
             return { posts: null };
