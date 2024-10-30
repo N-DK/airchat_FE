@@ -612,6 +612,7 @@ export default function Details() {
                         <>
                             {data?.report ? (
                                 <HiddenPostComponent
+                                    contentsChattingRef={contentsChattingRef}
                                     data={data}
                                     userInfo={userInfo}
                                     handleUndo={handleUndo}

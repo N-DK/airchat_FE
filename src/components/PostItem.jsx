@@ -377,6 +377,7 @@ function PostItem({
                         data={data}
                         userInfo={userInfo}
                         handleUndo={handleUndo}
+                        contentsChattingRef={contentsChattingRef}
                     />
                 ) : (
                     <>

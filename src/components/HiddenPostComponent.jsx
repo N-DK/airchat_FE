@@ -1,16 +1,72 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { IoEyeOffSharp } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
 import { LANGUAGE } from '../constants/language.constant';
 import { BASE_URL } from '../constants/api.constant';
 import { Avatar } from 'antd';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { debounce } from 'lodash';
+import { setPostActive } from '../redux/actions/PostActions';
+import { setObjectActive } from '../redux/actions/SurfActions';
 
-function HiddenPostComponent({ handleUndo, data, userInfo, className = '' }) {
+function HiddenPostComponent({
+    handleUndo,
+    data,
+    userInfo,
+    className = '',
+    contentsChattingRef,
+}) {
+    const dispatch = useDispatch();
+
+    const [isVisible, setIsVisible] = useState(false);
+
     const { language } = useSelector((state) => state.userLanguage);
 
+    const divRef = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                threshold: [0.1],
+                rootMargin: `-${Math.max(
+                    window.innerHeight * 0.1,
+                    100,
+                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
+            },
+        );
+
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
+
+        return () => {
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isVisible) {
+            dispatch(setPostActive(null));
+            dispatch(
+                setObjectActive({
+                    post: null,
+                    audio: null,
+                    element: divRef.current,
+                    parent: contentsChattingRef?.current,
+                    video: null,
+                    bonus: 0,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef]);
+
     return (
-        <div className={`w-full ${className}`}>
+        <div ref={divRef} className={`w-full ${className}`}>
             <p className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
                 <IoEyeOffSharp className="mr-2 text-bluePrimary" />
                 {LANGUAGE[language].HIDDEN}
