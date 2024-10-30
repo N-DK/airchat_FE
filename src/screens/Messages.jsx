@@ -290,9 +290,13 @@ export default function Messages() {
                     </button>
                 </div>
 
-                <div className="flex gap-3 bg-grayPrimary dark:bg-dark2Primary items-center w-full rounded-full px-6 py-3">
+                <div
+                    onClick={toggleShowDrawerNewDirect}
+                    className="flex gap-3 bg-grayPrimary dark:bg-dark2Primary items-center w-full rounded-full px-6 py-3"
+                >
                     <IoSearch size="1.5rem" className="text-gray-500 m-0 p-0" />
                     <input
+                        readOnly
                         className="bg-inherit w-full border-none outline-none text-[17px] text-black dark:text-white placeholder-gray-500"
                         placeholder={LANGUAGE[language].SEARCH_CONVERSATION}
                         type="text"
