@@ -38,7 +38,7 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
 
-const INITIAL_LIMIT = 2;
+const INITIAL_LIMIT = 10;
 const INITIAL_OFFSET = 0;
 
 const NotifyPinChannel = ({ message, show }) => (
@@ -61,7 +61,7 @@ export default function Chatting() {
     const [notifyMessage, setNotifyMessage] = useState('');
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [isTurnOnCameraReply, setIsTurnOnCameraReply] = useState(false);
-    const [postListData, setPostListData] = useState([]);
+    const [postListData, setPostListData] = useState(null);
     const [isBottom, setIsBottom] = useState(false);
     const [limit, setLimit] = useState(INITIAL_LIMIT);
     const [offset, setOffset] = useState(INITIAL_OFFSET);
@@ -95,7 +95,7 @@ export default function Chatting() {
     } = useContext(AppContext);
 
     const { pingStates, setPingStates, checkPingStates, currentItemIndex } =
-        usePingStates(postListData, postRefs);
+        usePingStates(postListData ?? [], postRefs);
 
     useAutoScroll(
         contentsChattingRef,
@@ -105,7 +105,7 @@ export default function Chatting() {
         isRunSpeed,
         checkPingStates,
         setPingStates,
-        postListData,
+        postListData ?? [],
     );
 
     const modalHandle = useCallback(() => {
@@ -133,13 +133,18 @@ export default function Chatting() {
     );
 
     const handleScroll = useCallback(() => {
+        const contents = contentsChattingRef?.current;
+        if (!contents) return;
+
+        const { scrollTop: scTop, clientHeight, scrollHeight } = contents;
+        setIsSwiping(scTop > contents.lastScrollTop);
+        contents.lastScrollTop = scTop <= 0 ? 0 : scTop;
+
         const scrollTop =
-            contentsChattingRef?.current?.scrollTop ||
-            contentsChattingRef?.current?.documentElement?.scrollTop;
+            contents.scrollTop || contents.documentElement?.scrollTop;
         const windowHeight = window.innerHeight;
         const documentHeight =
-            contentsChattingRef?.current?.scrollHeight ||
-            contentsChattingRef?.current?.documentElement?.scrollHeight;
+            contents.scrollHeight || contents.documentElement?.scrollHeight;
 
         if (scrollTop + windowHeight >= documentHeight - 300) {
             setIsBottom(true);
@@ -151,12 +156,12 @@ export default function Chatting() {
     const handleResetLimit = useCallback(() => {
         setLimit(INITIAL_LIMIT);
         setOffset(INITIAL_OFFSET);
-    }, []);
+    }, [redirect, contentsChattingRef]);
 
     useEffect(() => {
         if (redirect) {
             handleResetLimit();
-            setPostListData([]);
+            setPostListData(null);
             setIsEndPost(false);
             setHasMore(false);
             contentsChattingRef?.current?.scrollTo({ top: 0 });
@@ -164,14 +169,14 @@ export default function Chatting() {
     }, [redirect, handleResetLimit, contentsChattingRef]);
 
     useEffect(() => {
-        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
+        const contents = contentsChattingRef?.current;
+        if (loading || !contents) return;
+
+        contents.addEventListener('scroll', handleScroll);
         return () => {
-            contentsChattingRef?.current?.removeEventListener(
-                'scroll',
-                handleScroll,
-            );
+            contents.removeEventListener('scroll', handleScroll);
         };
-    }, [contentsChattingRef]);
+    }, [loading, contentsChattingRef]);
 
     useEffect(() => {
         if (isBottom && !isEndPost) {
@@ -183,9 +188,12 @@ export default function Chatting() {
     }, [isBottom, isEndPost]);
 
     useEffect(() => {
-        if (posts && results === 1) {
+        if (posts && results === 1 && posts?.length > 0) {
             if (hasMore) {
-                setPostListData((prev) => [...prev, ...posts]);
+                setPostListData((prev) => {
+                    const prevData = prev ?? [];
+                    return [...prevData, ...posts];
+                });
             } else {
                 setPostListData(posts);
             }
@@ -194,10 +202,12 @@ export default function Chatting() {
     }, [posts, dispatch, hasMore, results]);
 
     useEffect(() => {
-        if (results === 1 && posts?.length === 0) {
+        console.log(results, posts);
+
+        if (results === 1 && posts?.length === 0 && postListData) {
             setIsEndPost(true);
         }
-    }, [results, posts]);
+    }, [results, posts, postListData]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -377,7 +387,7 @@ export default function Chatting() {
 
                 <div className="relative bg-gray-200">
                     <ListPostItems
-                        postsList={postListData}
+                        postsList={postListData ?? []}
                         contentsChattingRef={contentsChattingRef}
                         isTurnOnCamera={isTurnOnCameraReply}
                     />
@@ -391,7 +401,7 @@ export default function Chatting() {
 
             <AddChannel />
             <RecordModal />
-            {isFullScreen && <ScreenFull postsList={postListData} />}
+            {isFullScreen && <ScreenFull postsList={postListData ?? []} />}
 
             <div
                 onClick={modalHandle}

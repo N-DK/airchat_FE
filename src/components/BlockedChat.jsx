@@ -50,7 +50,7 @@ function BlockedChat({ user, isBlockYou }) {
 
     return (
         <>
-            <div className="flex flex-col items-center justify-center py-4 bg-slatePrimary dark:bg-darkPrimary px-3">
+            <div className="flex flex-col items-center justify-center fixed bottom-0 left-0 right-0 py-4 bg-slatePrimary dark:bg-darkPrimary px-3">
                 <p className="dark:text-white">
                     {!isBlockYou
                         ? LANGUAGE[language].YOU_HAVE_BLOCKED

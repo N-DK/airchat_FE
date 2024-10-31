@@ -17,7 +17,7 @@ function RecordCover({ children, contextMenuVisible, close, touchStartX }) {
         if (progress < 100) {
             timer = setInterval(() => {
                 setProgress((prev) => Math.min(prev + 1, 100));
-            }, 500);
+            }, 1000);
         }
         return () => clearInterval(timer);
     }, [, progress]);

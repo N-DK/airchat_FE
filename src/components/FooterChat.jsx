@@ -136,7 +136,7 @@ export default function FooterChat({
         pressTimer.current = setTimeout(() => {
             setIsStartRecord(true);
             setContextMenuVisible(true);
-        }, 500);
+        }, 1000);
     }, []);
 
     const handleTouchMove = useCallback(

@@ -250,7 +250,7 @@ function PostContent({ item, contentsChattingRef }) {
             );
             setRect(targetElement?.getBoundingClientRect());
             setContextMenuVisible(true);
-        }, 500);
+        }, 1000);
     };
 
     const handleTouchEnd = () => {

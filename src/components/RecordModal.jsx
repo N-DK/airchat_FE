@@ -506,7 +506,7 @@ export default function RecordModal({ handle }) {
                             </div>
                         </div>
                     </div>
-                    {audio || video ? (
+                    {(audio || video) && transcript ? (
                         <div className="flex items-center">
                             <div
                                 className={`${

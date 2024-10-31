@@ -290,7 +290,7 @@ export default function Details() {
                     setRect(element.getBoundingClientRect());
                     setContextMenuVisible(true);
                 }
-            }, 500);
+            }, 1000);
         },
         [targetElement],
     );

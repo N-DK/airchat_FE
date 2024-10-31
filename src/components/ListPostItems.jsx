@@ -29,7 +29,7 @@ function ListPostItems({
         <div>
             {data?.map((item, index) => (
                 <PostItem
-                    key={item?.id}
+                    key={`${item?.id}-${index}-${item?.name_channel}`}
                     item={item}
                     contentsChattingRef={contentsChattingRef}
                     setList={setData}

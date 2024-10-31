@@ -272,7 +272,7 @@ function PostHosting({
             );
             setRect(targetElement?.getBoundingClientRect());
             setContextMenuVisible(true);
-        }, 500);
+        }, 1000);
     };
 
     const handleTouchEnd = () => {

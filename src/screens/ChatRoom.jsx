@@ -70,7 +70,7 @@ const ChatRoom = () => {
 
     useEffect(() => {
         if (!userInfo) dispatch(profile());
-        dispatch(connectSocket());
+        if (!socket?.connected || !isConnected) dispatch(connectSocket());
         return () => dispatch(disconnectSocket());
     }, [dispatch]);
 

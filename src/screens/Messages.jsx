@@ -141,7 +141,6 @@ export default function Messages() {
                         ? message?.friend_id_2
                         : message?.friend_id_1
                     : message?.friend_id_1;
-            console.log(message);
 
             if (!loadingBlock && !loadingBlockedYou) {
                 navigate(`/messages/t/${recipientId}`, {
@@ -254,7 +253,7 @@ export default function Messages() {
 
     useEffect(() => {
         if (!userInfo) dispatch(profile());
-        dispatch(connectSocket());
+        if (!socket?.connected || !isConnected) dispatch(connectSocket());
         return () => dispatch(disconnectSocket());
     }, [dispatch]);
 

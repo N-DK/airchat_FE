@@ -32,7 +32,7 @@ import { CHANNEL_POSTS_RESET } from '../redux/constants/ChannelConstants';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
 
-const INITIAL_LIMIT = 2;
+const INITIAL_LIMIT = 10;
 const INITIAL_OFFSET = 0;
 
 const NotifyPinChannel = ({ message, show }) => (
