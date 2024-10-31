@@ -26,6 +26,7 @@ import SpeechRecognition, {
 } from 'react-speech-recognition';
 import { validateFileSize } from '../utils/validateFileSize.utils';
 import { validateBase64Size } from '../utils/validateBase64Size.utils';
+import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -113,7 +114,9 @@ export default function FooterChat({
     const { language } = useSelector((state) => state.userLanguage);
     const { transcript, browserSupportsSpeechRecognition, resetTranscript } =
         useSpeechRecognition();
-
+    const { loading, success: newPost } = useSelector(
+        (state) => state.postSubmit,
+    );
     const startListening = () =>
         SpeechRecognition.startListening({
             continuous: true,
@@ -309,6 +312,12 @@ export default function FooterChat({
             console.error('Video object is undefined');
         }
     };
+
+    useEffect(() => {
+        if (newPost && newPost?.id) {
+            dispatch({ type: POST_SUBMIT_RESET });
+        }
+    }, [newPost, dispatch]);
 
     useEffect(() => {
         if (isStartRecord) {

@@ -38,6 +38,7 @@ import {
     listNotificationReducer,
     userLanguageReducer,
     userBlockedYouReducer,
+    userSaveFCMTokenReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -140,6 +141,7 @@ const reducer = combineReducers({
     setObjectVideoCurrent: setObjectVideoCurrentReducer,
     unReportPost: unReportPostReducer,
     userBlockedYou: userBlockedYouReducer,
+    userSaveFCMToken: userSaveFCMTokenReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')
@@ -156,6 +158,10 @@ const userLanguageFromLocalStorage = localStorage.getItem('language')
           return DEFAULT_LANGUAGE;
       })();
 
+const userSaveFCMTokenFromLocalStorage = localStorage.getItem('FCMToken')
+    ? JSON.parse(localStorage.getItem('FCMToken'))
+    : null;
+
 const initialState = {
     userLogin: {
         userInfo: userInfoFromLocalStorage,
@@ -165,6 +171,9 @@ const initialState = {
     },
     userLanguage: {
         language: userLanguageFromLocalStorage,
+    },
+    userSaveFCMToken: {
+        data: userSaveFCMTokenFromLocalStorage,
     },
 };
 

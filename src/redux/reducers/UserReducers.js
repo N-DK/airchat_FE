@@ -116,6 +116,10 @@ import {
     USER_BLOCKED_YOU_REQUEST,
     USER_BLOCKED_YOU_SUCCESS,
     USER_BLOCKED_YOU_FAIL,
+    USER_SAVE_FCM_TOKEN_REQUEST,
+    USER_SAVE_FCM_TOKEN_SUCCESS,
+    USER_SAVE_FCM_TOKEN_FAIL,
+    USER_FOLLOW_RESET,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -308,6 +312,8 @@ export const userFollowReducer = (state = {}, action) => {
                 isSuccess: action.results,
                 stranger_id: action.payload,
             };
+        case USER_FOLLOW_RESET:
+            return {};
         case USER_FOLLOW_FAIL:
             return { loading: false, error: action.payload };
         default:
@@ -631,6 +637,19 @@ export const userBlockedYouReducer = (state = {}, action) => {
         case USER_BLOCKED_YOU_SUCCESS:
             return { loading: false, blocked_you: action.payload };
         case USER_BLOCKED_YOU_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userSaveFCMTokenReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_SAVE_FCM_TOKEN_REQUEST:
+            return { loading: true, data: null };
+        case USER_SAVE_FCM_TOKEN_SUCCESS:
+            return { loading: false, data: action.payload };
+        case USER_SAVE_FCM_TOKEN_FAIL:
             return { loading: false, error: action.payload };
         default:
             return state;

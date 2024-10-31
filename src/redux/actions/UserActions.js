@@ -109,6 +109,9 @@ import {
     USER_BLOCKED_YOU_REQUEST,
     USER_BLOCKED_YOU_SUCCESS,
     USER_BLOCKED_YOU_FAIL,
+    USER_SAVE_FCM_TOKEN_REQUEST,
+    USER_SAVE_FCM_TOKEN_SUCCESS,
+    USER_SAVE_FCM_TOKEN_FAIL,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -1336,6 +1339,41 @@ export const getBlockedYou = () => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: USER_BLOCKED_YOU_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const saveFCMToken = (client_key) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_SAVE_FCM_TOKEN_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/save-client-key',
+            { client: client_key },
+            config,
+        );
+
+        dispatch({
+            type: USER_SAVE_FCM_TOKEN_SUCCESS,
+            payload: data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_SAVE_FCM_TOKEN_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

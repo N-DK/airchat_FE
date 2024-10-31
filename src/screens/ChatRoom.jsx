@@ -234,11 +234,7 @@ const ChatRoom = () => {
 
         const { scrollTop } = contents;
 
-        if (scrollTop === 0) {
-            setIsTop(true);
-        } else {
-            setIsTop(false);
-        }
+        setIsTop(scrollTop <= 100);
     }, [refContainer]);
 
     useEffect(() => {
@@ -261,29 +257,30 @@ const ChatRoom = () => {
     }, [loadingMessage, refContainer]);
 
     useEffect(() => {
-        if (!initMessages) return;
+        if (!initMessages || results !== 1) return;
 
         const sortedMessages = [...initMessages].sort((a, b) => a?.id - b?.id);
 
         setMessages((prevMessages) => {
             if (hasMore) {
                 const prevScrollHeight = refContainer.current.scrollHeight;
-
                 const updatedMessages = [...sortedMessages, ...prevMessages];
 
-                setTimeout(() => {
+                // Sử dụng `requestAnimationFrame` để điều chỉnh vị trí cuộn
+                requestAnimationFrame(() => {
                     const newScrollHeight = refContainer.current.scrollHeight;
                     refContainer.current.scrollTop +=
                         newScrollHeight - prevScrollHeight;
-                }, 0);
+                });
 
                 return updatedMessages;
             } else {
                 return sortedMessages;
             }
         });
+
         dispatch({ type: DETAIL_MESSAGE_RESET });
-    }, [initMessages, hasMore]);
+    }, [initMessages, hasMore, results]);
 
     useEffect(() => {
         if (!userInfo) dispatch(profile());

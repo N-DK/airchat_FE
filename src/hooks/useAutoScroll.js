@@ -85,39 +85,41 @@ export function useAutoScroll(
     );
 
     useEffect(() => {
-        const contents = contentsChattingRef.current;
+        if (postsList && postsList.length > 0) {
+            const contents = contentsChattingRef.current;
 
-        if (isRunAuto) {
-            handleScrollChatting();
-            contents?.addEventListener('scroll', handleScrollChatting);
-            if (
-                postsList[currentItemIndex] &&
-                postsList[currentItemIndex].audio
-            ) {
-                playAudio(currentItemIndex);
+            if (isRunAuto) {
+                handleScrollChatting();
+                contents?.addEventListener('scroll', handleScrollChatting);
+                if (
+                    postsList[currentItemIndex] &&
+                    postsList[currentItemIndex].audio
+                ) {
+                    playAudio(currentItemIndex);
+                } else {
+                    autoScrollToNextItem(currentItemIndex);
+                }
             } else {
-                autoScrollToNextItem(currentItemIndex);
-            }
-        } else {
-            setPingStates((prevPingStates) => {
-                const newPingStates = { ...prevPingStates };
-                Object.keys(newPingStates).forEach((id) => {
-                    newPingStates[id] = false;
+                setPingStates((prevPingStates) => {
+                    const newPingStates = { ...prevPingStates };
+                    Object.keys(newPingStates).forEach((id) => {
+                        newPingStates[id] = false;
+                    });
+                    return newPingStates;
                 });
-                return newPingStates;
-            });
-            clearTimeout(scrollTimeoutRef.current);
-            clearInterval(scrollIntervalRef.current);
-            contents?.removeEventListener('scroll', handleScrollChatting);
-            audioRef.current?.pause();
-        }
+                clearTimeout(scrollTimeoutRef.current);
+                clearInterval(scrollIntervalRef.current);
+                contents?.removeEventListener('scroll', handleScrollChatting);
+                audioRef.current?.pause();
+            }
 
-        return () => {
-            clearTimeout(scrollTimeoutRef.current);
-            clearInterval(scrollIntervalRef.current);
-            contents?.removeEventListener('scroll', handleScrollChatting);
-            audioRef.current?.pause();
-        };
+            return () => {
+                clearTimeout(scrollTimeoutRef.current);
+                clearInterval(scrollIntervalRef.current);
+                contents?.removeEventListener('scroll', handleScrollChatting);
+                audioRef.current?.pause();
+            };
+        }
     }, [
         isRunAuto,
         currentItemIndex,

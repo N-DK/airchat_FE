@@ -1,5 +1,5 @@
 import { RiCloseFill } from 'react-icons/ri';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../AppContext';
 import { IoMdLink, IoMdMic } from 'react-icons/io';
 import { submitPost } from '../redux/actions/PostActions';
@@ -79,6 +79,8 @@ export default function RecordModal({ handle }) {
     const userTheme = useSelector((state) => state.userTheme);
     const { channels } = useSelector((state) => state.channelList);
     const { language } = useSelector((state) => state.userLanguage);
+
+    const refTranscript = useRef(null);
 
     const startListening = () =>
         SpeechRecognition.startListening({
@@ -333,6 +335,15 @@ export default function RecordModal({ handle }) {
     }, [channels, redirect]);
 
     useEffect(() => {
+        if (refTranscript.current) {
+            refTranscript.current.scrollTo({
+                top: refTranscript.current.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
+    }, [transcript]);
+
+    useEffect(() => {
         if (permission) {
             startRecordingHandle();
         } else {
@@ -452,6 +463,7 @@ export default function RecordModal({ handle }) {
                     <div className="flex">
                         <div className="bg-bluePrimary flex-1 rounded-3xl overflow-auto scrollbar-none min-h-32 max-h-[242px] flex flex-col justify-between items-start px-4 py-3 shadow-md">
                             <textarea
+                                ref={refTranscript}
                                 value={transcript}
                                 readOnly={!transcript}
                                 className="w-full bg-inherit text-white placeholder-white outline-none"

@@ -101,7 +101,7 @@ export default function PostsChannel() {
             contentsChattingRef?.current?.scrollHeight ||
             contentsChattingRef?.current?.documentElement?.scrollHeight;
 
-        if (scrollTop + windowHeight >= documentHeight - 300) {
+        if (scrollTop + windowHeight >= documentHeight - 600) {
             setIsBottom(true);
         } else {
             setIsBottom(false);

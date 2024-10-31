@@ -22,7 +22,7 @@ import { usePingStates } from '../hooks/usePingStates';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import { barMenu, listPost, setPostActive } from '../redux/actions/PostActions';
-import { profile } from '../redux/actions/UserActions';
+import { profile, saveFCMToken } from '../redux/actions/UserActions';
 import {
     USER_FOLLOW_SUCCESS,
     USER_PROFILE_SUCCESS,
@@ -37,6 +37,7 @@ import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
+import { requestFCMToken } from '../utils/firebase';
 
 const INITIAL_LIMIT = 10;
 const INITIAL_OFFSET = 0;
@@ -75,12 +76,12 @@ export default function Chatting() {
     const [isVisible, setIsVisible] = useState(false);
     const { post } = useSelector((state) => state.setPostActive);
     const { userInfo } = useSelector((state) => state.userProfile);
-    const { isSuccess: isSuccessFollow } = useSelector(
-        (state) => state.userFollow,
-    );
 
     const { channel, error } = useSelector((state) => state.channelAdd);
     const { posts, loading, results } = useSelector((state) => state.postList);
+    const { data: dataFCMToken } = useSelector(
+        (state) => state.userSaveFCMToken,
+    );
 
     const {
         isAddChannel,
@@ -146,7 +147,7 @@ export default function Chatting() {
         const documentHeight =
             contents.scrollHeight || contents.documentElement?.scrollHeight;
 
-        if (scrollTop + windowHeight >= documentHeight - 300) {
+        if (scrollTop + windowHeight >= documentHeight - 600) {
             setIsBottom(true);
         } else {
             setIsBottom(false);
@@ -267,32 +268,6 @@ export default function Chatting() {
     }, [dispatch]);
 
     useEffect(() => {
-        if (isSuccessFollow) {
-            if (redirect === 'see-all') {
-                navigate('/seeall');
-            } else if (redirect?.includes('group-channel')) {
-                const channel_id = redirect?.split('/')[1];
-                dispatch(
-                    listPost(
-                        redirect?.split('/')[0],
-                        limit,
-                        offset,
-                        channel_id,
-                        1,
-                    ),
-                );
-            } else if (redirect !== 'see-all') {
-                dispatch(listPost(redirect, limit, offset));
-            }
-            dispatch({
-                type: USER_FOLLOW_SUCCESS,
-                payload: null,
-                results: false,
-            });
-        }
-    }, [isSuccessFollow, dispatch, redirect, limit, offset]);
-
-    useEffect(() => {
         if (channel) {
             if (isAddChannel && channel?.results) toggleIsAddChannel();
             if (channel?.results) {
@@ -305,6 +280,22 @@ export default function Chatting() {
             dispatch({ type: CHANNEL_ADD_RESET });
         }
     }, [channel]);
+
+    useEffect(() => {
+        const fetchFCM = async () => {
+            try {
+                const data = await requestFCMToken();
+                dispatch(saveFCMToken(data));
+                localStorage.setItem('FCMToken', JSON.stringify(data));
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        if (!dataFCMToken) {
+            fetchFCM();
+        }
+    }, []);
 
     return (
         <div className="relative flex flex-col justify-between h-screen overflow-hidden">

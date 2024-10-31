@@ -39,6 +39,7 @@ import { FaRegBookmark } from 'react-icons/fa';
 import ModalDelete from './ModalDelete';
 import PostHosting from './PostHosting';
 import { Howl } from 'howler';
+import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 function MessageItem({
@@ -69,7 +70,9 @@ function MessageItem({
     const { userInfo } = useSelector((state) => state.userProfile);
     const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const { language } = useSelector((state) => state.userLanguage);
-
+    const { isSuccess: isSuccessFollow, stranger_id } = useSelector(
+        (state) => state.userFollow,
+    );
     const { isRunAuto } = useContext(AppContext);
 
     useEffect(() => {
@@ -127,6 +130,22 @@ function MessageItem({
     useEffect(() => {
         if (!userInfo) dispatch(profile());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (isSuccessFollow) {
+            setData((prev) => {
+                if (prev?.user_id === stranger_id) {
+                    return {
+                        ...prev,
+                        dafollow: !!prev?.dafollow ? 0 : 1,
+                    };
+                }
+
+                return prev;
+            });
+            dispatch({ type: USER_FOLLOW_RESET });
+        }
+    }, [isSuccessFollow, stranger_id]);
 
     useEffect(() => {
         if (reportSuccess) {

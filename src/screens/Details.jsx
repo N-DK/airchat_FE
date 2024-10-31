@@ -30,7 +30,7 @@ import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import MessageItem from '../components/MessageItem';
 import icon1 from '../assets/Untitled-2.png';
-import { profile, sharePost } from '../redux/actions/UserActions';
+import { follow, profile, sharePost } from '../redux/actions/UserActions';
 import CustomContextMenu from '../components/CustomContextMenu';
 import { FaBookmark, FaRegBookmark, FaRegStar } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
@@ -46,6 +46,7 @@ import ModalDelete from '../components/ModalDelete';
 import PostHosting from '../components/PostHosting';
 import ScreenFull from '../components/ScreenFull';
 import { Howl } from 'howler';
+import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -124,6 +125,9 @@ export default function Details() {
     const { success: isSuccessDeletePost, post_id: postIdDelete } = useSelector(
         (state) => state.userDeletePost,
     );
+    const { isSuccess: isSuccessFollow, stranger_id } = useSelector(
+        (state) => state.userFollow,
+    );
 
     // const userId = new URLSearchParams(location.search).get('userId') || null;
 
@@ -140,6 +144,22 @@ export default function Details() {
     useEffect(() => {
         setDetailsPostReply(data?.reply || []);
     }, [data?.reply]);
+
+    useEffect(() => {
+        if (isSuccessFollow) {
+            setData((prev) => {
+                if (prev?.user_id === stranger_id) {
+                    return {
+                        ...prev,
+                        dafollow: !!prev?.dafollow ? 0 : 1,
+                    };
+                }
+
+                return prev;
+            });
+            dispatch({ type: USER_FOLLOW_RESET });
+        }
+    }, [isSuccessFollow, stranger_id]);
 
     useEffect(() => {
         // if (!post) dispatch(detailsPost(id, userId));

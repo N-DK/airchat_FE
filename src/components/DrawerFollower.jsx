@@ -44,19 +44,26 @@ function DrawerFollower({
     const { language } = useSelector((state) => state.userLanguage);
     const [listFollow, setListFollow] = useState([]);
 
-    const { follower, following } = useSelector(
+    const follower = useSelector(
         useCallback(
-            (state) => ({
-                follower: isStranger
+            (state) =>
+                isStranger
                     ? state.userGetFollowerStranger.follower
                     : state.userGetFollower.follower,
-                following: isStranger
-                    ? state.userGetFollowingStranger.following
-                    : state.userGetFollowing.following,
-            }),
             [isStranger],
         ),
     );
+
+    const following = useSelector(
+        useCallback(
+            (state) =>
+                isStranger
+                    ? state.userGetFollowingStranger.following
+                    : state.userGetFollowing.following,
+            [isStranger],
+        ),
+    );
+
     const userFollow = useSelector((state) => state.userFollow);
 
     useEffect(() => {
