@@ -30,6 +30,11 @@ import { LANGUAGE } from '../constants/language.constant';
 import { AppContext } from '../AppContext';
 import ScreenFull from '../components/ScreenFull';
 import BlockedChat from '../components/BlockedChat';
+import { CgSpinner } from 'react-icons/cg';
+import { DETAIL_MESSAGE_RESET } from '../redux/constants/MessageConstants';
+
+const INITIAL_LIMIT = 10;
+const INITIAL_OFFSET = 0;
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -46,33 +51,35 @@ const NotifyText = ({ message, show }) => {
 const ChatRoom = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+
     const { id } = useParams();
     const { state } = useLocation();
-    const { detailMessage: initMessages, loading: loadingMessage } =
-        useSelector((state) => state.detailMessage);
+    const { isFullScreen, newMessageFromFooter, isRecord, toggleIsRecord } =
+        useContext(AppContext);
+
+    const {
+        detailMessage: initMessages,
+        loading: loadingMessage,
+        results,
+    } = useSelector((state) => state.detailMessage);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { socket, isConnected } = useSelector((state) => state.socket);
+    const { language } = useSelector((state) => state.userLanguage);
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const [messages, setMessages] = useState(initMessages);
-    const refContainer = useRef(null);
-    const { language } = useSelector((state) => state.userLanguage);
-    const { isFullScreen, newMessageFromFooter } = useContext(AppContext);
     const [showNotify, setShowNotify] = useState(false);
     const [notifyMessage, setNotifyMessage] = useState('');
+    const [isTop, setIsTop] = useState(false);
+    const [offset, setOffset] = useState(INITIAL_OFFSET);
+    const [hasMore, setHasMore] = useState(false);
+    const [isEnd, setIsEnd] = useState(false);
+    const [isSurf, setIsSurf] = useState(true);
+
     const { isSuccess: isSuccessBlock, message: messageBlock } = useSelector(
         (state) => state.userBlock,
     );
 
-    useEffect(() => {
-        const sortedMessages = initMessages?.sort((a, b) => a?.id - b?.id);
-        setMessages(sortedMessages);
-    }, [initMessages]);
-
-    useEffect(() => {
-        if (!userInfo) dispatch(profile());
-        if (!socket?.connected || !isConnected) dispatch(connectSocket());
-        return () => dispatch(disconnectSocket());
-    }, [dispatch]);
+    const refContainer = useRef(null);
 
     const getMessageIndex = useCallback(
         (__message_) =>
@@ -221,6 +228,75 @@ const ChatRoom = () => {
         [socket, userInfo, id, messages, getMessageIndex],
     );
 
+    const handleScroll = useCallback(() => {
+        const contents = refContainer?.current;
+        if (!contents) return;
+
+        const { scrollTop } = contents;
+
+        if (scrollTop === 0) {
+            setIsTop(true);
+        } else {
+            setIsTop(false);
+        }
+    }, [refContainer]);
+
+    useEffect(() => {
+        if (isTop && !isEnd) {
+            setOffset((prev) => prev + INITIAL_LIMIT);
+            setHasMore(true);
+        } else {
+            setHasMore(false);
+        }
+    }, [isTop, isEnd]);
+
+    useEffect(() => {
+        const contents = refContainer?.current;
+        if (loadingMessage || !contents) return;
+
+        contents.addEventListener('scroll', handleScroll);
+        return () => {
+            contents.removeEventListener('scroll', handleScroll);
+        };
+    }, [loadingMessage, refContainer]);
+
+    useEffect(() => {
+        if (!initMessages) return;
+
+        const sortedMessages = [...initMessages].sort((a, b) => a?.id - b?.id);
+
+        setMessages((prevMessages) => {
+            if (hasMore) {
+                const prevScrollHeight = refContainer.current.scrollHeight;
+
+                const updatedMessages = [...sortedMessages, ...prevMessages];
+
+                setTimeout(() => {
+                    const newScrollHeight = refContainer.current.scrollHeight;
+                    refContainer.current.scrollTop +=
+                        newScrollHeight - prevScrollHeight;
+                }, 0);
+
+                return updatedMessages;
+            } else {
+                return sortedMessages;
+            }
+        });
+        dispatch({ type: DETAIL_MESSAGE_RESET });
+    }, [initMessages, hasMore]);
+
+    useEffect(() => {
+        if (!userInfo) dispatch(profile());
+        dispatch(connectSocket());
+        return () => dispatch(disconnectSocket());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (results === 1 && initMessages?.length === 0) {
+            setIsEnd(true);
+        }
+    }, [results, initMessages]);
+
     useEffect(() => {
         const setupSocketListeners = () => {
             if (isConnected && socket?.connected && socket) {
@@ -272,25 +348,32 @@ const ChatRoom = () => {
 
     useEffect(() => {
         if (id) {
-            dispatch(detailMessage(id));
+            dispatch(detailMessage(id, INITIAL_LIMIT, offset));
         }
-    }, [id, dispatch]);
+    }, [id, dispatch, offset]);
 
     useEffect(() => {
-        if (refContainer.current && messages?.length > 0) {
+        if (refContainer.current && messages?.length > 0 && isSurf) {
             refContainer.current.scrollTop =
                 refContainer.current.scrollHeight - 1000;
+            setIsSurf(false);
         }
-    }, [refContainer, messages]);
+    }, [refContainer, messages, isSurf]);
 
     const renderMessages = useMemo(() => {
-        if (loadingMessage) return <LoadingSpinner />;
+        if (loadingMessage && !hasMore) return <LoadingSpinner />;
         if (messages?.length > 0) {
             return (
                 <div className="appear-animation">
+                    {(loadingMessage || hasMore) && (
+                        <CgSpinner
+                            size={32}
+                            className="animate-spin mx-auto mb-3"
+                        />
+                    )}
                     {messages.map((message, index) => (
                         <MessageChatRoom
-                            key={index}
+                            key={message?.id}
                             position={
                                 message?.sender_name === userInfo?.name
                                     ? 'left'
@@ -315,7 +398,7 @@ const ChatRoom = () => {
                     )}
                 </div>
             );
-        } else if (!loadingMessage && messages?.length === 0) {
+        } else if (!loadingMessage && results === 1 && messages?.length === 0) {
             return (
                 <div className="rounded-lg dark:bg-darkPrimary bg-slatePrimary flex items-center justify-end h-[70px] py-3">
                     <div className="flex items-center px-3">
@@ -345,6 +428,8 @@ const ChatRoom = () => {
         initMessages,
         isTurnOnCamera,
         newMessageFromFooter,
+        hasMore,
+        results,
     ]);
 
     return (
@@ -353,7 +438,7 @@ const ChatRoom = () => {
                 ref={refContainer}
                 className="overflow-auto scrollbar-none h-screen w-screen pb-[640px] dark:bg-dark2Primary"
             >
-                <div className="fixed z-50 top-0 left-0 w-full h-[90px] bg-slatePrimary dark:bg-darkPrimary border-b-[1px] border-gray-200 dark:border-dark2Primary">
+                <div className="fixed z-40 top-0 left-0 w-full h-[90px] bg-slatePrimary dark:bg-darkPrimary border-b-[1px] border-gray-200 dark:border-dark2Primary">
                     <div className="flex items-center justify-center h-full px-6 md:px-10 relative text-black dark:text-white">
                         <button
                             className="absolute left-6 top-50"
@@ -376,6 +461,16 @@ const ChatRoom = () => {
                 </div>
             </div>
             <RecordModal handle={sendNewMessage} />
+            <div
+                onClick={() => {
+                    if (isRecord) toggleIsRecord();
+                }}
+                className={`z-40 absolute h-screen w-screen bg-black bg-opacity-10 transition-all duration-500 ${
+                    isRecord
+                        ? 'opacity-100 pointer-events-auto'
+                        : 'opacity-0 pointer-events-none'
+                }`}
+            />
             {isFullScreen && <ScreenFull postsList={messages} />}
             {(state?.isBlock || state?.isBlockedYou) &&
             messageBlock !== 'unblockAcc success' ? (

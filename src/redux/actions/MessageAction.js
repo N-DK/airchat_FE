@@ -66,7 +66,11 @@ export const detailMessage =
                 { friend_id, limit, offset },
                 config,
             );
-            dispatch({ type: DETAIL_MESSAGE_SUCCESS, payload: data.data });
+            dispatch({
+                type: DETAIL_MESSAGE_SUCCESS,
+                payload: data.data,
+                results: data.results,
+            });
         } catch (error) {
             dispatch({
                 type: DETAIL_MESSAGE_FAIL,

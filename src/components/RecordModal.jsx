@@ -345,6 +345,10 @@ export default function RecordModal({ handle }) {
     }, [wavesurfer]);
 
     useEffect(() => {
+        if (isRecord) toggleIsRecord();
+    }, []);
+
+    useEffect(() => {
         if (debouncedSearch) {
             dispatch(searchUser(debouncedSearch));
         } else {

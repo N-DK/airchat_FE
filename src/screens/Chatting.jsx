@@ -202,8 +202,6 @@ export default function Chatting() {
     }, [posts, dispatch, hasMore, results]);
 
     useEffect(() => {
-        console.log(results, posts);
-
         if (results === 1 && posts?.length === 0 && postListData) {
             setIsEndPost(true);
         }

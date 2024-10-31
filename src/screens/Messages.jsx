@@ -14,7 +14,6 @@ import {
 } from '../redux/actions/MessageAction';
 import { Avatar } from 'antd';
 import moment from 'moment/moment';
-import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import DrawerNewDirect from '../components/DrawerNewDirect';
 import { AppContext } from '../AppContext';
 import { EMIT_EVENT, LISTEN_EVENT } from '../constants/sockets.constant';
@@ -253,7 +252,7 @@ export default function Messages() {
 
     useEffect(() => {
         if (!userInfo) dispatch(profile());
-        if (!socket?.connected || !isConnected) dispatch(connectSocket());
+        dispatch(connectSocket());
         return () => dispatch(disconnectSocket());
     }, [dispatch]);
 

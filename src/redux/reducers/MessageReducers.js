@@ -4,6 +4,7 @@ import {
     CONNECT_SOCKET_SUCCESS,
     DETAIL_MESSAGE_FAIL,
     DETAIL_MESSAGE_REQUEST,
+    DETAIL_MESSAGE_RESET,
     DETAIL_MESSAGE_SUCCESS,
     DISCONNECT_SOCKET,
     LIST_MESSAGE_FAIL,
@@ -32,7 +33,13 @@ export const detailMessageReducers = (state = { message: {} }, action) => {
         case DETAIL_MESSAGE_REQUEST:
             return { loading: true, message: {} };
         case DETAIL_MESSAGE_SUCCESS:
-            return { loading: false, detailMessage: action.payload };
+            return {
+                loading: false,
+                detailMessage: action.payload,
+                results: action.results,
+            };
+        case DETAIL_MESSAGE_RESET:
+            return { results: null };
         case DETAIL_MESSAGE_FAIL:
             return { loading: false, error: action.payload };
         default:
