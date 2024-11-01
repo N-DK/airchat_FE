@@ -389,10 +389,6 @@ export default function Chatting() {
                     ref={saveFirebaseTokenRef}
                     onClick={async () => {
                         if (typeof firebaseplayerid !== 'undefined') {
-                            await axios.post(
-                                'http://192.168.11.28:3001/api/v1/save-key-client',
-                                { client: firebaseplayerid },
-                            );
                             dispatch(saveFCMToken(firebaseplayerid));
                             localStorage.setItem(
                                 'FCMToken',
