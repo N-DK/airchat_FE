@@ -23,21 +23,13 @@ import { useAutoScroll } from '../hooks/useAutoScroll';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import { barMenu, listPost, setPostActive } from '../redux/actions/PostActions';
 import { profile, saveFCMToken } from '../redux/actions/UserActions';
-import {
-    USER_FOLLOW_SUCCESS,
-    USER_PROFILE_SUCCESS,
-} from '../redux/constants/UserConstants';
-import {
-    connectSocket,
-    disconnectSocket,
-} from '../redux/actions/MessageAction';
+
 import { CHANNEL_ADD_RESET } from '../redux/constants/ChannelConstants';
 import Webcam from 'react-webcam';
 import { debounce } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
-import { requestFCMToken } from '../utils/firebase';
 
 const INITIAL_LIMIT = 10;
 const INITIAL_OFFSET = 0;
@@ -55,7 +47,7 @@ const NotifyPinChannel = ({ message, show }) => (
 );
 
 export default function Chatting() {
-    const contentsChattingRef = useRef(null);
+    const { search } = useLocation();
     const postRefs = useRef([]);
     const [isSwiping, setIsSwiping] = useState(false);
     const [showNotify, setShowNotify] = useState(false);
@@ -68,20 +60,23 @@ export default function Chatting() {
     const [offset, setOffset] = useState(INITIAL_OFFSET);
     const [hasMore, setHasMore] = useState(false);
     const [isEndPost, setIsEndPost] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { search } = useLocation();
     const redirect = search.split('=')[1] || 'for-you';
-    const divRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(false);
+
     const { post } = useSelector((state) => state.setPostActive);
     const { userInfo } = useSelector((state) => state.userProfile);
-
     const { channel, error } = useSelector((state) => state.channelAdd);
     const { posts, loading, results } = useSelector((state) => state.postList);
     const { data: dataFCMToken } = useSelector(
         (state) => state.userSaveFCMToken,
     );
+
+    const getFirebaseRef = useRef(null);
+    const saveFirebaseTokenRef = useRef(null);
+    const contentsChattingRef = useRef(null);
+    const divRef = useRef(null);
 
     const {
         isAddChannel,
@@ -282,20 +277,17 @@ export default function Chatting() {
     }, [channel]);
 
     useEffect(() => {
-        const fetchFCM = async () => {
-            try {
-                const data = await requestFCMToken();
-                dispatch(saveFCMToken(data));
-                localStorage.setItem('FCMToken', JSON.stringify(data));
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
-        if (!dataFCMToken) {
-            fetchFCM();
+        if (
+            getFirebaseRef?.current &&
+            saveFirebaseTokenRef?.current &&
+            !dataFCMToken
+        ) {
+            getFirebaseRef?.current?.click();
+            setTimeout(() => {
+                saveFirebaseTokenRef?.current?.click();
+            }, 1000);
         }
-    }, []);
+    }, [getFirebaseRef, saveFirebaseTokenRef, dataFCMToken]);
 
     return (
         <div className="relative flex flex-col justify-between h-screen overflow-hidden">
@@ -386,6 +378,34 @@ export default function Chatting() {
                         </div>
                     )}
                 </div>
+                <a
+                    ref={getFirebaseRef}
+                    className="hidden"
+                    href="getfirebaseplayerid://"
+                >
+                    getfirebaseplayerid://
+                </a>
+                <button
+                    ref={saveFirebaseTokenRef}
+                    onClick={async () => {
+                        if (typeof firebaseplayerid !== 'undefined') {
+                            await axios.post(
+                                'http://192.168.11.28:3001/api/v1/save-key-client',
+                                { client: firebaseplayerid },
+                            );
+                            dispatch(saveFCMToken(firebaseplayerid));
+                            localStorage.setItem(
+                                'FCMToken',
+                                firebaseplayerid
+                                    ? JSON.stringify(firebaseplayerid)
+                                    : null,
+                            );
+                        }
+                    }}
+                    className="hidden"
+                >
+                    Bước 2 nhấn vào đây để lấy token
+                </button>
             </div>
 
             <AddChannel />

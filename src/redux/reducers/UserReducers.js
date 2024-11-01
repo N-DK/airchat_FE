@@ -120,6 +120,7 @@ import {
     USER_SAVE_FCM_TOKEN_SUCCESS,
     USER_SAVE_FCM_TOKEN_FAIL,
     USER_FOLLOW_RESET,
+    USER_SAVE_FCM_TOKEN_RESET,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -649,6 +650,8 @@ export const userSaveFCMTokenReducer = (state = {}, action) => {
             return { loading: true, data: null };
         case USER_SAVE_FCM_TOKEN_SUCCESS:
             return { loading: false, data: action.payload };
+        case USER_SAVE_FCM_TOKEN_RESET:
+            return { data: null };
         case USER_SAVE_FCM_TOKEN_FAIL:
             return { loading: false, error: action.payload };
         default:

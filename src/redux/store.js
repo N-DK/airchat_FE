@@ -158,9 +158,19 @@ const userLanguageFromLocalStorage = localStorage.getItem('language')
           return DEFAULT_LANGUAGE;
       })();
 
-const userSaveFCMTokenFromLocalStorage = localStorage.getItem('FCMToken')
-    ? JSON.parse(localStorage.getItem('FCMToken'))
-    : null;
+let userSaveFCMTokenFromLocalStorage;
+try {
+    userSaveFCMTokenFromLocalStorage = localStorage.getItem('FCMToken')
+        ? JSON.parse(localStorage.getItem('FCMToken'))
+        : null;
+    if (userSaveFCMTokenFromLocalStorage === 'undefined') {
+        localStorage.removeItem('FCMToken');
+        userSaveFCMTokenFromLocalStorage = null;
+    }
+} catch (error) {
+    localStorage.removeItem('FCMToken');
+    userSaveFCMTokenFromLocalStorage = null;
+}
 
 const initialState = {
     userLogin: {

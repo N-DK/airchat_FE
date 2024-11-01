@@ -135,10 +135,7 @@ export default function RecordModal({ handle }) {
             const reader = new FileReader();
             reader.readAsDataURL(blob);
             reader.onloadend = async () => {
-                const base64data =
-                    recordOption === 'audio'
-                        ? reader.result
-                        : cleanDataURI(reader.result);
+                const base64data = cleanDataURI(reader.result);
 
                 const base64File = await convertToBase64(file, 'png');
 

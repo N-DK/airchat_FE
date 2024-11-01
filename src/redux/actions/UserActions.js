@@ -112,6 +112,7 @@ import {
     USER_SAVE_FCM_TOKEN_REQUEST,
     USER_SAVE_FCM_TOKEN_SUCCESS,
     USER_SAVE_FCM_TOKEN_FAIL,
+    USER_SAVE_FCM_TOKEN_RESET,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -154,6 +155,11 @@ export const login = (__data) => async (dispatch) => {
 
 export const logout = () => (dispatch) => {
     localStorage.removeItem('userInfo');
+
+    dispatch({
+        type: USER_SAVE_FCM_TOKEN_RESET,
+    });
+
     dispatch({
         type: CHECK_ACCOUNT_RESET,
     });
