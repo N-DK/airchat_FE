@@ -17,7 +17,6 @@ import ChannelCircle from './ChannelCircle';
 import PeopleCircle from './PeopleCricle';
 import { listFollow, profile } from '../redux/actions/UserActions';
 import { LANGUAGE } from '../constants/language.constant';
-import { title } from 'process';
 import ScreenFull from './ScreenFull';
 import { AppContext } from '../AppContext';
 const EmptySearch = React.memo(() => {

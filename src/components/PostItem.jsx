@@ -302,8 +302,6 @@ function PostItem({
                     bonus: bonusHeight,
                 }),
             );
-        } else {
-            dispatch(setPostActive(null));
         }
     }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
 
