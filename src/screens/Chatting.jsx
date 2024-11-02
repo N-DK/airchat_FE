@@ -371,6 +371,7 @@ export default function Chatting() {
                         postsList={postListData ?? []}
                         contentsChattingRef={contentsChattingRef}
                         isTurnOnCamera={isTurnOnCameraReply}
+                        setPostList={setPostListData}
                     />
                     {loading && (
                         <div className="absolute bottom-[-450px] md:bottom-[-520px] left-0 w-full">

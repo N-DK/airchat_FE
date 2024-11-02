@@ -32,6 +32,7 @@ import ScreenFull from '../components/ScreenFull';
 import BlockedChat from '../components/BlockedChat';
 import { CgSpinner } from 'react-icons/cg';
 import { DETAIL_MESSAGE_RESET } from '../redux/constants/MessageConstants';
+import { USER_PROFILE_STRANGER_RESET } from '../redux/constants/UserConstants';
 
 const INITIAL_LIMIT = 10;
 const INITIAL_OFFSET = 0;
@@ -53,7 +54,7 @@ const ChatRoom = () => {
     const dispatch = useDispatch();
 
     const { id } = useParams();
-    const { state } = useLocation();
+    const { state: stateUser } = useLocation();
     const { isFullScreen, newMessageFromFooter, isRecord, toggleIsRecord } =
         useContext(AppContext);
 
@@ -74,10 +75,13 @@ const ChatRoom = () => {
     const [hasMore, setHasMore] = useState(false);
     const [isEnd, setIsEnd] = useState(false);
     const [isSurf, setIsSurf] = useState(true);
+    const [state, setState] = useState(stateUser);
 
     const { isSuccess: isSuccessBlock, message: messageBlock } = useSelector(
         (state) => state.userBlock,
     );
+    const { userInfo: userInfoStranger, loading: loadingStranger } =
+        useSelector((state) => state.userProfileStranger);
 
     const refContainer = useRef(null);
 
@@ -247,6 +251,17 @@ const ChatRoom = () => {
     }, [isTop, isEnd]);
 
     useEffect(() => {
+        if (userInfoStranger) {
+            setState({ user: userInfoStranger });
+            dispatch({ type: USER_PROFILE_STRANGER_RESET });
+        }
+    }, [userInfoStranger]);
+
+    useEffect(() => {
+        if (!state) dispatch(getProfileStranger(id));
+    }, [dispatch, id]);
+
+    useEffect(() => {
         const contents = refContainer?.current;
         if (loadingMessage || !contents) return;
 
@@ -395,7 +410,7 @@ const ChatRoom = () => {
                     )}
                 </div>
             );
-        } else if (!loadingMessage && results === 1 && messages?.length === 0) {
+        } else if (!loadingMessage && messages?.length === 0) {
             return (
                 <div className="rounded-lg dark:bg-darkPrimary bg-slatePrimary flex items-center justify-end h-[70px] py-3">
                     <div className="flex items-center px-3">
@@ -426,7 +441,6 @@ const ChatRoom = () => {
         isTurnOnCamera,
         newMessageFromFooter,
         hasMore,
-        results,
     ]);
 
     return (

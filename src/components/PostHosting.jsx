@@ -344,7 +344,7 @@ function PostHosting({
             } else {
                 console.log('Thiết bị không hỗ trợ rung.');
             }
-            dispatch(setPostActive(data));
+            // dispatch(setPostActive(data));
             dispatch(
                 setObjectActive({
                     post: data,

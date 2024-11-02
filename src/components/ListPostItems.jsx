@@ -8,54 +8,57 @@ function ListPostItems({
     contentsChattingRef,
     isTurnOnCamera,
     bonusHeight,
+    setPostList,
 }) {
     const dispatch = useDispatch();
     const [data, setData] = useState([]);
+    const [isFlag, setIsFlag] = useState(true);
     const { success: newPost } = useSelector((state) => state.postSubmit);
     const { isSuccess: isSuccessFollow, stranger_id } = useSelector(
         (state) => state.userFollow,
     );
 
+    const updatePosts = (newPosts) => {
+        setPostList ? setPostList(newPosts) : setData(newPosts);
+    };
+
+    const finalData = setPostList ? postsList : data;
+
     useEffect(() => {
-        if (isSuccessFollow) {
-            if (!window.location.pathname.includes('profile')) {
-                const newPostListData = data?.filter(
-                    (item) => item?.user_id !== stranger_id,
-                );
-                setData(newPostListData);
-            }
+        if (isSuccessFollow && !window.location.pathname.includes('profile')) {
+            const filteredData = finalData.filter(
+                (item) => item?.user_id !== stranger_id,
+            );
+            updatePosts(filteredData);
             dispatch({
                 type: USER_FOLLOW_SUCCESS,
                 payload: null,
                 results: false,
             });
         }
-    }, [isSuccessFollow, stranger_id, data, window.location.pathname]);
+    }, [isSuccessFollow, stranger_id, finalData, dispatch]);
 
     useEffect(() => {
-        if (newPost) {
-            if (data.length === 0) {
-                setData([newPost]);
-            }
+        if (newPost && finalData.length === 0) {
+            updatePosts([newPost]);
         }
-    }, [newPost, data]);
+    }, [newPost, finalData]);
 
     useEffect(() => {
-        if (postsList && postsList.length > 0) {
-            setData(postsList);
-        } else {
-            setData([]);
+        if (isFlag) {
+            updatePosts(postsList?.length > 0 ? postsList : []);
+            setIsFlag(false);
         }
-    }, [postsList]);
+    }, [postsList, isFlag]);
 
     return (
         <div>
-            {data?.map((item, index) => (
+            {finalData.map((item, index) => (
                 <PostItem
                     key={`${item?.id}-${index}-${item?.name_channel}`}
                     item={item}
                     contentsChattingRef={contentsChattingRef}
-                    setList={setData}
+                    setList={setPostList || setData}
                     isTurnOnCamera={isTurnOnCamera}
                     bonusHeight={bonusHeight}
                 />

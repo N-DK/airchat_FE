@@ -160,10 +160,9 @@ function PostItem({
         if (newPost) {
             if (newPost?.reply_post && newPost?.reply_post === item?.id) {
                 setList((prev) => {
-                    const newPosts = prev.map((post) => {
-                        if (post.id === newPost.reply_post) {
-                            const updatedReplies = post.reply.map((reply) => {
-                                // Nếu user_id của reply trùng với user_id của newPost thì ghi đè
+                    const newPosts = prev?.map((post) => {
+                        if (post?.id === newPost?.reply_post) {
+                            const updatedReplies = post?.reply?.map((reply) => {
                                 if (reply.user_id === newPost.user_id) {
                                     return {
                                         ...newPost,
@@ -173,12 +172,10 @@ function PostItem({
                                 return reply;
                             });
 
-                            // Kiểm tra xem đã có reply với user_id trùng chưa
                             const hasExistingReply = updatedReplies.some(
                                 (reply) => reply.user_id === newPost.user_id,
                             );
 
-                            // Nếu chưa có thì thêm mới
                             if (!hasExistingReply) {
                                 updatedReplies.push({
                                     ...newPost,

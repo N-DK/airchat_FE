@@ -17,7 +17,6 @@ import FooterChat from '../components/FooterChat';
 import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import ListPostItems from '../components/ListPostItems';
-import { FaEllipsisH } from 'react-icons/fa';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { HiOutlineDotsHorizontal } from 'react-icons/hi';
 import EditChannel from '../components/EditChannel';
@@ -392,6 +391,7 @@ export default function PostsChannel() {
                     postsList={postsList}
                     isTurnOnCamera={isTurnOnCameraReply}
                     contentsChattingRef={contentsChattingRef}
+                    setPostList={setPostList}
                 />
                 {loading && (
                     <div className="absolute bottom-[-450px] md:bottom-[-520px] left-0 w-full">
