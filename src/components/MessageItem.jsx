@@ -41,6 +41,7 @@ import PostHosting from './PostHosting';
 import { Howl } from 'howler';
 import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 import SpeakingAnimation from './SpeakingAnimation';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 function MessageItem({
@@ -76,6 +77,7 @@ function MessageItem({
     const { isSuccess: isSuccessFollow, stranger_id } = useSelector(
         (state) => state.userFollow,
     );
+
     const { isRunAuto } = useContext(AppContext);
 
     useEffect(() => {
@@ -487,7 +489,7 @@ function MessageItem({
                                         )}
                                         {data?.img && (
                                             <figure className="max-w-full relative my-2">
-                                                <Avatar
+                                                {/* <Avatar
                                                     src={`${
                                                         data?.img.includes(
                                                             'blob',
@@ -496,6 +498,24 @@ function MessageItem({
                                                             : `https://talkie.transtechvietnam.com/${data?.img}`
                                                     } `}
                                                     className="min-h-40 h-full w-full object-cover rounded-xl"
+                                                /> */}
+                                                <LazyLoadImage
+                                                    className="min-h-40 h-full w-full object-cover rounded-xl"
+                                                    alt={''}
+                                                    effect="blur"
+                                                    wrapperProps={{
+                                                        style: {
+                                                            transitionDelay:
+                                                                '1s',
+                                                        },
+                                                    }}
+                                                    src={`${
+                                                        data?.img.includes(
+                                                            'blob',
+                                                        )
+                                                            ? data?.img
+                                                            : `https://talkie.transtechvietnam.com/${data?.img}`
+                                                    } `}
                                                 />
                                             </figure>
                                         )}

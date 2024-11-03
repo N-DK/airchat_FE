@@ -48,6 +48,7 @@ import ScreenFull from '../components/ScreenFull';
 import { Howl } from 'howler';
 import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 import SpeakingAnimation from '../components/SpeakingAnimation';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -90,8 +91,13 @@ export default function Details() {
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
-    const { isRecord, toggleIsRecord, isRunAuto, isFullScreen } =
-        useContext(AppContext);
+    const {
+        isRecord,
+        toggleIsRecord,
+        isRunAuto,
+        isFullScreen,
+        toggleIsRunAuto,
+    } = useContext(AppContext);
 
     const [isSwiping, setIsSwiping] = useState(false);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
@@ -410,7 +416,12 @@ export default function Details() {
             } transition-all duration-500`}
         >
             <div className="flex justify-between items-center relative pt-12">
-                <button onClick={() => navigate(-1)}>
+                <button
+                    onClick={() => {
+                        if (isRunAuto) toggleIsRunAuto();
+                        navigate(-1);
+                    }}
+                >
                     <FaChevronLeft className="text-lg md:text-[22px] text-black dark:text-white" />
                 </button>
                 <img src={icon1} className="w-9" alt="" />
@@ -539,9 +550,20 @@ export default function Details() {
                             )}
                             {data?.img && (
                                 <figure className="max-w-full relative my-2">
-                                    <Avatar
+                                    {/* <Avatar
                                         src={`https://talkie.transtechvietnam.com/${data?.img}`}
                                         className="min-h-40 h-full w-full object-cover rounded-xl"
+                                    /> */}
+                                    <LazyLoadImage
+                                        className="min-h-40 h-full w-full object-cover rounded-xl"
+                                        alt={''}
+                                        effect="blur"
+                                        wrapperProps={{
+                                            style: {
+                                                transitionDelay: '1s',
+                                            },
+                                        }}
+                                        src={`https://talkie.transtechvietnam.com/${data?.img}`}
                                     />
                                 </figure>
                             )}

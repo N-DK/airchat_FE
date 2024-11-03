@@ -19,9 +19,10 @@ import PeopleCircle from '../components/PeopleCricle';
 import { LANGUAGE } from '../constants/language.constant';
 
 export default function SearchScreen() {
+    const query = new URLSearchParams(window.location.search);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [searchText, setSearchText] = useState('');
+    const [searchText, setSearchText] = useState(query.get('keyword'));
     const [recentSearch, setRecentSearch] = useState([]);
     const debouncedSearch = useDebounce(searchText, 500);
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
@@ -62,6 +63,12 @@ export default function SearchScreen() {
 
     useEffect(() => {
         if (debouncedSearch.trim() !== '') {
+            query.set('keyword', debouncedSearch);
+            window.history.replaceState(
+                {},
+                '',
+                `${window.location.pathname}?${query}`,
+            );
             dispatch(search(debouncedSearch));
         }
     }, [debouncedSearch, dispatch]);

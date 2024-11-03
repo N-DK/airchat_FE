@@ -43,6 +43,7 @@ import { BASE_URL } from '../constants/api.constant';
 import { addViewPost } from '../redux/actions/UserActions';
 import { Howl, Howler } from 'howler';
 import SpeakingAnimation from './SpeakingAnimation';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -50,7 +51,7 @@ const MentionsItem = ({ user, handle, isMentions }) => {
             onClick={handle}
             className={`flex items-center p-2 py-1 rounded-lg  mr-2 ${
                 isMentions
-                    ? 'dark:bg-blue-500 bg-slate-400'
+                    ? 'dark:bg-blue-500 bg-[#adb8c1]'
                     : 'dark:bg-darkPrimary bg-white'
             }`}
         >
@@ -61,7 +62,13 @@ const MentionsItem = ({ user, handle, isMentions }) => {
                     className=" w-full h-full"
                 />
             </figure>
-            <p className="dark:text-white text-sm">{user?.name}</p>
+            <p
+                className={`${
+                    isMentions ? 'text-white' : 'dark:text-white'
+                } text-sm`}
+            >
+                {user?.name}
+            </p>
         </div>
     );
 };
@@ -121,7 +128,9 @@ const renderPostActions = (item) => {
                             : ''
                     } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
                 ></button>
-                <span className="ml-2 text-sm font-medium">{likeCount}</span>
+                <span className="ml-2 text-sm font-medium text-white">
+                    {likeCount}
+                </span>
             </div>
             {/* <div className="flex items-center text-white">
                 <PiArrowsClockwiseBold />
@@ -457,17 +466,6 @@ function PostContent({ item, contentsChattingRef }) {
                             </div>
                             <div onClick={() => handleNavigate(data)}>
                                 {renderPostHeader(data)}
-                                <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
-                                    {data.content}
-                                </p>
-                                {/* {data?.audio && (
-                                    <div className="mt-2">
-                                        <audio
-                                            controls
-                                            src={`https://talkie.transtechvietnam.com/${data?.audio}`}
-                                        />
-                                    </div>
-                                )} */}
                                 {(data?.tag_user || tagsUser?.length > 0) && (
                                     <div className="flex flex-wrap">
                                         {tagsUser?.map((tag, i) => (
@@ -480,6 +478,17 @@ function PostContent({ item, contentsChattingRef }) {
                                         ))}
                                     </div>
                                 )}
+                                <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
+                                    {data.content}
+                                </p>
+                                {/* {data?.audio && (
+                                    <div className="mt-2">
+                                        <audio
+                                            controls
+                                            src={`https://talkie.transtechvietnam.com/${data?.audio}`}
+                                        />
+                                    </div>
+                                )} */}
 
                                 {(data?.img || file) && (
                                     <figure
@@ -491,13 +500,28 @@ function PostContent({ item, contentsChattingRef }) {
                                         id={`delete-photo-${data.id}`}
                                         className="max-w-full relative min-h-40 mt-2"
                                     >
-                                        <Avatar
+                                        {/* <Avatar
                                             src={
                                                 file
                                                     ? convertObjectURL(file)
                                                     : `https://talkie.transtechvietnam.com/${data.img}`
                                             }
                                             className=" w-full h-full object-cover rounded-xl"
+                                        /> */}
+                                        <LazyLoadImage
+                                            className=" w-full h-full object-cover rounded-xl"
+                                            alt={''}
+                                            effect="blur"
+                                            wrapperProps={{
+                                                style: {
+                                                    transitionDelay: '1s',
+                                                },
+                                            }}
+                                            src={
+                                                file
+                                                    ? convertObjectURL(file)
+                                                    : `https://talkie.transtechvietnam.com/${data.img}`
+                                            }
                                         />
                                         {(loadingUpload ||
                                             loadingDeletePhoto) && (

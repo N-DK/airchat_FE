@@ -579,6 +579,7 @@ export default function Profile() {
                     <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
                         <button
                             onClick={() => {
+                                if (isRunAuto) toggleIsRunAuto();
                                 navigate(-1);
                                 dispatch({
                                     type: USER_PROFILE_STRANGER_RESET,

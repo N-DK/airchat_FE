@@ -6,6 +6,7 @@ import React, {
     useEffect,
     useCallback,
     useContext,
+    useRef,
 } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { ItemFollow } from './ItemFollow';
@@ -19,6 +20,7 @@ import { listFollow, profile } from '../redux/actions/UserActions';
 import { LANGUAGE } from '../constants/language.constant';
 import ScreenFull from './ScreenFull';
 import { AppContext } from '../AppContext';
+
 const EmptySearch = React.memo(() => {
     const { language } = useSelector((state) => state.userLanguage);
     return (
@@ -151,6 +153,7 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                             <ListPostItems
                                 postsList={data?.top?._data}
                                 isTurnOnCamera={data?.top?.isTurnOnCamera}
+                                contentsChattingRef={data?.contentContainerRef}
                             />
                         </div>
                     </div>
@@ -160,12 +163,46 @@ const Latest = React.memo(({ data, setActiveKey }) => {
     );
 });
 
+const Top = React.memo(({ data }) => {
+    const topPosts = data?.top;
+    const contentContainerRef = data?.contentContainerRef;
+
+    return topPosts?._data?.length > 0 && contentContainerRef?.current ? (
+        <ListPostItems
+            postsList={topPosts?._data}
+            isTurnOnCamera={topPosts?.isTurnOnCamera}
+            contentsChattingRef={contentContainerRef}
+            bonusKey={'top'}
+        />
+    ) : (
+        <EmptySearch />
+    );
+});
+
 const TabContent = React.memo(
-    ({ component: Component, data, setActiveKey }) => (
-        <div className={`w-full pb-[calc(100vh-390px)] dark:bg-dark2Primary`}>
-            <Component data={data} setActiveKey={setActiveKey} />
-        </div>
-    ),
+    ({ component: Component, data, setActiveKey }) => {
+        const contentContainerRef = useRef(null);
+        const [isRender, setIsRender] = useState(false);
+
+        useEffect(() => {
+            setIsRender(contentContainerRef?.current);
+        }, [contentContainerRef]);
+
+        return (
+            <div
+                ref={contentContainerRef}
+                className={`w-full dark:bg-dark2Primary`}
+            >
+                {isRender && (
+                    <Component
+                        contentContainerRef={contentContainerRef}
+                        data={data}
+                        setActiveKey={setActiveKey}
+                    />
+                )}
+            </div>
+        );
+    },
 );
 
 const tabData = [
@@ -179,17 +216,7 @@ const tabData = [
         key: '2',
         'title-en-US': 'Top',
         'title-vi-VN': 'Nổi bật',
-        component: ({ data }) => {
-            const topPosts = data?.top;
-            return topPosts?._data?.length > 0 ? (
-                <ListPostItems
-                    postsList={topPosts?._data}
-                    isTurnOnCamera={topPosts?.isTurnOnCamera}
-                />
-            ) : (
-                <EmptySearch />
-            );
-        },
+        component: Top,
     },
     {
         key: '3',
@@ -213,6 +240,9 @@ function Search({ data, isTurnOnCamera }) {
     const { language } = useSelector((state) => state.userLanguage);
     const { isFullScreen } = useContext(AppContext);
     const dispatch = useDispatch();
+
+    const contentContainerRef = useRef(null);
+
     useEffect(() => {
         if (!userInfo) dispatch(profile());
     }, []);
@@ -227,6 +257,7 @@ function Search({ data, isTurnOnCamera }) {
             } else if (direction === 'prev' && currentIndex > 0) {
                 setActiveKey(tabData[currentIndex - 1].key);
             }
+            contentContainerRef.current = null;
         },
         [activeKey],
     );
@@ -264,18 +295,24 @@ function Search({ data, isTurnOnCamera }) {
         setSearchData({
             ...data,
             top: { isTurnOnCamera, _data: data?.top },
+            contentContainerRef,
         });
-    }, [data, isTurnOnCamera]);
+    }, [data, isTurnOnCamera, contentContainerRef]);
 
     return (
-        <div {...handlers} className="overflow-auto scrollbar-none">
-            <Tabs
-                activeKey={activeKey}
-                onChange={setActiveKey}
-                className="centered-tabs"
+        <div {...handlers}>
+            <div
+                ref={contentContainerRef}
+                className="h-screen pb-[calc(100vh-230px)] overflow-auto scrollbar-none"
             >
-                {tabPanes}
-            </Tabs>
+                <Tabs
+                    activeKey={activeKey}
+                    onChange={setActiveKey}
+                    className="centered-tabs"
+                >
+                    {tabPanes}
+                </Tabs>
+            </div>
             {isFullScreen && <ScreenFull postsList={searchData?.top?._data} />}
         </div>
     );

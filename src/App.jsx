@@ -24,6 +24,8 @@ import ChatRoom from './screens/ChatRoom';
 import SearchScreen from './screens/SearchScreen';
 import PrivacyModal from './components/ModalPolicy';
 import 'react-phone-input-2/lib/style.css';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+
 import './App.css';
 
 import 'moment/locale/vi';

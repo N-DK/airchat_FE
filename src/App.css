@@ -481,65 +481,62 @@ body {
 
 .loader .circle1 {
     background: #ff5733;
-    animation: push_402 1s infinite linear;
-    animation-delay: 0.5s;
+    animation: push_401 1s infinite linear;
+    animation-delay: 0s;
 }
 
 .loader .circle2 {
     background: #33ff57;
-    animation: push_403 1s infinite linear;
-    animation-delay: 1.5s;
+    animation: push_402 1s infinite linear;
+    animation-delay: 0.2s;
 }
 
 .loader .circle3 {
     background: #3357ff;
-    animation: push_404 1s infinite linear;
-    animation-delay: 2s;
+    animation: push_403 1s infinite linear;
+    animation-delay: 0.4s;
 }
 
 .loader .circle4 {
     background: #ff33a1;
-    animation: push_405 1s infinite linear;
-    animation-delay: 1.2s;
+    animation: push_404 1s infinite linear;
+    animation-delay: 0.6s;
 }
 
 .loader .circle5 {
-    animation: push_401 1s infinite linear;
     background: #ffff33;
-    animation-delay: 0.5s;
+    animation: push_405 1s infinite linear;
+    animation-delay: 0.8s;
 }
 
-.loader .circle5 {
-    animation: push_401 1s infinite linear;
-    background: #ff5733;
-    animation-delay: 0.5s;
-}
 .loader .circle6 {
     background: #33ffd7;
     animation: push_406 1s infinite linear;
-    background: #33ffd7;
-    animation-delay: 1.9s;
+    animation-delay: 1s;
 }
+
 .loader .circle7 {
-    animation: push_407 1s infinite linear;
     background: #ff9933;
-    animation-delay: 1.7s;
+    animation: push_407 1s infinite linear;
+    animation-delay: 1.2s;
 }
+
 .loader .circle8 {
-    animation: push_408 1s infinite linear;
     background: #9933ff;
+    animation: push_408 1s infinite linear;
     animation-delay: 1.4s;
 }
 
 .loader .circle9 {
-    animation: push_409 1s infinite linear;
     background: #33ff99;
-    animation-delay: 1.3s;
+    animation: push_409 1s infinite linear;
+    animation-delay: 1.7s;
 }
+
 .loader .circle10 {
+    background: #ffd700;
     animation: push_410 1s infinite linear;
-    background: #ffd700; /* Màu vàng */
-    animation-delay: 1.5s;
+    animation-delay: 1.9s;
 }
 
 @keyframes push_401 {
@@ -616,7 +613,7 @@ body {
         transform: translate(-50%, 0%) scale(1);
     }
     100% {
-        transform: translate(-50%, 100%) scale(0);
+        transform: translate(-50%, 80%) scale(0);
     }
 }
 @keyframes push_409 {

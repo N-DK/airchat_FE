@@ -44,6 +44,7 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { addViewPost } from '../redux/actions/UserActions';
 import { Howl, Howler } from 'howler';
 import { AppContext } from '../AppContext';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -51,7 +52,7 @@ const MentionsItem = ({ user, handle, isMentions }) => {
             onClick={handle}
             className={`flex items-center p-2 py-1 rounded-lg  mr-2 ${
                 isMentions
-                    ? 'dark:bg-blue-500 bg-slate-400'
+                    ? 'dark:bg-blue-500 bg-[#adb8c1]'
                     : 'dark:bg-darkPrimary bg-white'
             }`}
         >
@@ -62,7 +63,13 @@ const MentionsItem = ({ user, handle, isMentions }) => {
                     className=" w-full h-full"
                 />
             </figure>
-            <p className="dark:text-white text-sm">{user?.name}</p>
+            <p
+                className={`${
+                    isMentions ? 'text-white' : 'dark:text-white'
+                } text-sm`}
+            >
+                {user?.name}
+            </p>
         </div>
     );
 };
@@ -165,6 +172,8 @@ function PostHosting({
     handleSharePost,
     handleBookMark,
     videoRef,
+    bonusHeight = 0,
+    bonusKey = '',
 }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -351,6 +360,7 @@ function PostHosting({
             } else {
                 console.log('Thiết bị không hỗ trợ rung.');
             }
+
             // dispatch(setPostActive(data));
             dispatch(
                 setObjectActive({
@@ -364,10 +374,11 @@ function PostHosting({
                           })
                         : null,
                     element: document.getElementById(
-                        `post-item-profile-${data?.id}`,
+                        `post-item-profile${bonusKey}-${data?.id}`,
                     ),
                     parent: contentsChattingRef?.current,
                     video: videoRef.current,
+                    bonus: bonusHeight,
                 }),
             );
         }
@@ -412,12 +423,14 @@ function PostHosting({
             <div className="relative flex-1 appear-animation duration-300">
                 <div
                     ref={divRef}
-                    id={`post-item-profile-${data?.id}`}
+                    id={`post-item-profile${bonusKey}-${data?.id}`}
                     className={`relative bg-slatePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
                         isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
                     }`}
                     onTouchStart={() => {
-                        handleTouchStartPost(`post-item-profile-${data?.id}`);
+                        handleTouchStartPost(
+                            `post-item-profile${bonusKey}-${data?.id}`,
+                        );
                     }}
                     onTouchEnd={handleTouchEndPost}
                 >
@@ -489,13 +502,28 @@ function PostHosting({
                                 id={`delete-photo-${data.id}`}
                                 className="max-w-full relative min-h-40 mt-2"
                             >
-                                <Avatar
+                                {/* <Avatar
                                     src={
                                         file
                                             ? convertObjectURL(file)
                                             : `https://talkie.transtechvietnam.com/${data.img}`
                                     }
                                     className=" w-full h-full object-cover rounded-xl"
+                                /> */}
+                                <LazyLoadImage
+                                    className=" w-full h-full object-cover rounded-xl"
+                                    alt={''}
+                                    effect="blur"
+                                    wrapperProps={{
+                                        style: {
+                                            transitionDelay: '1s',
+                                        },
+                                    }}
+                                    src={
+                                        file
+                                            ? convertObjectURL(file)
+                                            : `https://talkie.transtechvietnam.com/${data.img}`
+                                    }
                                 />
                                 {(loadingUpload || loadingDeletePhoto) && (
                                     <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">

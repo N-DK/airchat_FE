@@ -31,6 +31,8 @@ export function useAutoScroll(
 
     const playAudio = useCallback(
         (index) => {
+            console.log(audioRef?.current?._src);
+
             if (audioRef.current) {
                 audioRef.current.pause();
             }

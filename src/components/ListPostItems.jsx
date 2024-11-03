@@ -15,6 +15,7 @@ function ListPostItems({
     isTurnOnCamera,
     bonusHeight,
     setPostList,
+    bonusKey,
 }) {
     const dispatch = useDispatch();
     const [data, setData] = useState([]);
@@ -135,6 +136,7 @@ function ListPostItems({
                     setList={setPostList || setData}
                     isTurnOnCamera={isTurnOnCamera}
                     bonusHeight={bonusHeight}
+                    bonusKey={bonusKey}
                 />
             ))}
         </div>

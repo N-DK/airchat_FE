@@ -68,7 +68,7 @@ export default function FooterChat({
         },
         {
             icon: <IoSearch size="1.8rem" />,
-            name: 'search',
+            name: 'search?keyword=',
         },
         {
             icon:
@@ -173,16 +173,21 @@ export default function FooterChat({
                 if (stream) {
                     setStream(stream);
                 }
-                mediaRecorderRef.current = new MediaRecorder(stream);
+                const mimeType =
+                    recordOption === 'video'
+                        ? 'video/mp4'
+                        : 'audio/mp4;codecs=mp4a.40.2';
+                const options = {
+                    mimeType: mimeType,
+                    audioBitsPerSecond: 128000,
+                };
+                mediaRecorderRef.current = new MediaRecorder(stream, options);
                 mediaRecorderRef.current.ondataavailable = (event) => {
                     audioChunksRef.current.push(event.data);
                 };
                 mediaRecorderRef.current.onstop = () => {
                     const audioBlob = new Blob(audioChunksRef.current, {
-                        type:
-                            recordOption === 'video'
-                                ? 'video/mp4'
-                                : 'audio/mp4;codecs=mp4a.40.2',
+                        type: mimeType,
                     });
                     const reader = new FileReader();
                     reader.readAsDataURL(audioBlob);
@@ -212,9 +217,6 @@ export default function FooterChat({
         }
         SpeechRecognition.stopListening();
 
-        // resetTranscript();
-        // setAudio(null);
-        // setVideo(null);
         setIsStartRecord(false);
     };
 
@@ -238,10 +240,12 @@ export default function FooterChat({
             if (object.parent) {
                 const rect = object.element.getBoundingClientRect();
                 const parentRect = object.parent.getBoundingClientRect();
+
                 const scrollTop =
                     object.parent.scrollTop +
                     (rect.bottom - parentRect.top) +
                     (object?.bonus || 0);
+
                 object.parent.scrollTo({
                     top: scrollTop,
                     behavior: 'smooth',
@@ -258,10 +262,10 @@ export default function FooterChat({
     const handleAudioPlayback = async (object) => {
         if (audioCurrent && audioCurrent.playing()) {
             await new Promise((resolve) => {
-                audioCurrent.once('stop', () => {
+                audioCurrent.once('pause', () => {
                     resolve();
                 });
-                audioCurrent.stop();
+                audioCurrent?.pause();
             });
         }
         const audio = object?.audio;
@@ -272,10 +276,9 @@ export default function FooterChat({
             audio.on('end', () => {
                 handleScroll(object);
             });
-            audio.play();
-            audio.once('play', () => {
-                dispatch(setObjectAudioCurrent(audio));
-            });
+            dispatch(setObjectAudioCurrent(audio));
+            // audio.play();
+            // audio.once('play', () => {});
         } else {
             console.error('Audio object is undefined');
         }
@@ -300,14 +303,14 @@ export default function FooterChat({
                 handleScroll(object);
             };
 
-            video
-                .play()
-                .then(() => {
-                    dispatch(setObjectVideoCurrent(video));
-                })
-                .catch((error) => {
-                    console.error('Error playing video:', error);
-                });
+            dispatch(setObjectVideoCurrent(video));
+            // video
+            //     .play()
+            //     .then(() => {
+            //     })
+            //     .catch((error) => {
+            //         console.error('Error playing video:', error);
+            //     });
         } else {
             console.error('Video object is undefined');
         }
@@ -370,9 +373,11 @@ export default function FooterChat({
 
                 if (audio) {
                     const audioBlob = base64ToBlob(audio, 'audio/mp3');
+                    console.log(audioBlob);
                     audioFile = new File([audioBlob], 'audio-recording.mp3', {
                         type: 'audio/mp3',
                     });
+                    console.log(audioFile);
                 } else if (video) {
                     const videoBlob = base64ToBlob(video, 'video/mp4');
                     videoFile = new File([videoBlob], 'video-recording.mp4', {
@@ -437,41 +442,44 @@ export default function FooterChat({
         }
     }, [transcript, isStartRecord]);
 
-    useEffect(() => {
-        audioCurrent?.pause();
-        videoCurrent?.pause();
-    }, [useLocation(), audioCurrent, videoCurrent]);
+    // useEffect(() => {
+    //     audioCurrent?.pause();
+    //     videoCurrent?.pause();
+    // }, [audioCurrent, videoCurrent]);
 
     useEffect(() => {
-        if (!isRunAuto || isFullScreen) {
-            if (
-                (audioCurrent && audioCurrent.playing()) ||
-                (videoCurrent && !videoCurrent.paused)
-            ) {
-                audioCurrent?.pause();
-                videoCurrent?.pause();
-            }
-        } else if (isRunAuto && !isFullScreen && object) {
-            if (object?.audio) {
-                if (object?.audio === audioCurrent) {
-                    if (!audioCurrent.playing()) {
-                        audioCurrent.play();
+        const run = async () => {
+            if (!isRunAuto || isFullScreen) {
+                if (
+                    (audioCurrent && audioCurrent.playing()) ||
+                    (videoCurrent && !videoCurrent.paused)
+                ) {
+                    audioCurrent?.pause();
+                    videoCurrent?.pause();
+                }
+            } else if (isRunAuto && !isFullScreen && object) {
+                if (object?.audio) {
+                    if (object?.audio?._src === audioCurrent?._src) {
+                        if (!audioCurrent.playing()) {
+                            audioCurrent.play();
+                        }
+                    } else {
+                        await handleAudioPlayback(object);
+                    }
+                } else if (object?.video) {
+                    if (object?.video.src === videoCurrent.src) {
+                        if (videoCurrent?.paused) {
+                            videoCurrent?.play();
+                        }
+                    } else {
+                        await handleVideoPlayback(object);
                     }
                 } else {
-                    handleAudioPlayback(object);
+                    handleScroll(object);
                 }
-            } else if (object?.video) {
-                if (object?.video === videoCurrent) {
-                    if (videoCurrent?.paused) {
-                        videoCurrent?.play();
-                    }
-                } else {
-                    handleVideoPlayback(object);
-                }
-            } else {
-                handleScroll(object);
             }
-        }
+        };
+        run();
     }, [
         object,
         isRunAuto,
@@ -533,7 +541,9 @@ export default function FooterChat({
                                                 : `${
                                                       isSwiping
                                                           ? 'opacity-20'
-                                                          : title == item.name
+                                                          : item.name.includes(
+                                                                title,
+                                                            )
                                                           ? 'opacity-100'
                                                           : 'opacity-20'
                                                   } dark:text-white transition-all duration-500`
@@ -567,7 +577,9 @@ export default function FooterChat({
                                             : `${
                                                   isSwiping
                                                       ? 'opacity-20'
-                                                      : title == item.name
+                                                      : item.name.includes(
+                                                            title,
+                                                        )
                                                       ? 'opacity-100'
                                                       : 'opacity-20'
                                               } dark:text-white transition-all duration-500`

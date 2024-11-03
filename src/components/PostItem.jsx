@@ -37,10 +37,10 @@ import { LANGUAGE } from '../constants/language.constant';
 import moment from 'moment/moment';
 import 'moment/locale/vi';
 import ModalDelete from './ModalDelete';
-import PostContent from './PostContent';
 import PostHosting from './PostHosting';
 import { Howl, Howler } from 'howler';
 import SpeakingAnimation from './SpeakingAnimation';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -50,6 +50,7 @@ function PostItem({
     setList,
     isTurnOnCamera,
     bonusHeight = 0,
+    bonusKey = '',
 }) {
     const navigate = useNavigate();
     const { pingStates } = usePingStates();
@@ -297,6 +298,7 @@ function PostItem({
             dispatch(
                 setObjectActive({
                     post: data,
+
                     audio: data?.audio
                         ? new Howl({
                               src: [
@@ -461,6 +463,8 @@ function PostItem({
                                     handleSharePost={handleSharePost}
                                     handleBookMark={handleBookMark}
                                     videoRef={videoRef}
+                                    bonusHeight={bonusHeight}
+                                    bonusKey={bonusKey}
                                 />
                             ) : (
                                 <div
@@ -552,9 +556,21 @@ function PostItem({
                                         </p>
                                         {data?.img && (
                                             <figure className="max-w-full relative my-2">
-                                                <Avatar
+                                                {/* <Avatar
                                                     src={`https://talkie.transtechvietnam.com/${data?.img}`}
                                                     className="min-h-40 h-full w-full object-cover rounded-xl"
+                                                /> */}
+                                                <LazyLoadImage
+                                                    className="min-h-40 h-full w-full object-cover rounded-xl"
+                                                    alt={''}
+                                                    effect="blur"
+                                                    wrapperProps={{
+                                                        style: {
+                                                            transitionDelay:
+                                                                '1s',
+                                                        },
+                                                    }}
+                                                    src={`https://talkie.transtechvietnam.com/${data?.img}`}
                                                 />
                                             </figure>
                                         )}
