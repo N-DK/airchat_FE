@@ -121,7 +121,7 @@ const MessageChatRoom = ({
                 rootMargin: `-${Math.max(
                     window.innerHeight * 0.18,
                     100,
-                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
+                )}px 0px -${Math.max(window.innerHeight * 0.78, 400)}px 0px`,
             },
         );
 

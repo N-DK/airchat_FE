@@ -351,7 +351,7 @@ function PostContent({ item, contentsChattingRef }) {
     useEffect(() => {
         if (
             isVisible &&
-            document.getElementById(`post-item-profile-${data?.id}`) &&
+            document.getElementById(`post-item-content-${data?.id}`) &&
             (data?.video && data?.video != '0'
                 ? videoRef?.current
                 : data?.audio)
@@ -376,7 +376,7 @@ function PostContent({ item, contentsChattingRef }) {
                           })
                         : null,
                     element: document.getElementById(
-                        `post-item-profile-${data?.id}`,
+                        `post-item-content-${data?.id}`,
                     ),
                     parent: contentsChattingRef?.current,
                     video: videoRef.current,
@@ -436,7 +436,7 @@ function PostContent({ item, contentsChattingRef }) {
                             isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
                         }`}
                     >
-                        <div id={`post-item-profile-${data?.id}`}>
+                        <div id={`post-item-content-${data?.id}`}>
                             <div className="absolute top-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
                                 <FaRegStar className="text-white" />
                                 <label
@@ -520,7 +520,11 @@ function PostContent({ item, contentsChattingRef }) {
                                             src={
                                                 file
                                                     ? convertObjectURL(file)
-                                                    : `https://talkie.transtechvietnam.com/${data.img}`
+                                                    : data?.img.startsWith(
+                                                          'blob:',
+                                                      )
+                                                    ? data?.img
+                                                    : `https://talkie.transtechvietnam.com/${data?.img}`
                                             }
                                         />
                                         {(loadingUpload ||

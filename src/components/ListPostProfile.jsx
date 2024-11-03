@@ -60,12 +60,14 @@ const ListPostProfile = ({
                         contentsChattingRef={contentsChattingRef}
                     />
                 ))}
-            <ListPostItems
-                postsList={listPost}
-                isTurnOnCamera={isTurnOnCamera}
-                contentsChattingRef={contentsChattingRef}
-                setPostList={setListPost}
-            />
+            {listPost?.length > 0 && (
+                <ListPostItems
+                    postsList={listPost}
+                    isTurnOnCamera={isTurnOnCamera}
+                    contentsChattingRef={contentsChattingRef}
+                    setPostList={setListPost}
+                />
+            )}
         </>
     );
 };

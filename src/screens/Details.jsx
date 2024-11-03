@@ -220,7 +220,7 @@ export default function Details() {
     useEffect(() => {
         if (
             isVisible &&
-            document.getElementById(`post-item-reply-${data?.id}`) &&
+            document.getElementById(`post-item-details-${data?.id}`) &&
             (data?.video && data?.video != '0'
                 ? videoRef?.current
                 : data?.audio)
@@ -243,7 +243,7 @@ export default function Details() {
                           })
                         : null,
                     element: document.getElementById(
-                        `post-item-reply-${data?.id}`,
+                        `post-item-details-${data?.id}`,
                     ),
                     parent: contentsChattingRef?.current,
                     video: videoRef.current,
@@ -516,9 +516,11 @@ export default function Details() {
                         }`}
                     >
                         <div
-                            id={`post-item-reply-${data?.id}`}
+                            id={`post-item-details-${data?.id}`}
                             onTouchStart={() =>
-                                handleTouchStart(`post-item-reply-${data?.id}`)
+                                handleTouchStart(
+                                    `post-item-details-${data?.id}`,
+                                )
                             }
                             onTouchEnd={handleTouchEnd}
                         >

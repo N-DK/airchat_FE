@@ -260,6 +260,7 @@ export default function FooterChat({
     };
 
     const handleAudioPlayback = async (object) => {
+        dispatch(setObjectVideoCurrent(videoCurrent));
         if (audioCurrent && audioCurrent.playing()) {
             await new Promise((resolve) => {
                 audioCurrent.once('pause', () => {
@@ -268,6 +269,7 @@ export default function FooterChat({
                 audioCurrent?.pause();
             });
         }
+
         const audio = object?.audio;
         if (audio) {
             audio.volume(1);
@@ -285,6 +287,7 @@ export default function FooterChat({
     };
 
     const handleVideoPlayback = async (object) => {
+        dispatch(setObjectAudioCurrent(audioCurrent));
         if (videoCurrent && !videoCurrent.paused) {
             await new Promise((resolve) => {
                 videoCurrent.onpause = () => {
@@ -293,6 +296,7 @@ export default function FooterChat({
                 videoCurrent.pause();
             });
         }
+
         const video = object?.video;
         if (video) {
             video.controls = false;
@@ -461,18 +465,38 @@ export default function FooterChat({
                 if (object?.audio) {
                     if (object?.audio?._src === audioCurrent?._src) {
                         if (!audioCurrent.playing()) {
-                            audioCurrent.play();
+                            if (videoCurrent && !videoCurrent?.paused) {
+                                await new Promise((resolve) => {
+                                    videoCurrent.onpause = () => {
+                                        resolve();
+                                    };
+                                    videoCurrent?.pause();
+                                });
+                            }
+                            audioCurrent?.play();
                         }
                     } else {
-                        await handleAudioPlayback(object);
+                        setTimeout(async () => {
+                            await handleAudioPlayback(object);
+                        }, 500);
                     }
                 } else if (object?.video) {
-                    if (object?.video.src === videoCurrent.src) {
+                    if (object?.video === videoCurrent) {
                         if (videoCurrent?.paused) {
+                            if (audioCurrent && audioCurrent?.playing()) {
+                                await new Promise((resolve) => {
+                                    audioCurrent?.once('pause', () => {
+                                        resolve();
+                                    });
+                                    audioCurrent?.pause();
+                                });
+                            }
                             videoCurrent?.play();
                         }
                     } else {
-                        await handleVideoPlayback(object);
+                        setTimeout(async () => {
+                            await handleVideoPlayback(object);
+                        }, 500);
                     }
                 } else {
                     handleScroll(object);

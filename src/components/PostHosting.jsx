@@ -522,7 +522,11 @@ function PostHosting({
                                     src={
                                         file
                                             ? convertObjectURL(file)
-                                            : `https://talkie.transtechvietnam.com/${data.img}`
+                                            : data?.img instanceof File
+                                            ? URL.createObjectURL(data?.img)
+                                            : data?.img?.startsWith('blob:')
+                                            ? data?.img
+                                            : `https://talkie.transtechvietnam.com/${data?.img}`
                                     }
                                 />
                                 {(loadingUpload || loadingDeletePhoto) && (

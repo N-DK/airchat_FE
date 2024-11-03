@@ -204,7 +204,10 @@ function PostItem({
             } else if (newPost?.id && !newPost?.reply_post) {
                 setList((prev) => {
                     if (!prev.some((post) => post?.id === newPost?.id)) {
-                        const newPosts = [newPost, ...prev];
+                        const newPosts = [
+                            { ...newPost, img: convertObjectURL(newPost?.img) },
+                            ...prev,
+                        ];
                         return newPosts;
                     }
 

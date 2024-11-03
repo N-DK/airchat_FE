@@ -194,6 +194,10 @@ export default function Profile() {
         [dispatch],
     );
 
+    const convertObjectURL = (selectedFile) => {
+        return selectedFile ? URL.createObjectURL(selectedFile) : null;
+    };
+
     const groupPostById = (list) => {
         if (!list) return [];
 
@@ -322,7 +326,10 @@ export default function Profile() {
         if (newPost && newPost?.id) {
             setListPostUserProfile((prev) => {
                 if (!prev.some((post) => post.id === newPost.id)) {
-                    const newPosts = [newPost, ...prev];
+                    const newPosts = [
+                        { ...newPost, img: convertObjectURL(newPost.img) },
+                        ...prev,
+                    ];
                     return newPosts;
                 }
                 return prev;
