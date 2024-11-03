@@ -474,7 +474,11 @@ export const userSharePostReducer = (state = {}, action) => {
         case USER_SHARE_POST_REQUEST:
             return { loading: true };
         case USER_SHARE_POST_SUCCESS:
-            return { loading: false, isSuccess: true };
+            return {
+                loading: false,
+                isSuccess: action.payload,
+                post_id: action.post_id,
+            };
         case USER_SHARE_POST_FAIL:
             return { loading: false, error: action.payload };
         default:

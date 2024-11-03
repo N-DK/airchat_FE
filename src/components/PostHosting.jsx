@@ -71,6 +71,7 @@ const PostActions = ({ item, position, handleLike }) => {
     const [isHeart, setIsHeart] = useState(!!item.heart);
     const [likeCount, setLikeCount] = useState(item?.number_heart || 0);
     const [data, setData] = useState(item);
+    const [initialLoad, setInitialLoad] = useState(true);
 
     useEffect(() => {
         setIsHeart(!!data.heart);
@@ -88,21 +89,26 @@ const PostActions = ({ item, position, handleLike }) => {
         callback();
     };
 
+    useEffect(() => {
+        if (!isHeart) setInitialLoad(false);
+    }, [isHeart]);
     return (
         <div
             className={`absolute items-center bottom-[-22px] ${
                 position === 'right' ? 'right-0' : 'left-0'
             } border-[5px] border-grayPrimary dark:border-darkPrimary flex gap-4 bg-slatePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
         >
-            <div
-                onClick={handleLike}
-                className="flex items-center dark:text-white"
-            >
-                {isHeart ? (
-                    <FaHeart className="text-red-500" />
-                ) : (
-                    <FaRegHeart />
-                )}
+            <div className={`flex items-center text-gray-400`}>
+                <button
+                    onClick={handleLike}
+                    className={`btn heart ${
+                        isHeart
+                            ? initialLoad
+                                ? 'initial-active'
+                                : 'active'
+                            : ''
+                    } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
+                ></button>
                 <span className="ml-2 text-sm font-medium">{likeCount}</span>
             </div>
             {/* <div className="flex items-center dark:text-white">
@@ -182,6 +188,7 @@ function PostHosting({
     const [rect, setRect] = useState(null);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [currentItemId, setCurrentItemId] = useState(null);
+    const [initialLoad, setInitialLoad] = useState(true);
     const { loading: loadingUpload, success } = useSelector(
         (state) => state.postUploadImage,
     );
@@ -393,6 +400,10 @@ function PostHosting({
     }, [isVisible]);
 
     useEffect(() => {
+        if (!isBookMark) setInitialLoad(false);
+    }, [isBookMark]);
+
+    useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());
     }, [targetElement]);
 
@@ -417,17 +428,24 @@ function PostHosting({
                         } border-[5px] border-grayPrimary dark:border-darkPrimary flex items-center gap-4 bg-slatePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
                     >
                         <FaRegStar className="dark:text-white" />
-                        {isBookMark ? (
-                            <FaBookmark
-                                className="text-purple-700 text-[0.9rem]"
-                                onClick={handleBookMark}
-                            />
-                        ) : (
-                            <FaRegBookmark
-                                className="dark:text-white text-[0.9rem]"
-                                onClick={handleBookMark}
-                            />
-                        )}
+                        <label
+                            className={`ui-bookmark  ${
+                                isBookMark
+                                    ? initialLoad
+                                        ? 'init-active'
+                                        : 'active'
+                                    : ''
+                            }`}
+                            onClick={handleBookMark}
+                        >
+                            <div className="bookmark">
+                                <svg viewBox="0 0 32 32">
+                                    <g>
+                                        <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </label>
                         <RiDeleteBin6Line
                             onClick={() => {
                                 setIsOpen(true);
@@ -437,13 +455,6 @@ function PostHosting({
                     </div>
                     <div onClick={() => handleNavigate(data)}>
                         <PostHeader item={data} position={position} />
-                        <p
-                            className={`text-left line-clamp-5 md:text-lg dark:text-white ${
-                                position === 'left' ? 'text-right' : 'text-left'
-                            }`}
-                        >
-                            {data.content}
-                        </p>
                         {(data?.tag_user || tagsUser?.length > 0) && (
                             <div className="flex flex-wrap">
                                 {tagsUser?.map((tag, i) => (
@@ -456,6 +467,18 @@ function PostHosting({
                                 ))}
                             </div>
                         )}
+                        <p
+                            className={`text-left ${
+                                window.location.pathname.includes('details')
+                                    ? ''
+                                    : 'line-clamp-5'
+                            } md:text-lg dark:text-white ${
+                                position === 'left' ? 'text-right' : 'text-left'
+                            }`}
+                        >
+                            {data.content}
+                        </p>
+
                         {(data?.img || file) && (
                             <figure
                                 onTouchStart={(e) => {

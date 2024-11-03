@@ -40,6 +40,7 @@ import ModalDelete from './ModalDelete';
 import PostHosting from './PostHosting';
 import { Howl } from 'howler';
 import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
+import SpeakingAnimation from './SpeakingAnimation';
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 function MessageItem({
@@ -67,6 +68,8 @@ function MessageItem({
 
     const [targetElement, setTargetElement] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
+    const [initialLoadBookMark, setInitialLoadBookMark] = useState(true);
+
     const { userInfo } = useSelector((state) => state.userProfile);
     const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const { language } = useSelector((state) => state.userLanguage);
@@ -126,6 +129,10 @@ function MessageItem({
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);
     }, [isHeart]);
+
+    useEffect(() => {
+        if (!isBookMark) setInitialLoadBookMark(false);
+    }, [isBookMark]);
 
     useEffect(() => {
         if (!userInfo) dispatch(profile());
@@ -340,8 +347,8 @@ function MessageItem({
                                 <Link
                                     to={
                                         data?.user_id === userInfo?.id
-                                            ? '/profile'
-                                            : `/profile/${data?.user_id}`
+                                            ? '/profile/posts'
+                                            : `/profile/${data?.user_id}/posts`
                                     }
                                 >
                                     {data?.video && isVisible && isRunAuto ? (
@@ -379,7 +386,7 @@ function MessageItem({
                                             />
                                         )}
                                 </div>
-                                <div
+                                {/* <div
                                     className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
                                         isVisible && isRunAuto && data?.video
                                             ? 'h-16 w-16'
@@ -389,7 +396,18 @@ function MessageItem({
                                             ? 'animate-ping'
                                             : ''
                                     }`}
-                                ></div>
+                                ></div> */}
+                                <div
+                                    className={`md:h-12 ${
+                                        isVisible && isRunAuto && data?.video
+                                            ? 'h-16 w-16'
+                                            : 'w-10 h-10'
+                                    }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                                >
+                                    {isVisible && isRunAuto && (
+                                        <SpeakingAnimation />
+                                    )}
+                                </div>
                             </div>
                             {userInfo?.id === data?.user_id ? (
                                 <PostHosting
@@ -523,13 +541,34 @@ function MessageItem({
                                                 {shareCount}
                                             </span>
                                         </div>
-                                        {isBookMark && (
+                                        {/* {isBookMark && (
                                             <div
                                                 onClick={handleBookMark}
                                                 className={`flex items-center text-gray-400`}
                                             >
                                                 <FaBookmark className="text-purple-700 text-[0.9rem]" />
                                             </div>
+                                        )} */}
+
+                                        {isBookMark && (
+                                            <label
+                                                className={`ui-bookmark  ${
+                                                    isBookMark
+                                                        ? initialLoadBookMark
+                                                            ? 'init-active'
+                                                            : 'active'
+                                                        : ''
+                                                }`}
+                                                onClick={handleBookMark}
+                                            >
+                                                <div className="bookmark">
+                                                    <svg viewBox="0 0 32 32">
+                                                        <g>
+                                                            <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z"></path>
+                                                        </g>
+                                                    </svg>
+                                                </div>
+                                            </label>
                                         )}
                                         <div
                                             className={`flex items-center text-gray-400`}

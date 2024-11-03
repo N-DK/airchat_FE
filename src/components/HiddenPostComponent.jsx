@@ -86,8 +86,8 @@ function HiddenPostComponent({
                 <Link
                     to={
                         data?.user_id === userInfo?.id
-                            ? '/profile'
-                            : `/profile/${data?.user_id}`
+                            ? '/profile/posts'
+                            : `/profile/${data?.user_id}/posts`
                     }
                 >
                     <Avatar

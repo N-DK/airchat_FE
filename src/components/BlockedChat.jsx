@@ -55,7 +55,7 @@ function BlockedChat({ user, isBlockYou }) {
                     {!isBlockYou
                         ? LANGUAGE[language].YOU_HAVE_BLOCKED
                         : LANGUAGE[language].YOU_HAVE_BEEN_BLOCKED}{' '}
-                    {user?.user_name || 'this user'}
+                    {user?.username || 'this user'}
                 </p>
                 <p className="text-sm text-gray-500 text-center mb-2">
                     {LANGUAGE[language].YOU_CANNOT_MESSAGE}

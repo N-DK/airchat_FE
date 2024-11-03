@@ -233,3 +233,437 @@ body {
         transform: translate(-50%, -50%) rotate(360deg);
     }
 }
+
+/* bookmark */
+.ui-bookmark {
+    --icon-size: 16px;
+    --icon-secondary-color: rgb(173 184 193);
+    --icon-hover-color: rgb(173 184 193);
+    --icon-primary-color: gold;
+    --icon-circle-border: 1px solid var(--icon-primary-color);
+    --icon-circle-size: 35px;
+    --icon-anmt-duration: 0.3s;
+}
+
+.ui-bookmark input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: none;
+}
+
+.ui-bookmark .bookmark {
+    width: var(--icon-size);
+    height: auto;
+    fill: var(--icon-secondary-color);
+    cursor: pointer;
+    -webkit-transition: 0.2s;
+    -o-transition: 0.2s;
+    transition: 0.2s;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    position: relative;
+    -webkit-transform-origin: top;
+    -ms-transform-origin: top;
+    transform-origin: top;
+}
+
+.bookmark::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    -webkit-box-shadow: 0 30px 0 -4px var(--icon-primary-color),
+        30px 0 0 -4px var(--icon-primary-color),
+        0 -30px 0 -4px var(--icon-primary-color),
+        -30px 0 0 -4px var(--icon-primary-color),
+        -22px 22px 0 -4px var(--icon-primary-color),
+        -22px -22px 0 -4px var(--icon-primary-color),
+        22px -22px 0 -4px var(--icon-primary-color),
+        22px 22px 0 -4px var(--icon-primary-color);
+    box-shadow: 0 30px 0 -4px var(--icon-primary-color),
+        30px 0 0 -4px var(--icon-primary-color),
+        0 -30px 0 -4px var(--icon-primary-color),
+        -30px 0 0 -4px var(--icon-primary-color),
+        -22px 22px 0 -4px var(--icon-primary-color),
+        -22px -22px 0 -4px var(--icon-primary-color),
+        22px -22px 0 -4px var(--icon-primary-color),
+        22px 22px 0 -4px var(--icon-primary-color);
+    border-radius: 50%;
+    -webkit-transform: scale(0);
+    -ms-transform: scale(0);
+    transform: scale(0);
+}
+
+.bookmark::before {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    border: var(--icon-circle-border);
+    opacity: 0;
+}
+
+.ui-bookmark:hover .bookmark {
+    fill: var(--icon-hover-color);
+}
+
+.ui-bookmark.active .bookmark::after {
+    -webkit-animation: circles var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: circles var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    -webkit-animation-delay: var(--icon-anmt-duration);
+    animation-delay: var(--icon-anmt-duration);
+}
+
+.ui-bookmark.active .bookmark {
+    fill: var(--icon-primary-color);
+    -webkit-animation: bookmark var(--icon-anmt-duration) forwards;
+    animation: bookmark var(--icon-anmt-duration) forwards;
+    -webkit-transition-delay: 0.3s;
+    -o-transition-delay: 0.3s;
+    transition-delay: 0.3s;
+}
+
+.ui-bookmark.active .bookmark::before {
+    -webkit-animation: circle var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: circle var(--icon-anmt-duration)
+        cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    -webkit-animation-delay: var(--icon-anmt-duration);
+    animation-delay: var(--icon-anmt-duration);
+}
+
+.ui-bookmark.init-active .bookmark {
+    fill: var(--icon-primary-color); /* Giữ màu sắc trong trạng thái active */
+    /* Không cần animation khi đã ở trạng thái init-active */
+    transition: none; /* Hoặc có thể để lại nếu bạn muốn hiệu ứng chuyển tiếp khác */
+}
+
+.ui-bookmark.init-active .bookmark::after {
+    /* Bỏ hiệu ứng animation vì đã hoàn thành */
+    content: ''; /* Giữ content nếu cần */
+    /* Nếu cần thêm các thuộc tính khác, bạn có thể thêm vào đây */
+}
+
+.ui-bookmark.init-active .bookmark::before {
+    /* Bỏ hiệu ứng animation vì đã hoàn thành */
+    content: ''; /* Giữ content nếu cần */
+    /* Nếu cần thêm các thuộc tính khác, bạn có thể thêm vào đây */
+}
+
+@-webkit-keyframes bookmark {
+    50% {
+        -webkit-transform: scaleY(0.6);
+        transform: scaleY(0.6);
+    }
+
+    100% {
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+}
+
+@keyframes bookmark {
+    50% {
+        -webkit-transform: scaleY(0.6);
+        transform: scaleY(0.6);
+    }
+
+    100% {
+        -webkit-transform: scaleY(1);
+        transform: scaleY(1);
+    }
+}
+
+@-webkit-keyframes circle {
+    from {
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    90% {
+        width: var(--icon-circle-size);
+        height: var(--icon-circle-size);
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes circle {
+    from {
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+
+    90% {
+        width: var(--icon-circle-size);
+        height: var(--icon-circle-size);
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@-webkit-keyframes circles {
+    from {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    to {
+        -webkit-transform: scale(0.8);
+        transform: scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes circles {
+    from {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    to {
+        -webkit-transform: scale(0.8);
+        transform: scale(0.8);
+        opacity: 0;
+    }
+}
+
+/* From Uiverse.io by Shoh2008 */
+.loader {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    position: relative;
+}
+
+.loader .circle1,
+.loader .circle2,
+.loader .circle3,
+.loader .circle4,
+.loader .circle5,
+.loader .circle6,
+.loader .circle7,
+.loader .circle8,
+.loader .circle9,
+.loader .circle10 {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    border-radius: 50%;
+    transform: translate(-50%, 0%);
+}
+
+.loader .circle1 {
+    background: #ff5733;
+    animation: push_402 1s infinite linear;
+    animation-delay: 0.5s;
+}
+
+.loader .circle2 {
+    background: #33ff57;
+    animation: push_403 1s infinite linear;
+    animation-delay: 1.5s;
+}
+
+.loader .circle3 {
+    background: #3357ff;
+    animation: push_404 1s infinite linear;
+    animation-delay: 2s;
+}
+
+.loader .circle4 {
+    background: #ff33a1;
+    animation: push_405 1s infinite linear;
+    animation-delay: 1.2s;
+}
+
+.loader .circle5 {
+    animation: push_401 1s infinite linear;
+    background: #ffff33;
+    animation-delay: 0.5s;
+}
+
+.loader .circle5 {
+    animation: push_401 1s infinite linear;
+    background: #ff5733;
+    animation-delay: 0.5s;
+}
+.loader .circle6 {
+    background: #33ffd7;
+    animation: push_406 1s infinite linear;
+    background: #33ffd7;
+    animation-delay: 1.9s;
+}
+.loader .circle7 {
+    animation: push_407 1s infinite linear;
+    background: #ff9933;
+    animation-delay: 1.7s;
+}
+.loader .circle8 {
+    animation: push_408 1s infinite linear;
+    background: #9933ff;
+    animation-delay: 1.4s;
+}
+
+.loader .circle9 {
+    animation: push_409 1s infinite linear;
+    background: #33ff99;
+    animation-delay: 1.3s;
+}
+.loader .circle10 {
+    animation: push_410 1s infinite linear;
+    background: #ffd700; /* Màu vàng */
+    animation-delay: 1.5s;
+}
+
+@keyframes push_401 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(-50%, -70%) scale(0);
+    }
+}
+
+@keyframes push_402 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(20%, 0%) scale(0);
+    }
+}
+
+@keyframes push_403 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(-120%, -40%) scale(0);
+    }
+}
+
+@keyframes push_404 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(30%, 50%) scale(0);
+    }
+}
+
+@keyframes push_405 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(-100%, 60%) scale(0);
+    }
+}
+
+@keyframes push_406 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(0%, 70%) scale(0);
+    }
+}
+@keyframes push_407 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(-150%, -40%) scale(0);
+    }
+}
+@keyframes push_408 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(-50%, 100%) scale(0);
+    }
+}
+@keyframes push_409 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(10%, -60%) scale(0);
+    }
+}
+@keyframes push_410 {
+    0%,
+    50% {
+        transform: translate(-50%, 0%) scale(1);
+    }
+    100% {
+        transform: translate(-70%, -70%) scale(0);
+    }
+}
+
+.animation-surf-left {
+    animation: surf-left 0.5s ease-out;
+}
+
+.animation-flex {
+    animation: animation-flex 0.5s ease-out;
+}
+
+@keyframes surf-left {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes animation-flex {
+    from {
+        flex: 0;
+        opacity: 0;
+    }
+    to {
+        flex: 1;
+        opacity: 1;
+    }
+}

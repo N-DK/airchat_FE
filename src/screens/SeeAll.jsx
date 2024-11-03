@@ -164,10 +164,16 @@ export default function SeeAll() {
                     </div>
                 ) : (
                     <div className="mx-5">
-                        <div className="mt-8">
-                            <h5 className="font-bold text-black dark:text-white">
-                                {LANGUAGE[language].HOSTING}
-                            </h5>
+                        <div
+                            className={`${
+                                channels?.hosting?.length > 0 ? 'mt-8' : ''
+                            }`}
+                        >
+                            {channels?.hosting?.length > 0 && (
+                                <h5 className="font-bold text-black dark:text-white">
+                                    {LANGUAGE[language].HOSTING}
+                                </h5>
+                            )}
                             {loading ? (
                                 <LoaderSkeletonChannels />
                             ) : (
@@ -176,10 +182,16 @@ export default function SeeAll() {
                                 </div>
                             )}
                         </div>
-                        <div className="mt-8">
-                            <h5 className="font-bold text-black dark:text-white">
-                                {LANGUAGE[language].RECENTLY_ACTIVE}
-                            </h5>
+                        <div
+                            className={`${
+                                channels?.recent?.length > 0 ? 'mt-8' : ''
+                            }`}
+                        >
+                            {channels?.recent?.length > 0 && (
+                                <h5 className="font-bold text-black dark:text-white">
+                                    {LANGUAGE[language].RECENTLY_ACTIVE}
+                                </h5>
+                            )}
                             {loading ? (
                                 <LoaderSkeletonChannels />
                             ) : (
@@ -188,10 +200,16 @@ export default function SeeAll() {
                                 </div>
                             )}
                         </div>
-                        <div className="mt-8">
-                            <h5 className="font-bold text-black dark:text-white">
-                                {LANGUAGE[language].TRENDING}
-                            </h5>
+                        <div
+                            className={`${
+                                channels?.trending?.length > 0 ? 'mt-8' : ''
+                            }`}
+                        >
+                            {channels?.trending?.length > 0 && (
+                                <h5 className="font-bold text-black dark:text-white">
+                                    {LANGUAGE[language].TRENDING}
+                                </h5>
+                            )}
                             {loading ? (
                                 <LoaderSkeletonChannels />
                             ) : (
@@ -204,7 +222,7 @@ export default function SeeAll() {
                 )}
             </div>
 
-            <FooterChat title="" isSwiping={false} isPlay={false} />
+            <FooterChat title="" isSwiping={false} isPlay={true} />
         </div>
     );
 }

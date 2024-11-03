@@ -94,11 +94,11 @@ function App() {
                             element={<PrivateRouter comp={ChatRoom} />}
                         />
                         <Route
-                            path="/profile"
+                            path="/profile/:slug"
                             element={<PrivateRouter comp={Profile} />}
                         />
                         <Route
-                            path="/profile/:stranger_id"
+                            path="/profile/:stranger_id/:slug"
                             element={<PrivateRouter comp={Profile} />}
                         />
                         <Route

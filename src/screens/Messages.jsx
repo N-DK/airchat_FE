@@ -149,7 +149,7 @@ export default function Messages() {
                                 message?.receiver_id === userInfo?.id
                                     ? message?.sender_avatar
                                     : message?.receiver_avatar,
-                            user_name:
+                            username:
                                 message?.receiver_id === userInfo?.id
                                     ? message?.sender_name
                                     : message?.receiver_name,

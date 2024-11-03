@@ -19,7 +19,9 @@ export const PeopleCircle = ({ data, isAddRecentSearch = false }) => {
         }
         const profileId = data?.id || data?.user_id;
         const isOwnProfile = profileId === userInfo?.id;
-        const profilePath = isOwnProfile ? '/profile' : `/profile/${profileId}`;
+        const profilePath = isOwnProfile
+            ? '/profile/posts'
+            : `/profile/${profileId}/posts`;
         navigate(profilePath);
     };
 

@@ -6,6 +6,7 @@ import { IoCloseCircleOutline } from 'react-icons/io5';
 
 const LinkPreviewComponent = ({ post_id, url, setData, dataUrl, setUrl }) => {
     const [preview, setPreview] = useState(null);
+    const { userInfo } = useSelector((state) => state.userProfile);
     const dispatch = useDispatch();
     useEffect(() => {
         const fetchLinkPreview = async (url) => {
@@ -49,6 +50,7 @@ const LinkPreviewComponent = ({ post_id, url, setData, dataUrl, setUrl }) => {
                             {preview.description}
                         </p>
                     </div>
+                    {/* sửa lại logic */}
                     {window.location.pathname === '/profile' && (
                         <button
                             className="absolute top-3 right-3 p-1 dark:text-white text-white"

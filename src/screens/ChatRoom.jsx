@@ -471,7 +471,7 @@ const ChatRoom = () => {
                     </div>
                 </div>
             </div>
-            <RecordModal handle={sendNewMessage} />
+            <RecordModal handle={sendNewMessage} to={state?.user?.username} />
             <div
                 onClick={() => {
                     if (isRecord) toggleIsRecord();

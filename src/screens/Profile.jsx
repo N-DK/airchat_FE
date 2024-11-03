@@ -45,7 +45,7 @@ import DrawerFollower from '../components/DrawerFollower';
 import Webcam from 'react-webcam';
 import { BsEmojiFrown } from 'react-icons/bs';
 import { LANGUAGE } from '../constants/language.constant';
-import { debounce, isArray } from 'lodash';
+import { debounce, isArray, set } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import ScreenFull from '../components/ScreenFull';
 import {
@@ -83,7 +83,8 @@ const ACTIONS = [
 ];
 
 export default function Profile() {
-    const [showActions, setShowActions] = useState('posts');
+    const { stranger_id, slug } = useParams();
+    const [showActions, setShowActions] = useState(slug);
     const [userInfo, setUserInfo] = useState(null);
     const [listPostUserProfile, setListPostUserProfile] = useState([]);
     const [typeDrawer, setTypeDrawer] = useState(null);
@@ -92,7 +93,6 @@ export default function Profile() {
     const refProfile = useRef(null);
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { stranger_id } = useParams();
 
     const {
         isEditProfile,
@@ -125,8 +125,6 @@ export default function Profile() {
     const userBlock = useSelector((state) => state.userBlock);
     const userMute = useSelector((state) => state.userMute);
     const userDeletePost = useSelector((state) => state.userDeletePost);
-    const userBookMark = useSelector((state) => state.userBookMark);
-    const userSharePost = useSelector((state) => state.userSharePost);
 
     const { success: isSuccessDeletePost, post_id: postIdDelete } =
         userDeletePost;
@@ -144,8 +142,6 @@ export default function Profile() {
     const { mute: mutes } = userListMute;
     const { isSuccess: isSuccessBlock } = userBlock;
     const { isSuccess: isSuccessMute } = userMute;
-    const { success: isSuccessBookmark } = userBookMark;
-    const { isSuccess: isSuccessShare } = userSharePost;
     const { post } = useSelector((state) => state.setPostActive);
     const { language } = useSelector((state) => state.userLanguage);
     const divRef = useRef(null);
@@ -156,7 +152,6 @@ export default function Profile() {
     const modalHandle = () => {
         if (isEditProfile) toggleIsEditProfile();
         if (isRecord) toggleIsRecord();
-        // if (showDrawerFollow) toggleShowDrawerFollow();
     };
 
     const isFollowing = useCallback(() => {
@@ -223,6 +218,10 @@ export default function Profile() {
 
         return Array.from(groupedPosts.values());
     };
+
+    useEffect(() => {
+        setShowActions(slug);
+    }, [slug]);
 
     useEffect(() => {
         if (showDrawerFollow) toggleShowDrawerFollow();
@@ -390,17 +389,17 @@ export default function Profile() {
         fetchPosts();
     }, [showActions, stranger_id, dispatch]);
 
-    useEffect(() => {
-        if (isSuccessBookmark && showActions === 'bookmarks') {
-            dispatch(listPostProfile('bookmarks', 100, 0));
-        }
-    }, [isSuccessBookmark, dispatch, showActions]);
+    // useEffect(() => {
+    //     if (isSuccessBookmark && showActions === 'bookmarks') {
+    //         dispatch(listPostProfile('bookmarks', 100, 0));
+    //     }
+    // }, [isSuccessBookmark, dispatch, showActions]);
 
-    useEffect(() => {
-        if (isSuccessShare && showActions === 'posts') {
-            dispatch(listPostProfile('posts', 100, 0));
-        }
-    }, [isSuccessShare, dispatch, showActions]);
+    // useEffect(() => {
+    //     if (isSuccessShare && showActions === 'posts') {
+    //         // dispatch(listPostProfile('posts', 100, 0));
+    //     }
+    // }, [isSuccessShare, dispatch, showActions]);
 
     const renderActionButtons = () => (
         <div className="flex gap-3 text-black dark:text-white">
@@ -456,7 +455,8 @@ export default function Profile() {
                 />
             ) : (
                 <ListPostProfile
-                    list={listPostUserProfile}
+                    listProfile={listPostUserProfile}
+                    setListProfile={setListPostUserProfile}
                     userInfo={userInfo}
                     contentsChattingRef={refProfile}
                     isTurnOnCamera={isTurnOnCameraReply}
@@ -668,7 +668,13 @@ export default function Profile() {
                                 stranger_id ? item.id !== 'bookmarks' : true,
                             ).map((item) => (
                                 <button
-                                    onClick={() => setShowActions(item.id)}
+                                    onClick={() =>
+                                        navigate(
+                                            stranger_id
+                                                ? `/profile/${stranger_id}/${item.id}`
+                                                : `/profile/${item.id}`,
+                                        )
+                                    }
                                     key={item.id}
                                     className={`min-w-14 border-b-[3px] ${
                                         showActions === item.id
@@ -763,7 +769,9 @@ export default function Profile() {
 
                 <EditProfile />
                 <RecordModal />
-                {isFullScreen && <ScreenFull postsList={listPostUserProfile} />}
+                {isFullScreen && (
+                    <ScreenFull postsList={listPostUserProfile ?? []} />
+                )}
                 <InviteFriend />
                 <DrawerFollower
                     userInfo={userInfo}

@@ -137,7 +137,18 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                                 onClick={handleDropdown}
                                 className="relative"
                             >
-                                <FaChevronDown className="dark:text-white" />
+                                <FaChevronDown
+                                    className={
+                                        item.key.includes('group-channel')
+                                            ? title ===
+                                              `${item.key}/${item.channel_id}`
+                                                ? 'text-white'
+                                                : 'text-black dark:text-gray-400'
+                                            : title === item.key
+                                            ? 'text-white'
+                                            : 'text-black dark:text-gray-400'
+                                    }
+                                />
                             </MenuButton>
 
                             {item.key === 'group-channel' && (
@@ -203,16 +214,9 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
             } transition-all duration-500`}
         >
             <div className="text-black dark:text-white flex justify-between pt-12 px-6 md:px-10">
-                <button onClick={() => navigate('/profile')}>
+                <button onClick={() => navigate('/profile/posts')}>
                     <FaRegUser className="text-xl md:text-2xl" />
                 </button>
-                {/* <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://webrtc.github.io/samples/"
-                >
-                    
-                </a> */}
                 <div>
                     <img src={talkieLogo} className="w-9" alt="Talkie Logo" />
                 </div>

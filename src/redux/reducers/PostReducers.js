@@ -141,6 +141,7 @@ export const bookMarkReducer = (state = {}, action) => {
             return {
                 loading: false,
                 success: action.payload,
+                post_id: action.post_id,
             };
         case POST_BOOKMARK_FAIL:
             return { loading: false, error: action.payload };

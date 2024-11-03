@@ -15,7 +15,7 @@ const NotificationItem = ({ item }) => {
     const navigate = useNavigate();
     const handleNavigate = () => {
         if (item?.post_id === 0) {
-            navigate(`/profile/${item?.stranger_id}`);
+            navigate(`/profile/${item?.stranger_id}/posts`);
         } else {
             navigate(`/posts/details/${item?.post_id}`);
         }
@@ -69,6 +69,7 @@ export default function Notifications() {
     const [listMentions, setListMentions] = useState([]);
     const [listFollowing, setListFollowing] = useState([]);
     const [listAll, setListAll] = useState([]);
+    const [wait, setWait] = useState(true);
     const { language } = useSelector((state) => state.userLanguage);
     const actions = [
         {
@@ -121,6 +122,7 @@ export default function Notifications() {
             setListFollowing(notification);
         } else if (notification) {
             setListAll(notification);
+            setWait(false);
         }
     }, [notification, key]);
 
@@ -130,7 +132,7 @@ export default function Notifications() {
                 <div className="relative mb-8 pt-12 px-6">
                     <div className="relative">
                         <button
-                            onClick={() => navigate('/profile')}
+                            onClick={() => navigate('/profile/posts')}
                             className="absolute top-1/2 -translate-y-1/2 left-0 dark:text-white"
                         >
                             <FaRegUser className="text-xl md:text-2xl" />
@@ -170,13 +172,13 @@ export default function Notifications() {
             </div>
             <div className="relative flex flex-col justify-between h-screen overflow-auto scrollbar-none ">
                 <div className="absolute w-full left-0 top-[150px] pb-[200px] min-h-full overflow-hidden flex justify-center dark:bg-dark2Primary bg-slatePrimary">
-                    {loading ? (
+                    {loading || wait ? (
                         <LoaderSkeletonNotificationItem />
                     ) : (
                         <div className="w-full">
                             {showActions === 1 && (
                                 <div className="w-full">
-                                    {listAll.length === 0 ? (
+                                    {listAll?.length === 0 ? (
                                         <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
                                             <h5>
                                                 {

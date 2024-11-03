@@ -43,7 +43,7 @@ const NotifyText = ({ message, show }) => {
     );
 };
 
-export default function RecordModal({ handle }) {
+export default function RecordModal({ handle, to }) {
     const { isRecord, toggleIsRecord, recordOption } = useContext(AppContext);
     const redirect =
         useLocation().search.split('=')[1] || window.location.pathname;
@@ -207,7 +207,9 @@ export default function RecordModal({ handle }) {
                 const recordRTC = new RecordRTC(streamRecord, {
                     type: recordOption,
                     mimeType:
-                        recordOption === 'video' ? 'video/mp4' : 'audio/mp3',
+                        recordOption === 'video'
+                            ? 'video/mp4'
+                            : 'audio/mp4;codecs=mp4a.40.2',
                 });
                 setStream(streamRecord);
                 setRecorder(recordRTC);
@@ -373,32 +375,6 @@ export default function RecordModal({ handle }) {
         if (isAllow) handleClick();
     }, [isAllow]);
 
-    // useEffect(() => {
-    //     if ('webkitSpeechRecognition' in window) {
-    //         const SpeechRecognition =
-    //             window.SpeechRecognition || window.webkitSpeechRecognition;
-    //         const rec = new SpeechRecognition();
-    //         rec.continuous = true;
-    //         rec.interimResults = true;
-    //         rec.lang = language;
-    //         rec.onresult = (event) => {
-    //             let finalTranscript = '';
-    //             for (let i = event.resultIndex; i < event.results.length; i++) {
-    //                 const transcriptPart = event.results[i][0].transcript;
-    //                 if (event.results[i].isFinal) {
-    //                     finalTranscript += transcriptPart + ' ';
-    //                 } else {
-    //                     finalTranscript += transcriptPart;
-    //                 }
-    //             }
-    //             setRecordContents(finalTranscript);
-    //         };
-    //         setRecognition(rec);
-    //     } else {
-    //         alert('Web Speech API is not supported in your browser. ');
-    //     }
-    // }, []);
-
     useEffect(() => {
         if (!isRecord) {
             setPermission(false);
@@ -433,6 +409,7 @@ export default function RecordModal({ handle }) {
                                 </span>
                                 <span className="text-xl font-semibold">
                                     {post?.name ||
+                                        to ||
                                         getChannelName() ||
                                         'Just Chatting'}
                                 </span>
@@ -526,7 +503,7 @@ export default function RecordModal({ handle }) {
                                     (audio || video) &&
                                     transcript &&
                                     !permission
-                                        ? 'flex-1 opacity-100'
+                                        ? 'animation-flex flex-1 opacity-100'
                                         : 'w-0 opacity-0'
                                 } transition-all flex justify-end duration-500`}
                             >

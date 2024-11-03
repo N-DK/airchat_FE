@@ -86,9 +86,9 @@ export default function PostsChannel() {
     } = useSelector((state) => state.channelPosts);
     const { menus } = useSelector((state) => state.menuBar);
     const { channel } = useSelector((state) => state.channelPin);
-    const { isSuccess: isSuccessFollow } = useSelector(
-        (state) => state.userFollow,
-    );
+    // const { isSuccess: isSuccessFollow } = useSelector(
+    //     (state) => state.userFollow,
+    // );
     const { language } = useSelector((state) => state.userLanguage);
 
     const handleScroll = useCallback(() => {
@@ -240,11 +240,11 @@ export default function PostsChannel() {
         }
     }, [isVisible, contentsChattingRef]);
 
-    useEffect(() => {
-        if (isSuccessFollow) {
-            dispatch(postsChannel(id));
-        }
-    }, [dispatch, id, isSuccessFollow]);
+    // useEffect(() => {
+    //     if (isSuccessFollow) {
+    //         dispatch(postsChannel(id));
+    //     }
+    // }, [dispatch, id, isSuccessFollow]);
 
     const Dropdown = () => {
         return (

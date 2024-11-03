@@ -306,6 +306,7 @@ export const bookMark = (post_id) => async (dispatch, getState) => {
         dispatch({
             type: POST_BOOKMARK_SUCCESS,
             payload: data.results,
+            post_id,
         });
     } catch (error) {
         dispatch({

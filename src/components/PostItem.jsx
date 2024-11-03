@@ -40,6 +40,7 @@ import ModalDelete from './ModalDelete';
 import PostContent from './PostContent';
 import PostHosting from './PostHosting';
 import { Howl, Howler } from 'howler';
+import SpeakingAnimation from './SpeakingAnimation';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -72,6 +73,7 @@ function PostItem({
     const [targetElement, setTargetElement] = useState(null);
     const [data, setData] = useState(item);
     const [initialLoad, setInitialLoad] = useState(true);
+    const [initialLoadBookMark, setInitialLoadBookMark] = useState(true);
     const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const [detailsPostReply, setDetailsPostReply] = useState([]);
     const [rect, setRect] = useState(null);
@@ -138,6 +140,12 @@ function PostItem({
             report: !prev.report,
         }));
     }, [data]);
+
+    useEffect(() => {
+        if (item) {
+            setData(item);
+        }
+    }, [item]);
 
     useEffect(() => {
         if (unReportPostSuccess) {
@@ -265,6 +273,10 @@ function PostItem({
     }, [isHeart]);
 
     useEffect(() => {
+        if (!isBookMark) setInitialLoadBookMark(false);
+    }, [isBookMark]);
+
+    useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());
     }, [targetElement]);
 
@@ -386,8 +398,8 @@ function PostItem({
                             <Link
                                 to={
                                     data?.user_id === userInfo?.id
-                                        ? '/profile'
-                                        : `/profile/${data?.user_id}`
+                                        ? '/profile/posts'
+                                        : `/profile/${data?.user_id}/posts`
                                 }
                             >
                                 {data?.video && isVisible && isRunAuto ? (
@@ -426,14 +438,16 @@ function PostItem({
                                     )}
                             </div>
                             <div
-                                className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
+                                className={`md:h-12 ${
                                     isVisible && isRunAuto && data?.video
                                         ? 'h-16 w-16'
                                         : 'w-10 h-10'
-                                }  md:w-12 rounded-full ${
-                                    isVisible && isRunAuto ? 'animate-ping' : ''
-                                }`}
-                            ></div>
+                                }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                            >
+                                {isVisible && isRunAuto && (
+                                    <SpeakingAnimation />
+                                )}
+                            </div>
                         </div>
                         <div className="flex-1">
                             {userInfo?.id === data?.user_id ? (
@@ -519,9 +533,6 @@ function PostItem({
                                                     .fromNow(true)}
                                             </span>
                                         </div>
-                                        <p className="text-left line-clamp-5 md:text-lg text-black dark:text-white">
-                                            {data?.content}
-                                        </p>
                                         {data?.tag_user_detail && (
                                             <div className="flex flex-wrap">
                                                 {data?.tag_user_detail?.map(
@@ -536,6 +547,9 @@ function PostItem({
                                                 )}
                                             </div>
                                         )}
+                                        <p className="text-left line-clamp-5 md:text-lg text-black dark:text-white">
+                                            {data?.content}
+                                        </p>
                                         {data?.img && (
                                             <figure className="max-w-full relative my-2">
                                                 <Avatar
@@ -585,13 +599,33 @@ function PostItem({
                                             }
                                             count={shareCount}
                                         />
-                                        {isBookMark && (
+                                        {/* {isBookMark && (
                                             <ActionButton
                                                 onClick={handleBookMark}
                                                 icon={
                                                     <FaBookmark className="text-purple-700 text-[0.9rem]" />
                                                 }
                                             />
+                                        )} */}
+                                        {isBookMark && (
+                                            <label
+                                                className={`ui-bookmark  ${
+                                                    isBookMark
+                                                        ? initialLoadBookMark
+                                                            ? 'init-active'
+                                                            : 'active'
+                                                        : ''
+                                                }`}
+                                                onClick={handleBookMark}
+                                            >
+                                                <div className="bookmark">
+                                                    <svg viewBox="0 0 32 32">
+                                                        <g>
+                                                            <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z"></path>
+                                                        </g>
+                                                    </svg>
+                                                </div>
+                                            </label>
                                         )}
                                         <ActionButton
                                             icon={<FaChartLine />}

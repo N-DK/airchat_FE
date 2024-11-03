@@ -23,6 +23,7 @@ import { BASE_URL } from '../constants/api.constant';
 import { AppContext } from '../AppContext';
 import Webcam from 'react-webcam';
 import ImageFetcher from './ImageFetcher';
+import SpeakingAnimation from './SpeakingAnimation';
 
 const MessageChatRoom = ({
     position = 'right',
@@ -257,18 +258,32 @@ const MessageChatRoom = ({
                             />
                         )}
                         {!message?.isTurnOnCamera && (
+                            // <div
+                            //     className={`absolute top-0 left-0 bg-red-300 md:h-12 md:w-12  ${
+                            //         isVisible &&
+                            //         isRunAuto &&
+                            //         message?.video &&
+                            //         message?.video != 0
+                            //             ? 'h-16 w-16'
+                            //             : 'w-10 h-10'
+                            //     }  rounded-full ${
+                            //         isVisible && isRunAuto ? 'animate-ping' : ''
+                            //     }`}
+                            // ></div>
                             <div
-                                className={`absolute top-0 left-0 bg-red-300 md:h-12 md:w-12  ${
+                                className={`md:h-12 ${
                                     isVisible &&
                                     isRunAuto &&
                                     message?.video &&
                                     message?.video != 0
                                         ? 'h-16 w-16'
                                         : 'w-10 h-10'
-                                }  rounded-full ${
-                                    isVisible && isRunAuto ? 'animate-ping' : ''
-                                }`}
-                            ></div>
+                                }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                            >
+                                {isVisible && isRunAuto && (
+                                    <SpeakingAnimation />
+                                )}
+                            </div>
                         )}
                     </div>
                     <div

@@ -965,7 +965,8 @@ export const sharePost = (post_id) => async (dispatch, getState) => {
         );
         dispatch({
             type: USER_SHARE_POST_SUCCESS,
-            payload: data,
+            payload: data?.results,
+            post_id,
         });
     } catch (error) {
         dispatch({

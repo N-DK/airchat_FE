@@ -42,6 +42,7 @@ import { AppContext } from '../AppContext';
 import { BASE_URL } from '../constants/api.constant';
 import { addViewPost } from '../redux/actions/UserActions';
 import { Howl, Howler } from 'howler';
+import SpeakingAnimation from './SpeakingAnimation';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -89,6 +90,7 @@ const renderPostHeader = (item) => {
 const renderPostActions = (item) => {
     const [isHeart, setIsHeart] = useState(!!item.heart);
     const [likeCount, setLikeCount] = useState(item?.number_heart || 0);
+    const [initialLoad, setInitialLoad] = useState(true);
 
     const dispatch = useDispatch();
 
@@ -97,22 +99,28 @@ const renderPostActions = (item) => {
         callback();
     };
 
+    useEffect(() => {
+        if (!isHeart) setInitialLoad(false);
+    }, [isHeart]);
+
     return (
         <div className="absolute items-center bottom-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
-            <div
-                onClick={() =>
-                    handleAction(heart, item.id, () => {
-                        setIsHeart(!isHeart);
-                        setLikeCount(likeCount + (isHeart ? -1 : 1));
-                    })
-                }
-                className="flex items-center text-white"
-            >
-                {isHeart ? (
-                    <FaHeart className="text-red-500" />
-                ) : (
-                    <FaRegHeart />
-                )}
+            <div className={`flex items-center text-gray-400`}>
+                <button
+                    onClick={() =>
+                        handleAction(heart, item.id, () => {
+                            setIsHeart(!isHeart);
+                            setLikeCount(likeCount + (isHeart ? -1 : 1));
+                        })
+                    }
+                    className={`btn heart ${
+                        isHeart
+                            ? initialLoad
+                                ? 'initial-active'
+                                : 'active'
+                            : ''
+                    } flex items-center justify-center text-white text-xl w-10 h-10 text-primary-color rounded-full`}
+                ></button>
                 <span className="ml-2 text-sm font-medium">{likeCount}</span>
             </div>
             {/* <div className="flex items-center text-white">
@@ -154,6 +162,7 @@ function PostContent({ item, contentsChattingRef }) {
     const [rect, setRect] = useState(null);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [currentItemId, setCurrentItemId] = useState(null);
+    const [initialLoad, setInitialLoad] = useState(true);
     const pressTimer = useRef();
     const [isVisible, setIsVisible] = useState(false);
     const videoRef = useRef(null);
@@ -298,6 +307,10 @@ function PostContent({ item, contentsChattingRef }) {
     }, [users]);
 
     useEffect(() => {
+        if (!isBookMark) setInitialLoad(false);
+    }, [isBookMark]);
+
+    useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());
     }, [targetElement]);
 
@@ -388,7 +401,7 @@ function PostContent({ item, contentsChattingRef }) {
                         />
                     )}
 
-                    <div
+                    {/* <div
                         className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
                             isVisible && isRunAuto && data?.video
                                 ? 'h-16 w-16'
@@ -396,7 +409,16 @@ function PostContent({ item, contentsChattingRef }) {
                         }  md:w-12 rounded-full ${
                             isVisible && isRunAuto ? 'animate-ping' : ''
                         }`}
-                    ></div>
+                    ></div> */}
+                    <div
+                        className={`md:h-12 ${
+                            isVisible && isRunAuto && data?.video
+                                ? 'h-16 w-16'
+                                : 'w-10 h-10'
+                        }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                    >
+                        {isVisible && isRunAuto && <SpeakingAnimation />}
+                    </div>
                 </div>
                 <div className="flex-1">
                     <div
@@ -408,17 +430,24 @@ function PostContent({ item, contentsChattingRef }) {
                         <div id={`post-item-profile-${data?.id}`}>
                             <div className="absolute top-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
                                 <FaRegStar className="text-white" />
-                                {isBookMark ? (
-                                    <FaBookmark
-                                        className="text-purple-700 text-[0.9rem]"
-                                        onClick={handleToggleBookMark}
-                                    />
-                                ) : (
-                                    <FaRegBookmark
-                                        className="text-white text-[0.9rem]"
-                                        onClick={handleToggleBookMark}
-                                    />
-                                )}
+                                <label
+                                    className={`ui-bookmark  ${
+                                        isBookMark
+                                            ? initialLoad
+                                                ? 'init-active'
+                                                : 'active'
+                                            : ''
+                                    }`}
+                                    onClick={handleToggleBookMark}
+                                >
+                                    <div className="bookmark">
+                                        <svg viewBox="0 0 32 32">
+                                            <g>
+                                                <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z"></path>
+                                            </g>
+                                        </svg>
+                                    </div>
+                                </label>
                                 <RiDeleteBin6Line
                                     onClick={() => {
                                         setIsOpen(true);

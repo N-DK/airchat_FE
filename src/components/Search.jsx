@@ -67,6 +67,7 @@ const ListFollow = React.memo(({ data }) => {
                     isFollowing={userInfoListFollowing?.some(
                         (item_follow) => item_follow.stranger_id == item.id,
                     )}
+                    showButton={userInfo?.id !== item?.id}
                 />
             ))}
         </div>

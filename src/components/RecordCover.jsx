@@ -1,10 +1,22 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../AppContext';
+import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { RiArrowLeftSLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { FaAnglesLeft } from 'react-icons/fa6';
 
 function RecordCover({ children, contextMenuVisible, close, touchStartX }) {
     const [progress, setProgress] = useState(0);
+
+    const [dimensions, setDimensions] = useState({
+        minX: window.innerWidth * 0.1,
+        maxX: window.innerWidth * 0.3,
+    });
+
+    const buttonClassName = useMemo(() => {
+        return `animation-surf-left ml-4 w-12 h-12 bg-red-500 flex items-center justify-center rounded-full transition-all duration-300 ${
+            touchStartX < dimensions.maxX && touchStartX > dimensions.minX
+                ? 'scale-125'
+                : ''
+        }`;
+    }, [touchStartX, dimensions]);
 
     useEffect(() => {
         if (contextMenuVisible) {
@@ -14,34 +26,30 @@ function RecordCover({ children, contextMenuVisible, close, touchStartX }) {
 
     useEffect(() => {
         let timer;
-        if (progress < 100) {
+        if (progress < 100 && contextMenuVisible) {
             timer = setInterval(() => {
                 setProgress((prev) => Math.min(prev + 1, 100));
             }, 1000);
         }
         return () => clearInterval(timer);
-    }, [, progress]);
+    }, [progress, contextMenuVisible]);
 
     return (
         <div className="relative z-50">
             <div>{children}</div>
             {contextMenuVisible && (
-                <div className="absolute bg-black/70 w-[300px] rounded-full h-[130%] py-4 left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                <div className="absolute bg-black/30 w-[300px] rounded-full h-[130%] py-4 left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
                     <div className="flex relative items-center h-full">
-                        <button
-                            onClick={close}
-                            className={`ml-10 transition-all duration-300 ${
-                                touchStartX < 120 && touchStartX > 100
-                                    ? 'scale-150'
-                                    : ''
-                            }`}
-                        >
+                        <button onClick={close} className={buttonClassName}>
                             <RiDeleteBin6Line
-                                className="text-red-500 "
+                                className="text-white"
                                 size={26}
                             />
                         </button>
-                        <FaAnglesLeft size={24} className="text-white ml-4" />
+                        <FaAnglesLeft
+                            size={24}
+                            className="text-white ml-4 mr-4 animation-surf-left"
+                        />
                         <div className="absolute left-1/2 -translate-x-1/2">
                             <div className="w-16 h-16 rounded-full relative transition-all duration-300">
                                 <svg
@@ -67,4 +75,4 @@ function RecordCover({ children, contextMenuVisible, close, touchStartX }) {
     );
 }
 
-export default RecordCover;
+export default React.memo(RecordCover);

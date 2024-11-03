@@ -182,7 +182,7 @@ export default function FooterChat({
                         type:
                             recordOption === 'video'
                                 ? 'video/mp4'
-                                : 'audio/mp3',
+                                : 'audio/mp4;codecs=mp4a.40.2',
                     });
                     const reader = new FileReader();
                     reader.readAsDataURL(audioBlob);
@@ -349,7 +349,7 @@ export default function FooterChat({
         if (
             (audio || video) &&
             transcript &&
-            touchStartX >= 120 &&
+            touchStartX >= window.innerWidth * 0.3 &&
             !isStartRecord &&
             !isRecord
         ) {
@@ -410,15 +410,23 @@ export default function FooterChat({
             setAudio(null);
             setVideo(null);
         }
-    }, [audio, transcript, touchStartX, video, isStartRecord, isRecord]);
+    }, [
+        audio,
+        transcript,
+        touchStartX,
+        video,
+        isStartRecord,
+        isRecord,
+        window.innerWidth,
+    ]);
 
     useEffect(() => {
-        if (touchStartX < 120 && !isStartRecord) {
+        if (touchStartX < window.innerWidth * 0.3 && !isStartRecord) {
             resetTranscript();
             setAudio(null);
             setVideo(null);
         }
-    }, [touchStartX, isStartRecord]);
+    }, [touchStartX, isStartRecord, window.innerWidth]);
 
     useEffect(() => {
         if (transcript && isStartRecord) setNewMessageFromFooter(transcript);
