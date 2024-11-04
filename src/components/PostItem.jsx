@@ -240,12 +240,20 @@ function PostItem({
     }, [data?.id, data?.reply]);
 
     useEffect(() => {
+        if (setList) {
+            setList((prev) => {
+                return prev.map((item) => {
+                    return item?.id === data?.id ? data : item;
+                });
+            });
+        }
+
         setLikeCount(data?.number_heart ?? 0);
         setIsHeart(!!data?.heart);
         setShareCount(data?.number_share ?? 0);
         setIsShare(!!data?.share);
         setIsBookMark(!!data?.bookmark);
-    }, [data]);
+    }, [data, setList]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -255,7 +263,7 @@ function PostItem({
             {
                 threshold: [0.1],
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.1,
+                    window.innerHeight * 0.15,
                     100,
                 )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
@@ -293,7 +301,7 @@ function PostItem({
             document.getElementById(`post-item-${data?.id}`)
         ) {
             if (navigator.vibrate) {
-                navigator.vibrate(100); // Rung 200ms
+                navigator.vibrate(100);
             } else {
                 console.log('Thiết bị không hỗ trợ rung.');
             }
@@ -301,7 +309,6 @@ function PostItem({
             dispatch(
                 setObjectActive({
                     post: data,
-
                     audio: data?.audio
                         ? new Howl({
                               src: [
@@ -312,12 +319,19 @@ function PostItem({
                         : null,
                     element: document.getElementById(`post-item-${data?.id}`),
                     parent: contentsChattingRef?.current,
-                    video: videoRef.current,
+                    video: videoRef?.current,
                     bonus: bonusHeight,
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
+    }, [
+        contentsChattingRef,
+        videoRef,
+        isVisible,
+        data,
+        isRunAuto,
+        bonusHeight,
+    ]);
 
     const handleLike = useCallback(() => {
         dispatch(heart(data?.id));
@@ -393,67 +407,69 @@ function PostItem({
                     />
                 ) : (
                     <>
-                        <div
-                            className={`appear-animation duration-300 relative h-10 md:h-12 min-w-10 md:min-w-12 ${
-                                isVisible && isRunAuto && data?.video
-                                    ? 'h-16 w-16'
-                                    : ''
-                            } `}
-                        >
-                            <Link
-                                to={
-                                    data?.user_id === userInfo?.id
-                                        ? '/profile/posts'
-                                        : `/profile/${data?.user_id}/posts`
-                                }
-                            >
-                                {data?.video && isVisible && isRunAuto ? (
-                                    <div className="w-full h-full">
-                                        <video
-                                            ref={videoRef}
-                                            className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
-                                            src={`https://talkie.transtechvietnam.com/${data.video}`}
-                                        />
-                                    </div>
-                                ) : (
-                                    <Avatar
-                                        src={`${BASE_URL}${data?.avatar}`}
-                                        className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                                        alt="icon"
-                                    />
-                                )}
-                            </Link>
+                        {userInfo?.id !== data?.user_id && (
                             <div
-                                onClick={handleFollow}
-                                className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
-                                    (data?.dafollow === null ||
-                                        data?.dafollow <= 0) &&
-                                    userInfo?.id !== data?.user_id
-                                        ? 'border border-white'
-                                        : ''
-                                }`}
-                            >
-                                {(data?.dafollow === null ||
-                                    data?.dafollow <= 0) &&
-                                    userInfo?.id !== data?.user_id && (
-                                        <RiAddLine
-                                            size="1.1rem"
-                                            className="p-[2px] text-white"
-                                        />
-                                    )}
-                            </div>
-                            <div
-                                className={`md:h-12 ${
+                                className={`appear-animation duration-300 relative h-10 md:h-12 min-w-10 md:min-w-12 ${
                                     isVisible && isRunAuto && data?.video
                                         ? 'h-16 w-16'
-                                        : 'w-10 h-10'
-                                }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                                        : ''
+                                } `}
                             >
-                                {isVisible && isRunAuto && (
-                                    <SpeakingAnimation />
-                                )}
+                                <Link
+                                    to={
+                                        data?.user_id === userInfo?.id
+                                            ? '/profile/posts'
+                                            : `/profile/${data?.user_id}/posts`
+                                    }
+                                >
+                                    {data?.video && isVisible && isRunAuto ? (
+                                        <div className="w-full h-full">
+                                            <video
+                                                ref={videoRef}
+                                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                                src={`https://talkie.transtechvietnam.com/${data.video}`}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <Avatar
+                                            src={`${BASE_URL}${data?.avatar}`}
+                                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                            alt="icon"
+                                        />
+                                    )}
+                                </Link>
+                                <div
+                                    onClick={handleFollow}
+                                    className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
+                                        (data?.dafollow === null ||
+                                            data?.dafollow <= 0) &&
+                                        userInfo?.id !== data?.user_id
+                                            ? 'border border-white'
+                                            : ''
+                                    }`}
+                                >
+                                    {(data?.dafollow === null ||
+                                        data?.dafollow <= 0) &&
+                                        userInfo?.id !== data?.user_id && (
+                                            <RiAddLine
+                                                size="1.1rem"
+                                                className="p-[2px] text-white"
+                                            />
+                                        )}
+                                </div>
+                                <div
+                                    className={`md:h-12 ${
+                                        isVisible && isRunAuto && data?.video
+                                            ? 'h-16 w-16'
+                                            : 'w-10 h-10'
+                                    }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                                >
+                                    {isVisible && isRunAuto && (
+                                        <SpeakingAnimation />
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
                         <div className="flex-1">
                             {userInfo?.id === data?.user_id ? (
                                 <PostHosting
@@ -465,7 +481,6 @@ function PostItem({
                                     handleLike={handleLike}
                                     handleSharePost={handleSharePost}
                                     handleBookMark={handleBookMark}
-                                    videoRef={videoRef}
                                     bonusHeight={bonusHeight}
                                     bonusKey={bonusKey}
                                 />
@@ -654,23 +669,30 @@ function PostItem({
                                     </div>
                                 </div>
                             )}
-
-                            <div className="flex items-center mt-5">
-                                {item?.reply?.map((reply, index) => (
-                                    <Avatar
-                                        onClick={() =>
-                                            setReplyIndexCurrent(index)
-                                        }
-                                        key={index}
-                                        src={`${BASE_URL}${reply?.avatar}`}
-                                        className={`${
-                                            replyIndexCurrent === index
-                                                ? 'border-2 border-blue-400'
-                                                : ''
-                                        } mr-2`}
-                                    />
-                                ))}
+                            <div className="flex gap-3 md:gap-6">
+                                {userInfo?.id === data?.user_id && (
+                                    <div
+                                        className={`appear-animation duration-300 relative h-10 md:h-12 min-w-10 md:min-w-12`}
+                                    ></div>
+                                )}
+                                <div className="flex items-center mt-5">
+                                    {item?.reply?.map((reply, index) => (
+                                        <Avatar
+                                            onClick={() =>
+                                                setReplyIndexCurrent(index)
+                                            }
+                                            key={index}
+                                            src={`${BASE_URL}${reply?.avatar}`}
+                                            className={`${
+                                                replyIndexCurrent === index
+                                                    ? 'border-2 border-blue-400'
+                                                    : ''
+                                            } mr-2`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
+
                             <div className="flex-1 mb-2">
                                 {isTurnOnCamera && post?.id === data.id ? (
                                     <div className="flex items-start justify-end mt-6">
@@ -733,7 +755,7 @@ function PostItem({
                                                 recordOption === 'video'
                                                     ? 'w-16 h-16'
                                                     : 'w-10 h-10'
-                                            } overflow-hidden rounded-full ml-2`}
+                                            } rounded-full ml-2 relative`}
                                         >
                                             {recordOption === 'video' ? (
                                                 <Webcam
@@ -744,6 +766,9 @@ function PostItem({
                                                         width: '100%',
                                                         height: '100%',
                                                         objectFit: 'cover',
+                                                        borderRadius: '50%',
+                                                        zIndex: 1,
+                                                        position: 'relative',
                                                     }}
                                                 />
                                             ) : (
@@ -754,28 +779,45 @@ function PostItem({
                                                             ? `${BASE_URL}${userInfo?.image}`
                                                             : DEFAULT_PROFILE
                                                     }
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full object-cover z-[1]"
                                                     alt="icon"
                                                 />
                                             )}
+                                            <div
+                                                className={`md:h-12 ${
+                                                    recordOption === 'video'
+                                                        ? 'w-16 h-16'
+                                                        : 'w-10 h-10'
+                                                }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                                            >
+                                                <SpeakingAnimation />
+                                            </div>
                                         </figure>
                                     </div>
                                 ) : (
                                     detailsPostReply.length > 0 && (
-                                        <MessageItem
-                                            position="left"
-                                            message={
-                                                detailsPostReply[
-                                                    replyIndexCurrent
-                                                ]
-                                            }
-                                            setDetailsPostReply={
-                                                setDetailsPostReply
-                                            }
-                                            contentsChattingRef={
-                                                contentsChattingRef
-                                            }
-                                        />
+                                        <div className="flex gap-3 md:gap-6">
+                                            {userInfo?.id === data?.user_id && (
+                                                <div
+                                                    className={`appear-animation duration-300 relative h-10 md:h-12 min-w-10 md:min-w-12`}
+                                                ></div>
+                                            )}
+                                            <MessageItem
+                                                position="left"
+                                                message={
+                                                    detailsPostReply[
+                                                        replyIndexCurrent
+                                                    ]
+                                                }
+                                                setDetailsPostReply={
+                                                    setDetailsPostReply
+                                                }
+                                                contentsChattingRef={
+                                                    contentsChattingRef
+                                                }
+                                                setListProfile={setList}
+                                            />
+                                        </div>
                                     )
                                 )}
                             </div>

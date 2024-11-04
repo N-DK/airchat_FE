@@ -5,6 +5,7 @@ import PostContent from './PostContent';
 import { useDispatch, useSelector } from 'react-redux';
 import { POST_BOOKMARK_SUCCESS } from '../redux/constants/PostConstants';
 import { useLocation } from 'react-router-dom';
+import isEqual from 'lodash/isEqual';
 
 const ListPostProfile = ({
     listProfile,
@@ -17,21 +18,38 @@ const ListPostProfile = ({
     const { pathname } = useLocation();
     const [listPost, setListPost] = useState([]);
     const userBookMark = useSelector((state) => state.userBookMark);
-    const { success: isSuccessBookmark, post_id: postIdBookMark } =
-        userBookMark;
+    const {
+        success: isSuccessBookmark,
+        post_id: postIdBookMark,
+        message,
+    } = userBookMark;
 
     useEffect(() => {
         if (isSuccessBookmark) {
-            if (pathname.includes('bookmarks')) {
-                setListProfile((prev) =>
-                    prev.filter(
+            if (
+                pathname.includes('bookmarks') &&
+                message.includes('unbookmark')
+            ) {
+                setListProfile((prev) => {
+                    const newListProfile = [...prev];
+
+                    const nonUserPosts = newListProfile.filter(
+                        (item) => item.user_id !== userInfo.id,
+                    );
+
+                    const userPosts = newListProfile.filter(
+                        (item) => item.user_id === userInfo.id,
+                    );
+
+                    const filteredUserPosts = userPosts.filter(
                         (item) =>
-                            item?.id !== postIdBookMark &&
-                            !item?.reply?.some(
-                                (reply) => reply?.id === postIdBookMark,
-                            ),
-                    ),
-                );
+                            item?.bookmark ||
+                            (item?.reply?.length > 0 &&
+                                item?.reply?.some((reply) => reply?.bookmark)),
+                    );
+
+                    return [...nonUserPosts, ...filteredUserPosts];
+                });
             }
             dispatch({
                 type: POST_BOOKMARK_SUCCESS,
@@ -39,15 +57,23 @@ const ListPostProfile = ({
                 post_id: null,
             });
         }
-    }, [isSuccessBookmark, postIdBookMark, dispatch, pathname]);
+    }, [
+        isSuccessBookmark,
+        postIdBookMark,
+        dispatch,
+        pathname,
+        message,
+        userInfo,
+    ]);
 
     useEffect(() => {
         if (listProfile) {
-            setListPost(
-                listProfile?.filter((item) => item.user_id !== userInfo.id),
-            );
+            const nonUserPosts =
+                listProfile?.filter((item) => item.user_id !== userInfo.id) ||
+                [];
+            setListPost(nonUserPosts);
         }
-    }, [listProfile]);
+    }, [listProfile, userInfo]);
 
     return (
         <>
@@ -58,6 +84,7 @@ const ListPostProfile = ({
                         key={i}
                         item={item}
                         contentsChattingRef={contentsChattingRef}
+                        setListProfile={setListProfile}
                     />
                 ))}
             {listPost?.length > 0 && (
@@ -66,6 +93,7 @@ const ListPostProfile = ({
                     isTurnOnCamera={isTurnOnCamera}
                     contentsChattingRef={contentsChattingRef}
                     setPostList={setListPost}
+                    setListProfile={setListProfile}
                 />
             )}
         </>

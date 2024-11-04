@@ -14,7 +14,11 @@ import RecordCover from './RecordCover';
 import { Avatar } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { FaReply } from 'react-icons/fa6';
-import { setPostActive, submitPost } from '../redux/actions/PostActions';
+import {
+    listPost,
+    setPostActive,
+    submitPost,
+} from '../redux/actions/PostActions';
 import {
     setObjectActive,
     setObjectAudioCurrent,
@@ -47,6 +51,8 @@ export default function FooterChat({
     handleSend,
     setIsTurnOnCamera,
     isInChatRoom,
+    handleReload,
+    setSpeaking,
 }) {
     const {
         isRecord,
@@ -123,11 +129,26 @@ export default function FooterChat({
             language,
         });
 
+    const isProcess = useRef(false);
+
     const navigateHandle = (name) => {
         if (name == 'mic' && isPlay) {
             toggleIsRecord();
         } else {
-            if (name !== 'mic') {
+            if (name == 'chatting') {
+                const pathname = window.location.pathname.split('/')[1];
+                const redirect = window.location.search.split('=')[1];
+
+                if (
+                    ((pathname === 'chatting' && !redirect) ||
+                        redirect === 'for-you') &&
+                    handleReload
+                ) {
+                    handleReload();
+                } else {
+                    navigate('/chatting');
+                }
+            } else if (name !== 'mic') {
                 if (isRunAuto) toggleIsRunAuto();
                 navigate(`/${name}`);
             }
@@ -162,6 +183,7 @@ export default function FooterChat({
     );
 
     const startRecording = () => {
+        if (setSpeaking) setSpeaking(true);
         startListening();
         const mediaConstraints =
             recordOption === 'video'
@@ -216,7 +238,7 @@ export default function FooterChat({
             mediaRecorderRef.current.stop();
         }
         SpeechRecognition.stopListening();
-
+        if (setSpeaking) setSpeaking(false);
         setIsStartRecord(false);
     };
 
@@ -260,7 +282,7 @@ export default function FooterChat({
     };
 
     const handleAudioPlayback = async (object) => {
-        dispatch(setObjectVideoCurrent(videoCurrent));
+        // dispatch(setObjectVideoCurrent(null));
         if (audioCurrent && audioCurrent.playing()) {
             await new Promise((resolve) => {
                 audioCurrent.once('pause', () => {
@@ -278,16 +300,15 @@ export default function FooterChat({
             audio.on('end', () => {
                 handleScroll(object);
             });
+            isProcess.current = false;
             dispatch(setObjectAudioCurrent(audio));
-            // audio.play();
-            // audio.once('play', () => {});
         } else {
             console.error('Audio object is undefined');
         }
     };
 
     const handleVideoPlayback = async (object) => {
-        dispatch(setObjectAudioCurrent(audioCurrent));
+        // dispatch(setObjectAudioCurrent(null));
         if (videoCurrent && !videoCurrent.paused) {
             await new Promise((resolve) => {
                 videoCurrent.onpause = () => {
@@ -306,15 +327,8 @@ export default function FooterChat({
             video.onended = () => {
                 handleScroll(object);
             };
-
+            isProcess.current = false;
             dispatch(setObjectVideoCurrent(video));
-            // video
-            //     .play()
-            //     .then(() => {
-            //     })
-            //     .catch((error) => {
-            //         console.error('Error playing video:', error);
-            //     });
         } else {
             console.error('Video object is undefined');
         }
@@ -475,7 +489,8 @@ export default function FooterChat({
                             }
                             audioCurrent?.play();
                         }
-                    } else {
+                    } else if (!isProcess?.current) {
+                        isProcess.current = true;
                         setTimeout(async () => {
                             await handleAudioPlayback(object);
                         }, 500);
@@ -493,7 +508,8 @@ export default function FooterChat({
                             }
                             videoCurrent?.play();
                         }
-                    } else {
+                    } else if (!isProcess?.current) {
+                        isProcess.current = true;
                         setTimeout(async () => {
                             await handleVideoPlayback(object);
                         }, 500);

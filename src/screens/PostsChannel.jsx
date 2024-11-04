@@ -28,6 +28,7 @@ import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import ScreenFull from '../components/ScreenFull';
 import { CHANNEL_POSTS_RESET } from '../redux/constants/ChannelConstants';
+import SpeakingAnimation from '../components/SpeakingAnimation';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
 
@@ -71,9 +72,11 @@ export default function PostsChannel() {
     const [isBottom, setIsBottom] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [isEndPost, setIsEndPost] = useState(false);
+    const [speaking, setSpeaking] = useState(false);
 
     const divRef = useRef(null);
     const contentsChattingRef = useRef(null);
+    const refTranscript = useRef(null);
 
     const { userInfo } = useSelector((state) => state.userProfile);
     const { post } = useSelector((state) => state.setPostActive);
@@ -193,6 +196,21 @@ export default function PostsChannel() {
     }, []);
 
     useEffect(() => {
+        const contents = contentsChattingRef?.current;
+        if (contents) {
+            const { scrollTop } = contents;
+
+            if (scrollTop > 0 && !isSwiping) {
+                setTimeout(() => {
+                    setIsSwiping(true);
+                }, 500);
+            } else if (scrollTop <= 20 && isSwiping) {
+                setIsSwiping(false);
+            }
+        }
+    }, [contentsChattingRef, isSwiping]);
+
+    useEffect(() => {
         const observer = new IntersectionObserver(
             debounce(([entry]) => {
                 setIsVisible(entry.isIntersecting);
@@ -239,6 +257,15 @@ export default function PostsChannel() {
             );
         }
     }, [isVisible, contentsChattingRef]);
+
+    useEffect(() => {
+        if (refTranscript.current) {
+            refTranscript.current.scrollTo({
+                top: refTranscript.current.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
+    }, [newMessageFromFooter]);
 
     // useEffect(() => {
     //     if (isSuccessFollow) {
@@ -333,8 +360,8 @@ export default function PostsChannel() {
                 <figure>
                     <div
                         className={`h-10 md:h-12 w-10 md:w-12 ${
-                            isTurnOnCamera ? 'scale-[1.5]' : 'scale-[1]'
-                        } rounded-full overflow-hidden transition-all  duration-300`}
+                            isTurnOnCamera ? 'w-16 h-16' : 'w-10 h-10'
+                        } rounded-full relative transition-all  duration-300`}
                     >
                         {isTurnOnCamera ? (
                             <Webcam
@@ -345,6 +372,9 @@ export default function PostsChannel() {
                                     width: '100%',
                                     height: '100%',
                                     objectFit: 'cover',
+                                    borderRadius: '50%',
+                                    zIndex: 1,
+                                    position: 'relative',
                                 }}
                             />
                         ) : (
@@ -354,9 +384,18 @@ export default function PostsChannel() {
                                         ? `https://talkie.transtechvietnam.com/${userInfo.image}`
                                         : DEFAULT_PROFILE
                                 }
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover z-[1]"
                                 alt="icon"
                             />
+                        )}
+                        {speaking && !post && (
+                            <div
+                                className={`h-10 md:h-12 w-10 md:w-12 ${
+                                    isTurnOnCamera ? 'w-16 h-16' : 'w-10 h-10'
+                                } absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                            >
+                                <SpeakingAnimation />
+                            </div>
                         )}
                     </div>
                 </figure>
@@ -369,6 +408,7 @@ export default function PostsChannel() {
                     </h5>
                     <button className="text-gray-400 w-full">
                         <textarea
+                            ref={refTranscript}
                             value={
                                 !isRecord && !post
                                     ? newMessageFromFooter ||
@@ -424,6 +464,7 @@ export default function PostsChannel() {
                 setIsTurnOnCamera={
                     post ? setIsTurnOnCameraReply : setIsTurnOnCamera
                 }
+                setSpeaking={setSpeaking}
             />
             <NotifyPinChannel message={notifyMessage} show={showNotify} />
         </div>

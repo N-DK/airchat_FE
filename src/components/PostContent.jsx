@@ -44,6 +44,7 @@ import { addViewPost } from '../redux/actions/UserActions';
 import { Howl, Howler } from 'howler';
 import SpeakingAnimation from './SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import MessageItem from './MessageItem';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -149,7 +150,7 @@ const renderPostActions = (item) => {
     );
 };
 
-function PostContent({ item, contentsChattingRef }) {
+function PostContent({ item, contentsChattingRef, setListProfile }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -172,6 +173,8 @@ function PostContent({ item, contentsChattingRef }) {
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [currentItemId, setCurrentItemId] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
+    const [detailsPostReply, setDetailsPostReply] = useState([]);
+    const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const pressTimer = useRef();
     const [isVisible, setIsVisible] = useState(false);
     const videoRef = useRef(null);
@@ -223,6 +226,13 @@ function PostContent({ item, contentsChattingRef }) {
 
     const handleToggleBookMark = () => {
         handleAction(bookMark, item.id, () => {
+            setListProfile((prev) => {
+                return prev.map((item) => {
+                    return item.id === data.id
+                        ? { ...item, bookmark: !item.bookmark }
+                        : item;
+                });
+            });
             setIsBookMark((prevBookMark) => !prevBookMark);
         });
     };
@@ -276,6 +286,10 @@ function PostContent({ item, contentsChattingRef }) {
     };
 
     const closeContextMenu = () => setContextMenuVisible(false);
+
+    useEffect(() => {
+        setIsBookMark(!!data.bookmark);
+    }, [data]);
 
     useEffect(() => {
         if (isFirstRender.current) {
@@ -386,6 +400,12 @@ function PostContent({ item, contentsChattingRef }) {
         }
     }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
 
+    useEffect(() => {
+        if (item) {
+            setDetailsPostReply(item?.reply || []);
+        }
+    }, [item]);
+
     return (
         <>
             <div className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
@@ -481,14 +501,6 @@ function PostContent({ item, contentsChattingRef }) {
                                 <p className="text-left line-clamp-5 md:text-lg text-white dark:text-white">
                                     {data.content}
                                 </p>
-                                {/* {data?.audio && (
-                                    <div className="mt-2">
-                                        <audio
-                                            controls
-                                            src={`https://talkie.transtechvietnam.com/${data?.audio}`}
-                                        />
-                                    </div>
-                                )} */}
 
                                 {(data?.img || file) && (
                                     <figure
@@ -500,14 +512,6 @@ function PostContent({ item, contentsChattingRef }) {
                                         id={`delete-photo-${data.id}`}
                                         className="max-w-full relative min-h-40 mt-2"
                                     >
-                                        {/* <Avatar
-                                            src={
-                                                file
-                                                    ? convertObjectURL(file)
-                                                    : `https://talkie.transtechvietnam.com/${data.img}`
-                                            }
-                                            className=" w-full h-full object-cover rounded-xl"
-                                        /> */}
                                         <LazyLoadImage
                                             className=" w-full h-full object-cover rounded-xl"
                                             alt={''}
@@ -648,6 +652,29 @@ function PostContent({ item, contentsChattingRef }) {
                         </div>
                         {renderPostActions(item)}
                     </div>
+                    <div className="flex items-center mt-5">
+                        {item?.reply?.map((reply, index) => (
+                            <Avatar
+                                onClick={() => setReplyIndexCurrent(index)}
+                                key={index}
+                                src={`${BASE_URL}${reply?.avatar}`}
+                                className={`${
+                                    replyIndexCurrent === index
+                                        ? 'border-2 border-blue-400'
+                                        : ''
+                                } mr-2`}
+                            />
+                        ))}
+                    </div>
+                    {detailsPostReply.length > 0 && (
+                        <MessageItem
+                            position="left"
+                            message={detailsPostReply[replyIndexCurrent]}
+                            setDetailsPostReply={setDetailsPostReply}
+                            contentsChattingRef={contentsChattingRef}
+                            setListProfile={setListProfile}
+                        />
+                    )}
                 </div>
             </div>
             <CustomContextMenuDeletePhoto

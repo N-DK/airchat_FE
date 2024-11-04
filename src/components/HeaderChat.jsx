@@ -18,7 +18,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { LANGUAGE } from '../constants/language.constant';
 import { standardizeNames } from '../utils/standardizeNames.utils';
 
-const HeaderChat = ({ title, isSwiping, handleAction }) => {
+const HeaderChat = ({ title, isSwiping, handleAction, handleReload }) => {
     const { menus, loading } = useSelector((state) => state.menuBar);
     const redirect =
         useLocation().search.split('=')[1] || window.location.pathname;
@@ -61,6 +61,8 @@ const HeaderChat = ({ title, isSwiping, handleAction }) => {
                 navigate(`/channel/${item.channel_id}`, {
                     state: { channelData: item },
                 });
+            } else {
+                handleReload();
             }
         };
 

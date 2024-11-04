@@ -26,10 +26,11 @@ import { profile, saveFCMToken } from '../redux/actions/UserActions';
 
 import { CHANNEL_ADD_RESET } from '../redux/constants/ChannelConstants';
 import Webcam from 'react-webcam';
-import { debounce } from 'lodash';
+import { debounce, set } from 'lodash';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { LANGUAGE } from '../constants/language.constant';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
+import SpeakingAnimation from '../components/SpeakingAnimation';
 
 const INITIAL_LIMIT = 10;
 const INITIAL_OFFSET = 0;
@@ -61,6 +62,8 @@ export default function Chatting() {
     const [hasMore, setHasMore] = useState(false);
     const [isEndPost, setIsEndPost] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const [isReload, setIsReload] = useState(false);
+    const [speaking, setSpeaking] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const redirect = search.split('=')[1] || 'for-you';
@@ -77,6 +80,7 @@ export default function Chatting() {
     const saveFirebaseTokenRef = useRef(null);
     const contentsChattingRef = useRef(null);
     const divRef = useRef(null);
+    const refTranscript = useRef(null);
 
     const {
         isAddChannel,
@@ -153,6 +157,31 @@ export default function Chatting() {
         setLimit(INITIAL_LIMIT);
         setOffset(INITIAL_OFFSET);
     }, [redirect, contentsChattingRef]);
+
+    const handleReload = useCallback(() => {
+        setIsReload(true);
+        handleResetLimit();
+        setPostListData(null);
+        setIsEndPost(false);
+        setHasMore(false);
+        contentsChattingRef?.current.scrollTo({ top: 0 });
+        dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
+    }, [handleResetLimit, contentsChattingRef, dispatch, redirect]);
+
+    useEffect(() => {
+        const contents = contentsChattingRef?.current;
+        if (contents) {
+            const { scrollTop } = contents;
+            if (scrollTop > 0 && !isSwiping) {
+                setTimeout(() => {
+                    setIsSwiping(true);
+                }, 500);
+            } else if (scrollTop <= 20 && isSwiping) {
+                setIsSwiping(false);
+            }
+            setIsReload(false);
+        }
+    }, [contentsChattingRef, isSwiping, isReload]);
 
     useEffect(() => {
         if (redirect) {
@@ -277,6 +306,15 @@ export default function Chatting() {
     }, [channel]);
 
     useEffect(() => {
+        if (refTranscript.current) {
+            refTranscript.current.scrollTo({
+                top: refTranscript.current.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
+    }, [newMessageFromFooter]);
+
+    useEffect(() => {
         if (
             getFirebaseRef?.current &&
             saveFirebaseTokenRef?.current &&
@@ -295,11 +333,12 @@ export default function Chatting() {
                 title={redirect}
                 isSwiping={isSwiping}
                 handleAction={handleAction}
+                handleReload={handleReload}
             />
 
             <div
                 ref={contentsChattingRef}
-                className="absolute top-0 left-0 pb-[600px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
+                className="absolute top-0 left-0 pb-[700px] h-screen w-screen overflow-auto scrollbar-none bg-slatePrimary dark:bg-darkPrimary"
             >
                 <div
                     ref={divRef}
@@ -308,9 +347,9 @@ export default function Chatting() {
                     <figure>
                         <div
                             className={`h-10 md:h-12 w-10 md:w-12 ${
-                                isTurnOnCamera ? 'scale-[1.5]' : 'scale-[1]'
-                            } rounded-full overflow-hidden transition-all  duration-300 ${
-                                isVisible ? 'bg-red-500' : ''
+                                isTurnOnCamera ? 'w-16 h-16' : 'w-10 h-10'
+                            } rounded-full transition-all relative duration-300 ${
+                                isVisible ? '' : ''
                             }`}
                         >
                             {isTurnOnCamera ? (
@@ -322,6 +361,9 @@ export default function Chatting() {
                                         width: '100%',
                                         height: '100%',
                                         objectFit: 'cover',
+                                        borderRadius: '50%',
+                                        zIndex: 1,
+                                        position: 'relative',
                                     }}
                                 />
                             ) : (
@@ -332,9 +374,20 @@ export default function Chatting() {
                                             ? `https://talkie.transtechvietnam.com/${userInfo.image}`
                                             : DEFAULT_PROFILE
                                     }
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover z-[1]"
                                     alt="icon"
                                 />
+                            )}
+                            {speaking && !post && (
+                                <div
+                                    className={`h-10 md:h-12 w-10 md:w-12 ${
+                                        isTurnOnCamera
+                                            ? 'w-16 h-16'
+                                            : 'w-10 h-10'
+                                    } absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                                >
+                                    <SpeakingAnimation />
+                                </div>
                             )}
                         </div>
                     </figure>
@@ -347,6 +400,7 @@ export default function Chatting() {
                         </h5>
                         <button className="text-gray-400 w-full">
                             <textarea
+                                ref={refTranscript}
                                 value={
                                     !isRecord && !post
                                         ? newMessageFromFooter ||
@@ -425,6 +479,8 @@ export default function Chatting() {
                 setIsTurnOnCamera={
                     post ? setIsTurnOnCameraReply : setIsTurnOnCamera
                 }
+                handleReload={handleReload}
+                setSpeaking={setSpeaking}
             />
             <NotifyPinChannel message={notifyMessage} show={showNotify} />
         </div>

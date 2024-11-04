@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import PostItem from './PostItem';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -15,6 +15,7 @@ function ListPostItems({
     isTurnOnCamera,
     bonusHeight,
     setPostList,
+    setListProfile,
     bonusKey,
 }) {
     const dispatch = useDispatch();
@@ -37,7 +38,10 @@ function ListPostItems({
         setPostList ? setPostList(newPosts) : setData(newPosts);
     };
 
-    const finalData = setPostList ? postsList : data;
+    const finalData = useMemo(
+        () => (setPostList ? postsList : data),
+        [setPostList, postsList, data],
+    );
 
     useEffect(() => {
         if (!userInfo) dispatch(profile());
@@ -73,13 +77,24 @@ function ListPostItems({
     useEffect(() => {
         if (isSuccessBookmark) {
             if (pathname.includes('bookmarks')) {
+                console.log('finalData', finalData);
+
                 const filteredData = finalData.filter(
                     (item) =>
-                        item?.id !== postIdBookMark &&
-                        !item?.reply?.some(
-                            (reply) => reply?.id === postIdBookMark,
-                        ),
+                        item?.bookmark ||
+                        (item?.reply?.length > 0 &&
+                            item?.reply?.some((reply) => reply?.bookmark)),
                 );
+
+                if (setListProfile) {
+                    setListProfile((prev) => {
+                        const userPosts = prev.filter(
+                            (item) => item.user_id === userInfo.id,
+                        );
+
+                        return [...filteredData, ...userPosts];
+                    });
+                }
 
                 updatePosts(filteredData);
             }
@@ -89,7 +104,14 @@ function ListPostItems({
                 post_id: null,
             });
         }
-    }, [isSuccessBookmark, postIdBookMark, finalData, dispatch, pathname]);
+    }, [
+        isSuccessBookmark,
+        postIdBookMark,
+        finalData,
+        dispatch,
+        pathname,
+        setListProfile,
+    ]);
 
     useEffect(() => {
         if (isSuccessShare) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { IoSearch } from 'react-icons/io5';
@@ -24,6 +24,7 @@ export default function SearchScreen() {
     const dispatch = useDispatch();
     const [searchText, setSearchText] = useState(query.get('keyword'));
     const [recentSearch, setRecentSearch] = useState([]);
+    const [isSwiping, setIsSwiping] = useState(false);
     const debouncedSearch = useDebounce(searchText, 500);
     const [isTurnOnCamera, setIsTurnOnCamera] = useState(false);
     const { language } = useSelector((state) => state.userLanguage);
@@ -137,7 +138,13 @@ export default function SearchScreen() {
 
     return (
         <div className="relative flex flex-col h-screen bg-slatePrimary dark:bg-dark2Primary overflow-hidden">
-            <div className="flex justify-center pt-12 px-5 bg-white dark:bg-darkPrimary pb-[18px]">
+            <div
+                className={`flex justify-center pt-12 px-5 bg-white dark:bg-darkPrimary pb-[18px] transition-all duration-500 ${
+                    isSwiping
+                        ? 'translate-y-[-150px] opacity-0 hidden'
+                        : 'opacity-100'
+                }`}
+            >
                 <div className="flex gap-3 bg-grayPrimary dark:bg-dark2Primary items-center w-full rounded-full px-6 py-3">
                     <IoSearch size="1.5rem" className="text-gray-500 m-0 p-0" />
                     <input
@@ -151,7 +158,11 @@ export default function SearchScreen() {
             </div>
 
             {searchText ? (
-                <Search data={searchResult} isTurnOnCamera={isTurnOnCamera} />
+                <Search
+                    setIsSwiping={setIsSwiping}
+                    data={searchResult}
+                    isTurnOnCamera={isTurnOnCamera}
+                />
             ) : (
                 <div className="mx-5 h-full overflow-auto scrollbar-none pb-[200px]">
                     {recentSearch?.length > 0 && (

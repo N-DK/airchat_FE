@@ -443,71 +443,63 @@ export default function Details() {
             ref={divRef}
             className="flex  mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
         >
-            <div
-                className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12  ${
-                    isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
-                } `}
-            >
-                <Link
-                    to={
-                        data?.user_id === userInfo?.id
-                            ? '/profile/posts'
-                            : `/profile/${data?.user_id}/posts`
-                    }
-                >
-                    {data?.video && isVisible && isRunAuto ? (
-                        <div className="w-full h-full">
-                            <video
-                                ref={videoRef}
-                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
-                                src={`https://talkie.transtechvietnam.com/${data.video}`}
-                            />
-                        </div>
-                    ) : (
-                        <Avatar
-                            src={`${BASE_URL}${data?.avatar}`}
-                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                            alt="icon"
-                        />
-                    )}
-                </Link>
+            {userInfo?.id !== data?.user_id && (
                 <div
-                    onClick={handleFollow}
-                    className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
-                        (data?.dafollow === null || data?.dafollow <= 0) &&
-                        userInfo?.id !== data?.user_id
-                            ? 'border border-white'
-                            : ''
-                    }`}
+                    className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12  ${
+                        isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
+                    } `}
                 >
-                    {(data?.dafollow === null || data?.dafollow <= 0) &&
-                        userInfo?.id !== data?.user_id && (
-                            <RiAddLine
-                                size="1.1rem"
-                                className="p-[2px] text-white"
+                    <Link
+                        to={
+                            data?.user_id === userInfo?.id
+                                ? '/profile/posts'
+                                : `/profile/${data?.user_id}/posts`
+                        }
+                    >
+                        {data?.video && isVisible && isRunAuto ? (
+                            <div className="w-full h-full">
+                                <video
+                                    ref={videoRef}
+                                    className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                    src={`https://talkie.transtechvietnam.com/${data.video}`}
+                                />
+                            </div>
+                        ) : (
+                            <Avatar
+                                src={`${BASE_URL}${data?.avatar}`}
+                                className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                alt="icon"
                             />
                         )}
+                    </Link>
+                    <div
+                        onClick={handleFollow}
+                        className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
+                            (data?.dafollow === null || data?.dafollow <= 0) &&
+                            userInfo?.id !== data?.user_id
+                                ? 'border border-white'
+                                : ''
+                        }`}
+                    >
+                        {(data?.dafollow === null || data?.dafollow <= 0) &&
+                            userInfo?.id !== data?.user_id && (
+                                <RiAddLine
+                                    size="1.1rem"
+                                    className="p-[2px] text-white"
+                                />
+                            )}
+                    </div>
+                    <div
+                        className={`md:h-12 ${
+                            isVisible && isRunAuto && data?.video
+                                ? 'h-16 w-16'
+                                : 'w-10 h-10'
+                        }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                    >
+                        {isVisible && isRunAuto && <SpeakingAnimation />}
+                    </div>
                 </div>
-                {/* <div
-                    className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
-                        isVisible && isRunAuto && data?.video
-                            ? 'h-16 w-16'
-                            : 'w-10 h-10'
-                    }  md:w-12 rounded-full ${
-                        isVisible && isRunAuto ? 'animate-ping' : ''
-                    }`}
-                ></div> */}
-                <div
-                    className={`md:h-12 ${
-                        isVisible && isRunAuto && data?.video
-                            ? 'h-16 w-16'
-                            : 'w-10 h-10'
-                    }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
-                >
-                    {isVisible && isRunAuto && <SpeakingAnimation />}
-                </div>
-            </div>
-
+            )}
             <div className="flex-1">
                 {userInfo?.id !== data?.user_id ? (
                     <div
@@ -552,10 +544,6 @@ export default function Details() {
                             )}
                             {data?.img && (
                                 <figure className="max-w-full relative my-2">
-                                    {/* <Avatar
-                                        src={`https://talkie.transtechvietnam.com/${data?.img}`}
-                                        className="min-h-40 h-full w-full object-cover rounded-xl"
-                                    /> */}
                                     <LazyLoadImage
                                         className="min-h-40 h-full w-full object-cover rounded-xl"
                                         alt={''}
@@ -605,14 +593,6 @@ export default function Details() {
                                 }
                                 count={shareCount}
                             />
-                            {/* {isBookMark && (
-                                <ActionButton
-                                    onClick={handleBookMark}
-                                    icon={
-                                        <FaBookmark className="text-purple-700 text-[0.9rem]" />
-                                    }
-                                />
-                            )} */}
                             {isBookMark && (
                                 <label
                                     className={`ui-bookmark  ${
@@ -650,26 +630,34 @@ export default function Details() {
                         handleLike={handleHeart}
                         handleSharePost={handleSharePost}
                         handleBookMark={handleBookMark}
-                        videoRef={videoRef}
                     />
                 )}
 
                 {data?.reply?.length > 0 && (
-                    <div className="relative mt-9 pb-12 overflow-auto scrollbar-none">
-                        {data?.reply?.map((img, index) => (
-                            <Avatar
-                                key={index}
-                                onClick={() => setIndexCommentPresent(index)}
-                                src={`https://talkie.transtechvietnam.com/${img.avatar}`}
-                                className={`absolute top-0 h-[45px] w-[45px] object-cover  border-[3px]  ${
-                                    indexCommentPresent === index
-                                        ? 'border-bluePrimary'
-                                        : ''
-                                }`}
-                                style={{ left: `${index * 48}px` }}
-                                alt=""
-                            />
-                        ))}
+                    <div className="flex gap-3 md:gap-6">
+                        {userInfo?.id === data?.user_id && (
+                            <div
+                                className={`appear-animation duration-300 relative h-10 md:h-12 min-w-10 md:min-w-12`}
+                            ></div>
+                        )}
+                        <div className="relative mt-9 w-full pb-12 overflow-auto scrollbar-none">
+                            {data?.reply?.map((img, index) => (
+                                <Avatar
+                                    key={index}
+                                    onClick={() =>
+                                        setIndexCommentPresent(index)
+                                    }
+                                    src={`https://talkie.transtechvietnam.com/${img.avatar}`}
+                                    className={`absolute top-0 h-[45px] w-[45px] object-cover  border-[3px]  ${
+                                        indexCommentPresent === index
+                                            ? 'border-bluePrimary'
+                                            : ''
+                                    }`}
+                                    style={{ left: `${index * 48}px` }}
+                                    alt=""
+                                />
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

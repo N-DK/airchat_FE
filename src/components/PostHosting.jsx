@@ -45,6 +45,8 @@ import { addViewPost } from '../redux/actions/UserActions';
 import { Howl, Howler } from 'howler';
 import { AppContext } from '../AppContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { BASE_URL } from '../constants/api.constant';
+import SpeakingAnimation from './SpeakingAnimation';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -171,7 +173,6 @@ function PostHosting({
     handleLike,
     handleSharePost,
     handleBookMark,
-    videoRef,
     bonusHeight = 0,
     bonusKey = '',
 }) {
@@ -211,7 +212,8 @@ function PostHosting({
     const { isRunAuto } = useContext(AppContext);
 
     const [isVisible, setIsVisible] = useState(false);
-    // const videoRef = useRef(null);
+
+    const videoRef = useRef(null);
     const divRef = useRef(null);
 
     const handleToggleSearch = (itemId) => {
@@ -331,7 +333,7 @@ function PostHosting({
             {
                 threshold: [0.1],
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.1,
+                    window.innerHeight * 0.15,
                     100,
                 )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
@@ -353,7 +355,8 @@ function PostHosting({
             isVisible &&
             (data?.video && data?.video != '0'
                 ? videoRef?.current
-                : data?.audio)
+                : data?.audio) &&
+            document.getElementById(`post-item-profile${bonusKey}-${data?.id}`)
         ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100);
@@ -361,7 +364,6 @@ function PostHosting({
                 console.log('Thiết bị không hỗ trợ rung.');
             }
 
-            // dispatch(setPostActive(data));
             dispatch(
                 setObjectActive({
                     post: data,
@@ -377,12 +379,19 @@ function PostHosting({
                         `post-item-profile${bonusKey}-${data?.id}`,
                     ),
                     parent: contentsChattingRef?.current,
-                    video: videoRef.current,
+                    video: videoRef?.current,
                     bonus: bonusHeight,
                 }),
             );
         }
-    }, [isVisible, contentsChattingRef, videoRef?.current, data, isRunAuto]);
+    }, [
+        isVisible,
+        contentsChattingRef,
+        videoRef,
+        data,
+        isRunAuto,
+        bonusHeight,
+    ]);
 
     useEffect(() => {
         if (debouncedSearch) {
@@ -420,89 +429,127 @@ function PostHosting({
 
     return (
         <>
-            <div className="relative flex-1 appear-animation duration-300">
+            <div
+                className={`flex gap-3 md:gap-6 ${
+                    position === 'right' ? '' : 'flex-row-reverse'
+                }`}
+            >
                 <div
-                    ref={divRef}
-                    id={`post-item-profile${bonusKey}-${data?.id}`}
-                    className={`relative bg-slatePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
-                        isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
+                    className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
+                        isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
                     }`}
-                    onTouchStart={() => {
-                        handleTouchStartPost(
-                            `post-item-profile${bonusKey}-${data?.id}`,
-                        );
-                    }}
-                    onTouchEnd={handleTouchEndPost}
                 >
-                    <div
-                        id={'hidden'}
-                        className={`absolute top-[-22px] ${
-                            position === 'right' ? 'right-0' : 'left-0'
-                        } border-[5px] border-grayPrimary dark:border-darkPrimary flex items-center gap-4 bg-slatePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
-                    >
-                        <FaRegStar className="dark:text-white" />
-                        <label
-                            className={`ui-bookmark  ${
-                                isBookMark
-                                    ? initialLoad
-                                        ? 'init-active'
-                                        : 'active'
-                                    : ''
-                            }`}
-                            onClick={handleBookMark}
-                        >
-                            <div className="bookmark">
-                                <svg viewBox="0 0 32 32">
-                                    <g>
-                                        <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z"></path>
-                                    </g>
-                                </svg>
-                            </div>
-                        </label>
-                        <RiDeleteBin6Line
-                            onClick={() => {
-                                setIsOpen(true);
-                            }}
-                            className="dark:text-white"
+                    {data?.video && isVisible && isRunAuto ? (
+                        <div className="w-full h-full">
+                            <video
+                                ref={videoRef}
+                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                src={`https://talkie.transtechvietnam.com/${data.video}`}
+                            />
+                        </div>
+                    ) : (
+                        <Avatar
+                            src={`${BASE_URL}${data?.avatar}`}
+                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                            alt="icon"
                         />
-                    </div>
-                    <div onClick={() => handleNavigate(data)}>
-                        <PostHeader item={data} position={position} />
-                        {(data?.tag_user || tagsUser?.length > 0) && (
-                            <div className="flex flex-wrap">
-                                {tagsUser?.map((tag, i) => (
-                                    <span
-                                        className={`font-semibold dark:text-white  mr-2`}
-                                        key={i}
-                                    >
-                                        {tag?.name}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        <p
-                            className={`text-left ${
-                                window.location.pathname.includes('details')
-                                    ? ''
-                                    : 'line-clamp-5'
-                            } md:text-lg dark:text-white ${
-                                position === 'left' ? 'text-right' : 'text-left'
-                            }`}
-                        >
-                            {data.content}
-                        </p>
+                    )}
 
-                        {(data?.img || file) && (
-                            <figure
-                                onTouchStart={(e) => {
-                                    e.stopPropagation();
-                                    handleTouchStart(data);
-                                }}
-                                onTouchEnd={handleTouchEnd}
-                                id={`delete-photo-${data.id}`}
-                                className="max-w-full relative min-h-40 mt-2"
+                    <div
+                        className={`md:h-12 ${
+                            isVisible && isRunAuto && data?.video
+                                ? 'h-16 w-16'
+                                : 'w-10 h-10'
+                        }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                    >
+                        {isVisible && isRunAuto && <SpeakingAnimation />}
+                    </div>
+                </div>
+                <div className="relative flex-1 appear-animation duration-300">
+                    <div
+                        ref={divRef}
+                        id={`post-item-profile${bonusKey}-${data?.id}`}
+                        className={`relative bg-slatePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
+                            isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
+                        }`}
+                        onTouchStart={() => {
+                            handleTouchStartPost(
+                                `post-item-profile${bonusKey}-${data?.id}`,
+                            );
+                        }}
+                        onTouchEnd={handleTouchEndPost}
+                    >
+                        <div
+                            id={'hidden'}
+                            className={`absolute top-[-22px] ${
+                                position === 'right' ? 'right-0' : 'left-0'
+                            } border-[5px] border-grayPrimary dark:border-darkPrimary flex items-center gap-4 bg-slatePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]`}
+                        >
+                            <FaRegStar className="dark:text-white" />
+                            <label
+                                className={`ui-bookmark  ${
+                                    isBookMark
+                                        ? initialLoad
+                                            ? 'init-active'
+                                            : 'active'
+                                        : ''
+                                }`}
+                                onClick={handleBookMark}
                             >
-                                {/* <Avatar
+                                <div className="bookmark">
+                                    <svg viewBox="0 0 32 32">
+                                        <g>
+                                            <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z"></path>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </label>
+                            <RiDeleteBin6Line
+                                onClick={() => {
+                                    setIsOpen(true);
+                                }}
+                                className="dark:text-white"
+                            />
+                        </div>
+                        <div onClick={() => handleNavigate(data)}>
+                            <PostHeader item={data} position={position} />
+                            {(data?.tag_user || tagsUser?.length > 0) && (
+                                <div className="flex flex-wrap">
+                                    {tagsUser?.map((tag, i) => (
+                                        <span
+                                            className={`font-semibold dark:text-white  mr-2`}
+                                            key={i}
+                                        >
+                                            {tag?.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <p
+                                className={`text-left ${
+                                    window.location.pathname.includes('details')
+                                        ? ''
+                                        : 'line-clamp-5'
+                                } md:text-lg dark:text-white ${
+                                    position === 'left'
+                                        ? 'text-right'
+                                        : 'text-left'
+                                }`}
+                            >
+                                {data.content}
+                            </p>
+
+                            {(data?.img || file) && (
+                                <figure
+                                    onTouchStart={(e) => {
+                                        e.stopPropagation();
+                                        handleTouchStart(data);
+                                    }}
+                                    onTouchEnd={handleTouchEnd}
+                                    id={`delete-photo-${data.id}`}
+                                    className="max-w-full relative min-h-40 mt-2"
+                                >
+                                    {/* <Avatar
                                     src={
                                         file
                                             ? convertObjectURL(file)
@@ -510,140 +557,143 @@ function PostHosting({
                                     }
                                     className=" w-full h-full object-cover rounded-xl"
                                 /> */}
-                                <LazyLoadImage
-                                    className=" w-full h-full object-cover rounded-xl"
-                                    alt={''}
-                                    effect="blur"
-                                    wrapperProps={{
-                                        style: {
-                                            transitionDelay: '1s',
-                                        },
-                                    }}
-                                    src={
-                                        file
-                                            ? convertObjectURL(file)
-                                            : data?.img instanceof File
-                                            ? URL.createObjectURL(data?.img)
-                                            : data?.img?.startsWith('blob:')
-                                            ? data?.img
-                                            : `https://talkie.transtechvietnam.com/${data?.img}`
-                                    }
-                                />
-                                {(loadingUpload || loadingDeletePhoto) && (
-                                    <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
-                                        <LoadingSpinner />
-                                    </div>
-                                )}
-                            </figure>
-                        )}
-                        {(data?.url || url) && (
-                            <div>
-                                <LinkPreviewComponent
-                                    url={url ?? data.url}
-                                    post_id={data.id}
-                                    setData={setData}
-                                    dataUrl={data.url}
-                                />
-                            </div>
-                        )}
-                        <div className="flex items-center mt-2">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleUploadAvatar(data.id);
-                                }}
-                            >
-                                <LuImagePlus className="dark:text-white mr-2" />
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setIsOpenLink(true);
-                                }}
-                            >
-                                <IoMdLink
-                                    className="dark:text-white mr-2"
-                                    size={20}
-                                />
-                            </button>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleToggleSearch(data.id);
-                                }}
-                            >
-                                <GoMention className="dark:text-white  mr-2" />
-                            </button>
-                        </div>
-                        {isShowSearch && (
-                            <>
-                                <div className="w-[80%] flex flex-wrap gap-1 mt-2">
-                                    {(result.length > 0
-                                        ? result
-                                        : tagsUser
-                                    )?.map((user, i) => (
-                                        <MentionsItem
-                                            key={i}
-                                            user={user}
-                                            handle={(e) => {
-                                                e.stopPropagation();
-                                                handleMentions(user);
-                                            }}
-                                            isMentions={isMentions(user?.id)}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%] bg-white">
-                                    <input
-                                        onChange={(e) =>
-                                            setSearchText(e.target.value)
+                                    <LazyLoadImage
+                                        className=" w-full h-full object-cover rounded-xl"
+                                        alt={''}
+                                        effect="blur"
+                                        wrapperProps={{
+                                            style: {
+                                                transitionDelay: '1s',
+                                            },
+                                        }}
+                                        src={
+                                            file
+                                                ? convertObjectURL(file)
+                                                : data?.img instanceof File
+                                                ? URL.createObjectURL(data?.img)
+                                                : data?.img?.startsWith('blob:')
+                                                ? data?.img
+                                                : `https://talkie.transtechvietnam.com/${data?.img}`
                                         }
-                                        onClick={(e) => e.stopPropagation()}
-                                        placeholder="Search"
-                                        className="border-none outline-none bg-transparent w-full dark:text-white dark:placeholder-gray-400"
                                     />
-                                    <RiSearch2Line className="dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
-                                    {loading && (
-                                        <PiSpinnerBold className="dark:text-white absolute right-1 top-1/2 -translate-y-1/2 spinner" />
+                                    {(loadingUpload || loadingDeletePhoto) && (
+                                        <div className="absolute w-full h-full top-0 left-0 rounded-xl bg-black/30 flex justify-center items-center">
+                                            <LoadingSpinner />
+                                        </div>
                                     )}
+                                </figure>
+                            )}
+                            {(data?.url || url) && (
+                                <div>
+                                    <LinkPreviewComponent
+                                        url={url ?? data.url}
+                                        post_id={data.id}
+                                        setData={setData}
+                                        dataUrl={data.url}
+                                    />
                                 </div>
-                            </>
-                        )}
+                            )}
+                            <div className="flex items-center mt-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleUploadAvatar(data.id);
+                                    }}
+                                >
+                                    <LuImagePlus className="dark:text-white mr-2" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsOpenLink(true);
+                                    }}
+                                >
+                                    <IoMdLink
+                                        className="dark:text-white mr-2"
+                                        size={20}
+                                    />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleSearch(data.id);
+                                    }}
+                                >
+                                    <GoMention className="dark:text-white  mr-2" />
+                                </button>
+                            </div>
+                            {isShowSearch && (
+                                <>
+                                    <div className="w-[80%] flex flex-wrap gap-1 mt-2">
+                                        {(result.length > 0
+                                            ? result
+                                            : tagsUser
+                                        )?.map((user, i) => (
+                                            <MentionsItem
+                                                key={i}
+                                                user={user}
+                                                handle={(e) => {
+                                                    e.stopPropagation();
+                                                    handleMentions(user);
+                                                }}
+                                                isMentions={isMentions(
+                                                    user?.id,
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="relative dark:bg-darkPrimary rounded-md pl-10 mt-2 py-1 w-[80%] bg-white">
+                                        <input
+                                            onChange={(e) =>
+                                                setSearchText(e.target.value)
+                                            }
+                                            onClick={(e) => e.stopPropagation()}
+                                            placeholder="Search"
+                                            className="border-none outline-none bg-transparent w-full dark:text-white dark:placeholder-gray-400"
+                                        />
+                                        <RiSearch2Line className="dark:text-white absolute left-3 top-1/2 -translate-y-1/2" />
+                                        {loading && (
+                                            <PiSpinnerBold className="dark:text-white absolute right-1 top-1/2 -translate-y-1/2 spinner" />
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        <ModalDelete
+                            title="TITLE_DELETE_POST"
+                            subTitle="SUBTITLE_DELETE_POST"
+                            isOpen={isOpen}
+                            setIsOpen={setIsOpen}
+                            handle={() =>
+                                handleAction(deletePost, item?.id, () => {})
+                            }
+                        />
+                        <ModalDelete
+                            title="TITLE_ADD_LINK"
+                            subTitle="SUBTITLE_ADD_LINK"
+                            isOpen={isOpenLink}
+                            setIsOpen={setIsOpenLink}
+                            handle={handlePasteUrl}
+                            buttonOKText="PASTE"
+                        />
+                        <ModalDelete
+                            title="TITLE_DELETE_PHOTO"
+                            subTitle="SUBTITLE_DELETE_PHOTO"
+                            isOpen={isOpenDeletePhoto}
+                            setIsOpen={setIsOpenDeletePhoto}
+                            handle={() => {
+                                item.img = null;
+                                setFile(null);
+                                dispatch(deletePhoto(item?.id));
+                            }}
+                        />
                     </div>
-                    <ModalDelete
-                        title="TITLE_DELETE_POST"
-                        subTitle="SUBTITLE_DELETE_POST"
-                        isOpen={isOpen}
-                        setIsOpen={setIsOpen}
-                        handle={() =>
-                            handleAction(deletePost, item?.id, () => {})
-                        }
-                    />
-                    <ModalDelete
-                        title="TITLE_ADD_LINK"
-                        subTitle="SUBTITLE_ADD_LINK"
-                        isOpen={isOpenLink}
-                        setIsOpen={setIsOpenLink}
-                        handle={handlePasteUrl}
-                        buttonOKText="PASTE"
-                    />
-                    <ModalDelete
-                        title="TITLE_DELETE_PHOTO"
-                        subTitle="SUBTITLE_DELETE_PHOTO"
-                        isOpen={isOpenDeletePhoto}
-                        setIsOpen={setIsOpenDeletePhoto}
-                        handle={() => {
-                            item.img = null;
-                            setFile(null);
-                            dispatch(deletePhoto(item?.id));
-                        }}
+                    <PostActions
+                        item={data}
+                        position={position}
+                        handleLike={handleLike}
                     />
                 </div>
-                <PostActions
-                    item={data}
-                    position={position}
-                    handleLike={handleLike}
-                />
             </div>
             <CustomContextMenuDeletePhoto
                 isVisible={contextMenuVisible}

@@ -221,7 +221,6 @@ const MessageChatRoom = ({
                         isVisible &&
                         isRunAuto ? (
                             <video
-                                // playsInline
                                 ref={videoRef}
                                 className="transition-all w-[60px] h-[60px] duration-300 z-10 rounded-full object-cover"
                                 src={
@@ -231,25 +230,36 @@ const MessageChatRoom = ({
                                 }
                             />
                         ) : message?.isTurnOnCamera ? (
-                            recordOption === 'video' ? (
-                                <Webcam
-                                    className="transition-all w-[60px] h-[60px] duration-300 z-10 rounded-full object-cover"
-                                    videoConstraints={{
-                                        facingMode: 'user',
-                                    }}
-                                    style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        objectFit: 'cover',
-                                    }}
-                                />
-                            ) : (
-                                <Avatar
-                                    src={`${BASE_URL}${message?.sender_avt}`}
-                                    className=" top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                                    alt="icon"
-                                />
-                            )
+                            <>
+                                {recordOption === 'video' ? (
+                                    <Webcam
+                                        className="transition-all w-[60px] h-[60px] duration-300 z-10 rounded-full object-cover"
+                                        videoConstraints={{
+                                            facingMode: 'user',
+                                        }}
+                                        style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            objectFit: 'cover',
+                                        }}
+                                    />
+                                ) : (
+                                    <Avatar
+                                        src={`${BASE_URL}${message?.sender_avt}`}
+                                        className=" top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                        alt="icon"
+                                    />
+                                )}
+                                <div
+                                    className={`md:h-12 ${
+                                        recordOption === 'video'
+                                            ? 'w-16 h-16'
+                                            : 'w-10 h-10'
+                                    }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                                >
+                                    <SpeakingAnimation />
+                                </div>
+                            </>
                         ) : (
                             <Avatar
                                 src={`${BASE_URL}${message?.sender_avt}`}
@@ -258,18 +268,6 @@ const MessageChatRoom = ({
                             />
                         )}
                         {!message?.isTurnOnCamera && (
-                            // <div
-                            //     className={`absolute top-0 left-0 bg-red-300 md:h-12 md:w-12  ${
-                            //         isVisible &&
-                            //         isRunAuto &&
-                            //         message?.video &&
-                            //         message?.video != 0
-                            //             ? 'h-16 w-16'
-                            //             : 'w-10 h-10'
-                            //     }  rounded-full ${
-                            //         isVisible && isRunAuto ? 'animate-ping' : ''
-                            //     }`}
-                            // ></div>
                             <div
                                 className={`md:h-12 ${
                                     isVisible &&

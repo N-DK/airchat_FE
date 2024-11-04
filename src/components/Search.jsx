@@ -154,6 +154,7 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                                 postsList={data?.top?._data}
                                 isTurnOnCamera={data?.top?.isTurnOnCamera}
                                 contentsChattingRef={data?.contentContainerRef}
+                                bonusKey={'-latest'}
                             />
                         </div>
                     </div>
@@ -172,7 +173,7 @@ const Top = React.memo(({ data }) => {
             postsList={topPosts?._data}
             isTurnOnCamera={topPosts?.isTurnOnCamera}
             contentsChattingRef={contentContainerRef}
-            bonusKey={'top'}
+            bonusKey={'-top'}
         />
     ) : (
         <EmptySearch />
@@ -180,25 +181,11 @@ const Top = React.memo(({ data }) => {
 });
 
 const TabContent = React.memo(
-    ({ component: Component, data, setActiveKey }) => {
-        const contentContainerRef = useRef(null);
-        const [isRender, setIsRender] = useState(false);
-
-        useEffect(() => {
-            setIsRender(contentContainerRef?.current);
-        }, [contentContainerRef]);
-
+    ({ component: Component, data, setActiveKey, shouldRender }) => {
         return (
-            <div
-                ref={contentContainerRef}
-                className={`w-full dark:bg-dark2Primary`}
-            >
-                {isRender && (
-                    <Component
-                        contentContainerRef={contentContainerRef}
-                        data={data}
-                        setActiveKey={setActiveKey}
-                    />
+            <div className={`w-full dark:bg-dark2Primary`}>
+                {shouldRender && (
+                    <Component data={data} setActiveKey={setActiveKey} />
                 )}
             </div>
         );
@@ -221,7 +208,7 @@ const tabData = [
     {
         key: '3',
         'title-en-US': 'People',
-        'title-vi-VN': 'Người',
+        'title-vi-VN': 'Mọi người',
         component: ListFollow,
     },
     {
@@ -235,6 +222,7 @@ const tabData = [
 function Search({ data, isTurnOnCamera }) {
     const [activeKey, setActiveKey] = useState('1');
     const [searchData, setSearchData] = useState(data);
+    const [renderedTabs, setRenderedTabs] = useState({});
     const { loading } = useSelector((state) => state.userSearch);
     const { userInfo } = useSelector((state) => state.userProfile);
     const { language } = useSelector((state) => state.userLanguage);
@@ -247,6 +235,13 @@ function Search({ data, isTurnOnCamera }) {
         if (!userInfo) dispatch(profile());
     }, []);
 
+    useEffect(() => {
+        setRenderedTabs((prev) => ({
+            ...prev,
+            [activeKey]: true,
+        }));
+    }, [activeKey]);
+
     const changeTab = useCallback(
         (direction) => {
             const currentIndex = tabData.findIndex(
@@ -257,7 +252,9 @@ function Search({ data, isTurnOnCamera }) {
             } else if (direction === 'prev' && currentIndex > 0) {
                 setActiveKey(tabData[currentIndex - 1].key);
             }
-            contentContainerRef.current = null;
+            contentContainerRef.current.scrollTo({
+                top: 0,
+            });
         },
         [activeKey],
     );
@@ -271,24 +268,34 @@ function Search({ data, isTurnOnCamera }) {
 
     const tabPanes = useMemo(
         () =>
-            tabData.map((tab) => (
-                <TabPane tab={tab[`title-${language}`]} key={tab.key}>
-                    {loading ? (
-                        <div className="mt-4">
-                            <LoadingSpinner />
-                        </div>
-                    ) : (
-                        <>
-                            <TabContent
-                                component={tab.component}
-                                data={searchData}
-                                setActiveKey={setActiveKey}
-                            />
-                        </>
-                    )}
-                </TabPane>
-            )),
-        [searchData, loading],
+            tabData.map((tab) => {
+                const shouldRender =
+                    renderedTabs[tab.key] || activeKey === tab.key;
+
+                if (activeKey === tab.key && !renderedTabs[tab.key]) {
+                    setRenderedTabs((prev) => ({ ...prev, [tab.key]: true }));
+                }
+
+                return (
+                    <TabPane tab={tab[`title-${language}`]} key={tab.key}>
+                        {loading ? (
+                            <div className="mt-4">
+                                <LoadingSpinner />
+                            </div>
+                        ) : (
+                            <>
+                                <TabContent
+                                    component={tab.component}
+                                    data={searchData}
+                                    setActiveKey={setActiveKey}
+                                    shouldRender={shouldRender}
+                                />
+                            </>
+                        )}
+                    </TabPane>
+                );
+            }),
+        [searchData, loading, activeKey, renderedTabs],
     );
 
     useEffect(() => {
@@ -303,7 +310,7 @@ function Search({ data, isTurnOnCamera }) {
         <div {...handlers}>
             <div
                 ref={contentContainerRef}
-                className="h-screen pb-[calc(100vh-230px)] overflow-auto scrollbar-none"
+                className="h-screen pb-[calc(100vh-200px)] overflow-auto scrollbar-none"
             >
                 <Tabs
                     activeKey={activeKey}

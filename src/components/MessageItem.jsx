@@ -49,6 +49,7 @@ function MessageItem({
     message,
     setDetailsPostReply,
     contentsChattingRef,
+    setListProfile,
 }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -93,13 +94,24 @@ function MessageItem({
                     }),
                 );
             }
+            if (setListProfile) {
+                setListProfile((prev) =>
+                    prev.map((item) => ({
+                        ...item,
+                        reply: item.reply?.map((reply) =>
+                            reply?.id === data?.id ? data : reply,
+                        ),
+                    })),
+                );
+            }
+
             setIsHeart(!!data?.heart);
             setLikeCount(data?.number_heart ?? 0);
             setShareCount(data?.number_share ?? 0);
             setIsShare(!!data?.share);
             setIsBookMark(!!data?.bookmark);
         }
-    }, [data]);
+    }, [data, setListProfile, setDetailsPostReply]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -107,11 +119,9 @@ function MessageItem({
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                // threshold: 0.3,
-                // rootMargin: '-100px 0px -610px 0px', //rootMargin: '-200px 0px -510px 0px',
-                threshold: [0.1], // đa dạng giá trị threshold cho nhiều tình huống
+                threshold: [0.1],
                 rootMargin: `-${Math.max(
-                    window.innerHeight * 0.1,
+                    window.innerHeight * 0.15,
                     100,
                 )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
             },
@@ -337,80 +347,77 @@ function MessageItem({
                                 position === 'left' ? 'flex-row-reverse' : ''
                             } `}
                         >
-                            <div
-                                className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
-                                    isVisible && isRunAuto && data?.video
-                                        ? 'h-16 w-16'
-                                        : ''
-                                } ${
-                                    position === 'left' ? 'mr-0 ml-2' : 'mr-2'
-                                }`}
-                            >
-                                <Link
-                                    to={
-                                        data?.user_id === userInfo?.id
-                                            ? '/profile/posts'
-                                            : `/profile/${data?.user_id}/posts`
-                                    }
-                                >
-                                    {data?.video && isVisible && isRunAuto ? (
-                                        <div className="w-full h-full">
-                                            <video
-                                                ref={videoRef}
-                                                className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
-                                                src={`https://talkie.transtechvietnam.com/${data?.video}`}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <Avatar
-                                            src={`${BASE_URL}${data?.avatar}`}
-                                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                                            alt="icon"
-                                        />
-                                    )}
-                                </Link>
+                            {userInfo?.id !== data?.user_id && (
                                 <div
-                                    onClick={handleFollow}
-                                    className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
-                                        (data?.dafollow === null ||
-                                            data?.dafollow <= 0) &&
-                                        userInfo?.id !== data?.user_id
-                                            ? 'border border-white'
+                                    className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
+                                        isVisible && isRunAuto && data?.video
+                                            ? 'h-16 w-16'
                                             : ''
+                                    } ${
+                                        position === 'left'
+                                            ? 'mr-0 ml-2'
+                                            : 'mr-2'
                                     }`}
                                 >
-                                    {(data?.dafollow === null ||
-                                        data?.dafollow <= 0) &&
-                                        userInfo?.id !== data?.user_id && (
-                                            <RiAddLine
-                                                size="1.1rem"
-                                                className="p-[2px] text-white"
+                                    <Link
+                                        to={
+                                            data?.user_id === userInfo?.id
+                                                ? '/profile/posts'
+                                                : `/profile/${data?.user_id}/posts`
+                                        }
+                                    >
+                                        {data?.video &&
+                                        isVisible &&
+                                        isRunAuto ? (
+                                            <div className="w-full h-full">
+                                                <video
+                                                    ref={videoRef}
+                                                    className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
+                                                    src={`https://talkie.transtechvietnam.com/${data?.video}`}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <Avatar
+                                                src={`${BASE_URL}${data?.avatar}`}
+                                                className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                                alt="icon"
                                             />
                                         )}
+                                    </Link>
+                                    <div
+                                        onClick={handleFollow}
+                                        className={`absolute bottom-0 right-[-3px] z-20 bg-blue-500 rounded-full ${
+                                            (data?.dafollow === null ||
+                                                data?.dafollow <= 0) &&
+                                            userInfo?.id !== data?.user_id
+                                                ? 'border border-white'
+                                                : ''
+                                        }`}
+                                    >
+                                        {(data?.dafollow === null ||
+                                            data?.dafollow <= 0) &&
+                                            userInfo?.id !== data?.user_id && (
+                                                <RiAddLine
+                                                    size="1.1rem"
+                                                    className="p-[2px] text-white"
+                                                />
+                                            )}
+                                    </div>
+                                    <div
+                                        className={`md:h-12 ${
+                                            isVisible &&
+                                            isRunAuto &&
+                                            data?.video
+                                                ? 'h-16 w-16'
+                                                : 'w-10 h-10'
+                                        }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
+                                    >
+                                        {isVisible && isRunAuto && (
+                                            <SpeakingAnimation />
+                                        )}
+                                    </div>
                                 </div>
-                                {/* <div
-                                    className={`absolute top-0 left-0 bg-red-300  md:h-12 ${
-                                        isVisible && isRunAuto && data?.video
-                                            ? 'h-16 w-16'
-                                            : 'w-10 h-10'
-                                    }  md:w-12 rounded-full ${
-                                        isVisible && isRunAuto
-                                            ? 'animate-ping'
-                                            : ''
-                                    }`}
-                                ></div> */}
-                                <div
-                                    className={`md:h-12 ${
-                                        isVisible && isRunAuto && data?.video
-                                            ? 'h-16 w-16'
-                                            : 'w-10 h-10'
-                                    }  md:w-12 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2`}
-                                >
-                                    {isVisible && isRunAuto && (
-                                        <SpeakingAnimation />
-                                    )}
-                                </div>
-                            </div>
+                            )}
                             {userInfo?.id === data?.user_id ? (
                                 <PostHosting
                                     item={data}
@@ -422,7 +429,6 @@ function MessageItem({
                                     handleLike={handleHeart}
                                     handleSharePost={handleSharePost}
                                     handleBookMark={handleBookMark}
-                                    videoRef={videoRef}
                                 />
                             ) : (
                                 <div
