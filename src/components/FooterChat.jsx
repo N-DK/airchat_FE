@@ -493,7 +493,7 @@ export default function FooterChat({
                         isProcess.current = true;
                         setTimeout(async () => {
                             await handleAudioPlayback(object);
-                        }, 500);
+                        }, 700);
                     }
                 } else if (object?.video) {
                     if (object?.video === videoCurrent) {
@@ -512,7 +512,7 @@ export default function FooterChat({
                         isProcess.current = true;
                         setTimeout(async () => {
                             await handleVideoPlayback(object);
-                        }, 500);
+                        }, 700);
                     }
                 } else {
                     handleScroll(object);

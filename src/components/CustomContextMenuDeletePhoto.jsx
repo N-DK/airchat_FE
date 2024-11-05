@@ -58,10 +58,10 @@ const CustomContextMenuDeletePhoto = ({
                         }}
                     >
                         <button
-                            onClick={() =>
-                                handle(id.split('-')[id.split('-').length - 1])
-                            }
-                            className="dark:bg-dark2Primary flex items-center text-red-500 rounded-xl py-2 px-4 mb-3 float-right"
+                            onClick={() => {
+                                handle(id.split('-')[id.split('-').length - 1]);
+                            }}
+                            className="dark:bg-dark2Primary flex items-center relative z-50 text-red-500 rounded-xl py-2 px-4 mb-3 float-right"
                         >
                             {LANGUAGE[language]['TITLE_DELETE_PHOTO']}
                             <FaRegTrashAlt className="ml-2" />

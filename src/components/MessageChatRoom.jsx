@@ -163,7 +163,9 @@ const MessageChatRoom = ({
     useEffect(() => {
         if (
             isVisible &&
-            (message?.video != '0' ? videoRef?.current : message?.audio)
+            (message?.video && message?.video != '0'
+                ? videoRef?.current
+                : message?.audio)
         ) {
             if (navigator.vibrate) {
                 navigator.vibrate(100); // Rung 200ms
