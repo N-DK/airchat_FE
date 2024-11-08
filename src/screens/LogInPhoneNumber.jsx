@@ -174,6 +174,7 @@ export default function LogInPhoneNumber() {
         if (errorCheckPhone) {
             setShowNotify(true);
             setMessageNotify(errorCheckPhone);
+            dispatch({ type: CHECK_NUMBER_PHONE_RESET });
         }
     }, [errorCheckPhone]);
 

@@ -6,7 +6,10 @@ import {
     checkUserAccount,
     checkUserEmail,
 } from './../redux/actions/UserActions';
-import { SAVE_USER_EMAIL_TEMPORARY } from '../redux/constants/UserConstants';
+import {
+    CHECK_USER_EMAIL_RESET,
+    SAVE_USER_EMAIL_TEMPORARY,
+} from '../redux/constants/UserConstants';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
 import { CgSpinner } from 'react-icons/cg';
@@ -57,6 +60,9 @@ export default function LogInEmail() {
                 payload: email,
             });
         }
+        dispatch({
+            type: CHECK_USER_EMAIL_RESET,
+        });
     }, [userInfo]);
 
     useEffect(() => {
