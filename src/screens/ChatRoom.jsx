@@ -251,7 +251,7 @@ const ChatRoom = () => {
     }, [isTop, isEnd]);
 
     useEffect(() => {
-        if (userInfoStranger) {
+        if (userInfoStranger && !state?.user) {
             setState({ user: userInfoStranger });
             dispatch({ type: USER_PROFILE_STRANGER_RESET });
         }
