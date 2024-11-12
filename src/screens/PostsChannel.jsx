@@ -203,8 +203,8 @@ export default function PostsChannel() {
             if (scrollTop > 0 && !isSwiping) {
                 setTimeout(() => {
                     setIsSwiping(true);
-                }, 500);
-            } else if (scrollTop <= 20 && isSwiping) {
+                }, 1500);
+            } else if (scrollTop <= 50 && isSwiping) {
                 setIsSwiping(false);
             }
         }
