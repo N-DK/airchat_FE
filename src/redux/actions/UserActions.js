@@ -113,6 +113,13 @@ import {
     USER_SAVE_FCM_TOKEN_SUCCESS,
     USER_SAVE_FCM_TOKEN_FAIL,
     USER_SAVE_FCM_TOKEN_RESET,
+    USER_GET_WEATHER_SUCCESS,
+    USER_GET_WEATHER_REQUEST,
+    USER_GET_WEATHER_FAIL,
+    USER_SEND_WEATHER_REQUEST,
+    USER_SEND_WEATHER_SUCCESS,
+    USER_SEND_WEATHER_FAIL,
+    USER_SET_COORDS,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -1427,3 +1434,78 @@ export const getListNotification =
             });
         }
     };
+
+export const getWeather = (lat, lng) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_GET_WEATHER_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/get-weather',
+            { lat, lng },
+            config,
+        );
+        dispatch({
+            type: USER_GET_WEATHER_SUCCESS,
+            payload: data?.data,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_GET_WEATHER_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const setCoords = (coords) => async (dispatch, getState) => {
+    dispatch({
+        type: USER_SET_COORDS,
+        payload: coords,
+    });
+};
+
+export const sendWeather = (coords) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_SEND_WEATHER_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo.token ?? userInfoCode.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/send-weather',
+            coords,
+            config,
+        );
+        dispatch({
+            type: USER_SEND_WEATHER_SUCCESS,
+            results: data.results,
+        });
+    } catch (error) {
+        dispatch({
+            type: USER_SEND_WEATHER_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};

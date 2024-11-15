@@ -77,6 +77,7 @@ export default function PostsChannel() {
     const divRef = useRef(null);
     const contentsChattingRef = useRef(null);
     const refTranscript = useRef(null);
+    const timeoutRef = useRef(null);
 
     const { userInfo } = useSelector((state) => state.userProfile);
     const { post } = useSelector((state) => state.setPostActive);
@@ -89,9 +90,6 @@ export default function PostsChannel() {
     } = useSelector((state) => state.channelPosts);
     const { menus } = useSelector((state) => state.menuBar);
     const { channel } = useSelector((state) => state.channelPin);
-    // const { isSuccess: isSuccessFollow } = useSelector(
-    //     (state) => state.userFollow,
-    // );
     const { language } = useSelector((state) => state.userLanguage);
 
     const handleScroll = useCallback(() => {
@@ -187,7 +185,11 @@ export default function PostsChannel() {
 
         const handleScroll = () => {
             const currentScrollTop = contents.scrollTop;
-            setIsSwiping(currentScrollTop > lastScrollTop);
+            setIsSwiping(
+                currentScrollTop > 50
+                    ? currentScrollTop >= lastScrollTop
+                    : false,
+            );
             lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
         };
 
@@ -197,18 +199,44 @@ export default function PostsChannel() {
 
     useEffect(() => {
         const contents = contentsChattingRef?.current;
-        if (contents) {
+        if (!contents) return;
+
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+
+        const handleScroll = debounce(() => {
             const { scrollTop } = contents;
 
-            if (scrollTop > 0 && !isSwiping) {
-                setTimeout(() => {
-                    setIsSwiping(true);
-                }, 1500);
-            } else if (scrollTop <= 50 && isSwiping) {
-                setIsSwiping(false);
+            if (scrollTop > 20 && !isSwiping) {
+                timeoutRef.current = setTimeout(() => {
+                    if (contents.scrollTop > 20) {
+                        setIsSwiping(true);
+                    }
+                    timeoutRef.current = null;
+                }, 1000);
             }
-        }
-    }, [contentsChattingRef, isSwiping]);
+
+            if (scrollTop <= 50 && isSwiping) {
+                setIsSwiping(false);
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        }, 500);
+
+        contents.addEventListener('scroll', handleScroll);
+
+        return () => {
+            contents.removeEventListener('scroll', handleScroll);
+            handleScroll.cancel();
+
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        };
+    }, [contentsChattingRef, isSwiping, timeoutRef]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(

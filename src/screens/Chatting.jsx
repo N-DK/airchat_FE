@@ -22,7 +22,11 @@ import { usePingStates } from '../hooks/usePingStates';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import { barMenu, listPost, setPostActive } from '../redux/actions/PostActions';
-import { profile, saveFCMToken } from '../redux/actions/UserActions';
+import {
+    getWeather,
+    profile,
+    saveFCMToken,
+} from '../redux/actions/UserActions';
 
 import { CHANNEL_ADD_RESET } from '../redux/constants/ChannelConstants';
 import Webcam from 'react-webcam';
@@ -75,12 +79,16 @@ export default function Chatting() {
     const { data: dataFCMToken } = useSelector(
         (state) => state.userSaveFCMToken,
     );
+    const { weather } = useSelector((state) => state.userGetWeather);
 
     const getFirebaseRef = useRef(null);
     const saveFirebaseTokenRef = useRef(null);
     const contentsChattingRef = useRef(null);
     const divRef = useRef(null);
     const refTranscript = useRef(null);
+    const timeoutRef = useRef(null);
+
+    const coords = JSON.parse(localStorage.getItem('coords'));
 
     const {
         isAddChannel,
@@ -137,7 +145,7 @@ export default function Chatting() {
         if (!contents) return;
 
         const { scrollTop: scTop, clientHeight, scrollHeight } = contents;
-        setIsSwiping(scTop > contents.lastScrollTop);
+        setIsSwiping(scTop > 50 ? scTop >= contents.lastScrollTop : false);
         contents.lastScrollTop = scTop <= 0 ? 0 : scTop;
 
         const scrollTop =
@@ -168,29 +176,73 @@ export default function Chatting() {
         dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
     }, [handleResetLimit, contentsChattingRef, dispatch, redirect]);
 
+    // useEffect(() => {
+    //     if (coords) dispatch(getWeather(coords.lat, coords.lng));
+    // }, [coords?.lat, coords?.lng, dispatch]);
+
     useEffect(() => {
         const contents = contentsChattingRef?.current;
-        if (contents) {
-            const { scrollTop } = contents;
-            if (scrollTop > 0 && !isSwiping) {
-                setTimeout(() => {
-                    setIsSwiping(true);
-                }, 1500);
-            } else if (scrollTop <= 50 && isSwiping) {
-                setIsSwiping(false);
-            }
-            setIsReload(false);
+        if (!contents) return;
+
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
         }
-    }, [contentsChattingRef, isSwiping, isReload]);
+
+        const handleScroll = debounce(() => {
+            const { scrollTop } = contents;
+
+            if (scrollTop > 20 && !isSwiping) {
+                timeoutRef.current = setTimeout(() => {
+                    if (contents.scrollTop > 20) {
+                        setIsSwiping(true);
+                    }
+                    timeoutRef.current = null;
+                }, 1000);
+            }
+
+            if (scrollTop <= 50 && isSwiping) {
+                setIsSwiping(false);
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        }, 100);
+
+        contents.addEventListener('scroll', handleScroll);
+
+        setIsReload(false);
+
+        return () => {
+            contents.removeEventListener('scroll', handleScroll);
+            handleScroll.cancel();
+
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        };
+    }, [contentsChattingRef, isSwiping, isReload, timeoutRef]);
 
     useEffect(() => {
         if (redirect) {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+
             handleResetLimit();
             setPostListData(null);
             setIsEndPost(false);
             setHasMore(false);
             contentsChattingRef?.current?.scrollTo({ top: 0 });
         }
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        };
     }, [redirect, handleResetLimit, contentsChattingRef]);
 
     useEffect(() => {
@@ -279,7 +331,7 @@ export default function Chatting() {
         } else if (redirect?.includes('group-channel')) {
             const channel_id = redirect?.split('/')[1];
             dispatch(
-                listPost(redirect?.split('/')[0], limit, offset, channel_id, 1),
+                listPost(redirect?.split('/')[0], limit, offset, channel_id, 0),
             );
         } else if (redirect !== 'see-all') {
             dispatch(listPost(redirect, limit, offset));

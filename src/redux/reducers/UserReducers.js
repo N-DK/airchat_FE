@@ -121,6 +121,13 @@ import {
     USER_SAVE_FCM_TOKEN_FAIL,
     USER_FOLLOW_RESET,
     USER_SAVE_FCM_TOKEN_RESET,
+    USER_GET_WEATHER_REQUEST,
+    USER_GET_WEATHER_SUCCESS,
+    USER_GET_WEATHER_FAIL,
+    USER_SEND_WEATHER_REQUEST,
+    USER_SEND_WEATHER_SUCCESS,
+    USER_SEND_WEATHER_FAIL,
+    USER_SET_COORDS,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -658,6 +665,38 @@ export const userSaveFCMTokenReducer = (state = {}, action) => {
             return { data: null };
         case USER_SAVE_FCM_TOKEN_FAIL:
             return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userGetWeatherReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_GET_WEATHER_REQUEST:
+            return { loading: true };
+        case USER_GET_WEATHER_SUCCESS:
+            return {
+                loading: false,
+                weather: action.payload,
+            };
+        case USER_SET_COORDS:
+            return { coords: action.payload };
+        case USER_GET_WEATHER_FAIL:
+            return { loading: false, error: action.payload };
+        default:
+            return state;
+    }
+};
+
+export const userSendWeatherReducer = (state = {}, action) => {
+    switch (action.type) {
+        case USER_SEND_WEATHER_REQUEST:
+            return { loading: true };
+        case USER_SEND_WEATHER_SUCCESS:
+            return { loading: false, isSuccess: action.results };
+        case USER_SEND_WEATHER_FAIL:
+            return { loading: false, error: action.payload };
+
         default:
             return state;
     }

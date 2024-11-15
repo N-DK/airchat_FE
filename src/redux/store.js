@@ -39,6 +39,7 @@ import {
     userLanguageReducer,
     userBlockedYouReducer,
     userSaveFCMTokenReducer,
+    userGetWeatherReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -142,6 +143,7 @@ const reducer = combineReducers({
     unReportPost: unReportPostReducer,
     userBlockedYou: userBlockedYouReducer,
     userSaveFCMToken: userSaveFCMTokenReducer,
+    userGetWeather: userGetWeatherReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

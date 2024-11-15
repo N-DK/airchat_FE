@@ -6,6 +6,7 @@ import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
 import { checkUserAccount, profile } from '../redux/actions/UserActions';
 import { Avatar } from 'antd';
+import useLocation from '../hooks/useLocation';
 
 export default function HomeScreen() {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function HomeScreen() {
         (state) => state.userProfile,
     );
     const userAccount = useSelector((state) => state.userAccount);
+
     const {
         account,
         loading: loadingAccount,
@@ -39,7 +41,7 @@ export default function HomeScreen() {
         if (account?.results === 1) {
             setTimeout(() => {
                 setIsLoading(false);
-            }, 1000);
+            }, 1500);
             if (account.login == 1 && userInfo?.token) {
                 navigate('/chatting');
             } else if (account.login == 2 && userInfo?.token) {

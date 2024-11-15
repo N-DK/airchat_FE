@@ -128,7 +128,7 @@ export const listPost =
             };
             const { data } = await axios.post(
                 `https://talkie.transtechvietnam.com/${redirect}`,
-                { limit, offset, channel_id },
+                { limit, offset, channel_id, trending },
                 config,
             );
             dispatch({
