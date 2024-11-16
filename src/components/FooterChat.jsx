@@ -410,7 +410,7 @@ export default function FooterChat({
     useEffect(() => {
         const run = async () => {
             if (isRunAuto && !isFullScreen) {
-                if (!object?.video && !object?.audio) {
+                if (!object?.video && !object?.audio && object) {
                     handleScroll(object);
                 }
             }

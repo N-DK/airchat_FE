@@ -49,10 +49,11 @@ const useMediaHandler = ({
             }
         } else {
             if (videoRef?.current?.paused) {
+                videoRef.current.playbackRate = isRunSpeed;
                 videoRef?.current?.play();
             }
         }
-    }, [isRunAuto, isFullScreen]);
+    }, [isRunAuto, isFullScreen, isRunSpeed]);
 
     const handleAudio = useCallback(() => {
         if (!isRunAuto || isFullScreen) {
@@ -61,10 +62,11 @@ const useMediaHandler = ({
             }
         } else {
             if (!audioRef?.current?.playing()) {
+                audioRef.current.rate(isRunSpeed);
                 audioRef?.current?.play();
             }
         }
-    }, [isRunAuto, isFullScreen]);
+    }, [isRunAuto, isFullScreen, isRunSpeed]);
 
     const handlePause = useCallback(() => {
         if (data?.video && data?.video !== '0') {
@@ -77,7 +79,7 @@ const useMediaHandler = ({
     }, [data]);
 
     const initAudio = useCallback(() => {
-        if (item?.audio && item?.audio != 0) {
+        if (item?.audio && item?.audio != 0 && !audioRef?.current) {
             let audioSrc = '';
             if (item.audio.startsWith('blob:')) {
                 audioSrc = item.audio;
@@ -92,7 +94,6 @@ const useMediaHandler = ({
                 html5: true,
             });
             audioRef.current.volume(1);
-            audioRef.current.rate(isRunSpeed);
             audioRef.current.on('end', () => {
                 handleScroll({
                     element: postItemRef.current,
@@ -101,14 +102,13 @@ const useMediaHandler = ({
                 });
             });
         }
-    }, [item?.audio, handleScroll]);
+    }, [item?.audio, handleScroll, audioRef]);
 
     const initVideo = useCallback(() => {
         if (!videoRef?.current) return;
 
         const video = videoRef.current;
         video.controls = false;
-        video.playbackRate = isRunSpeed;
         video.playsInline = true;
         video.onended = () => {
             handleScroll({
