@@ -267,11 +267,6 @@ export default function PostsChannel() {
 
     useEffect(() => {
         if (isVisible) {
-            // if (navigator.vibrate) {
-            //     navigator.vibrate(100); // Rung 200ms
-            // } else {
-            //     console.log('Thiết bị không hỗ trợ rung.');
-            // }
             dispatch(setPostActive(null));
             dispatch(
                 setObjectActive({

@@ -44,6 +44,7 @@ import {
     POST_REPLY_ALL_SUCCESS,
     POST_REPLY_ALL_FAIL,
     POST_REPLY_ALL_RESET,
+    POST_DELETE_RESET,
 } from '../constants/PostConstants';
 
 export const postSubmitReducer = (state = {}, action) => {
@@ -177,6 +178,8 @@ export const deletePostReducer = (state = {}, action) => {
                 success: action.payload,
                 post_id: action.post_id,
             };
+        case POST_DELETE_RESET:
+            return {};
         case POST_DELETE_FAIL:
             return { loading: false, error: action.payload };
         default:

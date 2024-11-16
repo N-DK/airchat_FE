@@ -219,84 +219,29 @@ const tabData = [
     },
 ];
 
-function Search({ data, isTurnOnCamera }) {
-    const [activeKey, setActiveKey] = useState('1');
+const Search = ({ data, isTurnOnCamera }) => {
     const [searchData, setSearchData] = useState(data);
+    const [activeKey, setActiveKey] = useState('1');
     const [renderedTabs, setRenderedTabs] = useState({});
     const { loading } = useSelector((state) => state.userSearch);
-    const { userInfo } = useSelector((state) => state.userProfile);
     const { language } = useSelector((state) => state.userLanguage);
-    const { isFullScreen } = useContext(AppContext);
     const dispatch = useDispatch();
 
     const contentContainerRef = useRef(null);
 
+    // Fetch user profile if not available
     useEffect(() => {
-        if (!userInfo) dispatch(profile());
-    }, []);
+        dispatch(profile());
+    }, [dispatch]);
 
+    // Mark the active tab as rendered
     useEffect(() => {
         setRenderedTabs((prev) => ({
             ...prev,
             [activeKey]: true,
         }));
+        contentContainerRef.current?.scrollTo(0, 0);
     }, [activeKey]);
-
-    const changeTab = useCallback(
-        (direction) => {
-            const currentIndex = tabData.findIndex(
-                (tab) => tab.key === activeKey,
-            );
-            if (direction === 'next' && currentIndex < tabData.length - 1) {
-                setActiveKey(tabData[currentIndex + 1].key);
-            } else if (direction === 'prev' && currentIndex > 0) {
-                setActiveKey(tabData[currentIndex - 1].key);
-            }
-            contentContainerRef.current.scrollTo({
-                top: 0,
-            });
-        },
-        [activeKey],
-    );
-
-    const handlers = useSwipeable({
-        onSwipedLeft: () => changeTab('next'),
-        onSwipedRight: () => changeTab('prev'),
-        preventDefaultTouchmoveEvent: true,
-        trackMouse: true,
-    });
-
-    const tabPanes = useMemo(
-        () =>
-            tabData.map((tab) => {
-                const shouldRender =
-                    renderedTabs[tab.key] || activeKey === tab.key;
-
-                if (activeKey === tab.key && !renderedTabs[tab.key]) {
-                    setRenderedTabs((prev) => ({ ...prev, [tab.key]: true }));
-                }
-
-                return (
-                    <TabPane tab={tab[`title-${language}`]} key={tab.key}>
-                        {loading ? (
-                            <div className="mt-4">
-                                <LoadingSpinner />
-                            </div>
-                        ) : (
-                            <>
-                                <TabContent
-                                    component={tab.component}
-                                    data={searchData}
-                                    setActiveKey={setActiveKey}
-                                    shouldRender={shouldRender}
-                                />
-                            </>
-                        )}
-                    </TabPane>
-                );
-            }),
-        [searchData, loading, activeKey, renderedTabs],
-    );
 
     useEffect(() => {
         setSearchData({
@@ -306,23 +251,47 @@ function Search({ data, isTurnOnCamera }) {
         });
     }, [data, isTurnOnCamera, contentContainerRef]);
 
+    const tabPanes = useMemo(() => {
+        return tabData.map((tab) => {
+            const shouldRender = renderedTabs[tab.key] || activeKey === tab.key;
+
+            return (
+                <TabPane tab={tab[`title-${language}`]} key={tab.key}>
+                    {loading ? (
+                        <div className="mt-4">
+                            <LoadingSpinner />
+                        </div>
+                    ) : (
+                        shouldRender && (
+                            <TabContent
+                                component={tab.component}
+                                data={searchData}
+                                setActiveKey={setActiveKey}
+                                shouldRender={shouldRender}
+                            />
+                        )
+                    )}
+                </TabPane>
+            );
+        });
+    }, [searchData, loading, activeKey, renderedTabs, language]);
+
     return (
-        <div {...handlers}>
+        <div>
             <div
                 ref={contentContainerRef}
                 className="h-screen pb-[calc(100vh-200px)] overflow-auto scrollbar-none"
             >
                 <Tabs
                     activeKey={activeKey}
-                    onChange={setActiveKey}
+                    onChange={(key) => setActiveKey(key)}
                     className="centered-tabs"
                 >
                     {tabPanes}
                 </Tabs>
             </div>
-            {isFullScreen && <ScreenFull postsList={searchData?.top?._data} />}
         </div>
     );
-}
+};
 
 export default Search;

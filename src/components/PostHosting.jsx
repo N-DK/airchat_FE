@@ -47,6 +47,7 @@ import { AppContext } from '../AppContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { BASE_URL } from '../constants/api.constant';
 import SpeakingAnimation from './SpeakingAnimation';
+import useMediaHandler from '../hooks/useMediaHandler';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -209,11 +210,21 @@ function PostHosting({
 
     const { users, loading } = useSelector((state) => state.searchUser);
 
-    const { isRunAuto } = useContext(AppContext);
+    const { isRunAuto, isFullScreen, isRunSpeed } = useContext(AppContext);
 
     const [isVisible, setIsVisible] = useState(false);
 
-    const videoRef = useRef(null);
+    const { videoRef, postItemRef } = useMediaHandler({
+        item,
+        isRunAuto,
+        isFullScreen,
+        isVisible,
+        isRunSpeed,
+        dispatch,
+        contentsChattingRef,
+        setPostActive: null,
+    });
+
     const divRef = useRef(null);
 
     const handleToggleSearch = (itemId) => {
@@ -351,49 +362,6 @@ function PostHosting({
     }, []);
 
     useEffect(() => {
-        if (
-            isVisible &&
-            (data?.video && data?.video != '0'
-                ? videoRef?.current
-                : data?.audio) &&
-            document.getElementById(`post-item-profile${bonusKey}-${data?.id}`)
-        ) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100);
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
-
-            dispatch(
-                setObjectActive({
-                    post: data,
-                    audio: data?.audio
-                        ? new Howl({
-                              src: [
-                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
-                              ],
-                              html5: true,
-                          })
-                        : null,
-                    element: document.getElementById(
-                        `post-item-profile${bonusKey}-${data?.id}`,
-                    ),
-                    parent: contentsChattingRef?.current,
-                    video: videoRef?.current,
-                    bonus: bonusHeight,
-                }),
-            );
-        }
-    }, [
-        isVisible,
-        contentsChattingRef,
-        videoRef,
-        data,
-        isRunAuto,
-        bonusHeight,
-    ]);
-
-    useEffect(() => {
         if (debouncedSearch) {
             dispatch(searchUser(debouncedSearch));
         } else {
@@ -465,9 +433,12 @@ function PostHosting({
                         {isVisible && isRunAuto && <SpeakingAnimation />}
                     </div>
                 </div>
-                <div className="relative flex-1 appear-animation duration-300">
+                <div
+                    ref={divRef}
+                    className="relative flex-1 appear-animation duration-300"
+                >
                     <div
-                        ref={divRef}
+                        ref={postItemRef}
                         id={`post-item-profile${bonusKey}-${data?.id}`}
                         className={`relative bg-slatePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
                             isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'

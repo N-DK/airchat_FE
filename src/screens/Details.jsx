@@ -36,6 +36,7 @@ import { FaBookmark, FaRegBookmark, FaRegStar } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import {
+    POST_DELETE_RESET,
     POST_REPLY_ALL_RESET,
     POST_SUBMIT_RESET,
 } from '../redux/constants/PostConstants';
@@ -49,6 +50,7 @@ import { Howl } from 'howler';
 import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 import SpeakingAnimation from '../components/SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import useMediaHandler from '../hooks/useMediaHandler';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -95,6 +97,7 @@ export default function Details() {
         isRecord,
         toggleIsRecord,
         isRunAuto,
+        isRunSpeed,
         isFullScreen,
         toggleIsRunAuto,
     } = useContext(AppContext);
@@ -119,7 +122,6 @@ export default function Details() {
     const [isOpen, setIsOpen] = useState(false);
     const contentsChattingRef = useRef(null);
     const divRef = useRef(null);
-    const videoRef = useRef(null);
 
     const [isVisible, setIsVisible] = useState(false);
     const postRefs = useRef([]);
@@ -138,7 +140,16 @@ export default function Details() {
         (state) => state.userFollow,
     );
 
-    // const userId = new URLSearchParams(location.search).get('userId') || null;
+    const { videoRef, postItemRef } = useMediaHandler({
+        item: data,
+        isRunAuto,
+        isFullScreen,
+        isVisible,
+        isRunSpeed,
+        dispatch,
+        contentsChattingRef,
+        setPostActive,
+    });
 
     useEffect(() => {
         if (isArray(post)) {
@@ -218,42 +229,6 @@ export default function Details() {
     }, [reportSuccess]);
 
     useEffect(() => {
-        if (
-            isVisible &&
-            document.getElementById(`post-item-details-${data?.id}`) &&
-            (data?.video && data?.video != '0'
-                ? videoRef?.current
-                : data?.audio)
-        ) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100); // Rung 200ms
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
-            dispatch(setPostActive(data));
-            dispatch(
-                setObjectActive({
-                    post: data,
-                    audio: data?.audio
-                        ? new Howl({
-                              src: [
-                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
-                              ],
-                              html5: true,
-                          })
-                        : null,
-                    element: document.getElementById(
-                        `post-item-details-${data?.id}`,
-                    ),
-                    parent: contentsChattingRef?.current,
-                    video: videoRef.current,
-                    bonus: 70,
-                }),
-            );
-        }
-    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
-
-    useEffect(() => {
         if (data && !isHeart) setInitialLoad(false);
     }, [isHeart, data]);
 
@@ -277,6 +252,8 @@ export default function Details() {
                     reply: newReply,
                 };
             });
+
+            dispatch({ type: POST_DELETE_RESET });
         }
     }, [isSuccessDeletePost, postIdDelete]);
 
@@ -508,6 +485,7 @@ export default function Details() {
                         }`}
                     >
                         <div
+                            ref={postItemRef}
                             id={`post-item-details-${data?.id}`}
                             onTouchStart={() =>
                                 handleTouchStart(

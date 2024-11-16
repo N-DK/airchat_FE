@@ -42,6 +42,7 @@ import { Howl } from 'howler';
 import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 import SpeakingAnimation from './SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import useMediaHandler from '../hooks/useMediaHandler';
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 function MessageItem({
@@ -66,7 +67,6 @@ function MessageItem({
     const [rect, setRect] = useState(null);
     const pressTimer = useRef();
     const messageRef = useRef(null);
-    const videoRef = useRef(null);
 
     const [targetElement, setTargetElement] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
@@ -79,7 +79,18 @@ function MessageItem({
         (state) => state.userFollow,
     );
 
-    const { isRunAuto } = useContext(AppContext);
+    const { isRunAuto, isFullScreen, isRunSpeed } = useContext(AppContext);
+
+    const { videoRef, postItemRef } = useMediaHandler({
+        item: message,
+        isRunAuto,
+        isFullScreen,
+        isVisible,
+        isRunSpeed,
+        dispatch,
+        contentsChattingRef,
+        setPostActive: null,
+    });
 
     useEffect(() => {
         if (message) setData(message);
@@ -172,6 +183,10 @@ function MessageItem({
         }
     }, [reportSuccess]);
 
+    useEffect(() => {
+        setRect(targetElement?.getBoundingClientRect());
+    }, [targetElement]);
+
     const handleTouchStart = useCallback(
         (id) => {
             pressTimer.current = setTimeout(() => {
@@ -238,13 +253,6 @@ function MessageItem({
         }
     };
 
-    // const handleBookMark = () => {
-    //     if (data?.id) {
-    //         dispatch(bookMark(data.id));
-    //         setIsBookMark((prev) => !prev);
-    //     }
-    // };
-
     const handleBookMark = useCallback(() => {
         dispatch(bookMark(data?.id));
         setIsBookMark((prev) => {
@@ -280,47 +288,6 @@ function MessageItem({
         const baseUrl = `/posts/details/${data.id}`;
         return baseUrl;
     }, [data?.id, data?.reply]);
-
-    useEffect(() => {
-        if (
-            isVisible &&
-            document.getElementById(`post-item-reply-${data?.id}`) &&
-            (data?.video && data?.video != '0'
-                ? videoRef?.current
-                : data?.audio)
-        ) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100); // Rung 200ms
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
-            if (window.location.pathname.includes('/posts/details')) {
-                dispatch(setPostActive(data));
-            }
-            dispatch(
-                setObjectActive({
-                    post: data,
-                    audio: data?.audio
-                        ? new Howl({
-                              src: [
-                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
-                              ],
-                              html5: true,
-                          })
-                        : null,
-                    element: document.getElementById(
-                        `post-item-reply-${data?.id}`,
-                    ),
-                    parent: contentsChattingRef?.current,
-                    video: videoRef.current,
-                }),
-            );
-        }
-    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
-
-    useEffect(() => {
-        setRect(targetElement?.getBoundingClientRect());
-    }, [targetElement]);
 
     if (!message) {
         return (
@@ -439,6 +406,7 @@ function MessageItem({
                                     }`}
                                 >
                                     <div
+                                        ref={postItemRef}
                                         id={`post-item-reply-${data.id}`}
                                         onTouchStart={() =>
                                             handleTouchStart(

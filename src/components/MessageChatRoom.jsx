@@ -24,6 +24,7 @@ import { AppContext } from '../AppContext';
 import Webcam from 'react-webcam';
 import ImageFetcher from './ImageFetcher';
 import SpeakingAnimation from './SpeakingAnimation';
+import useMediaHandler from '../hooks/useMediaHandler';
 
 const MessageChatRoom = ({
     position = 'right',
@@ -31,16 +32,26 @@ const MessageChatRoom = ({
     setMessages,
     refContainer,
 }) => {
-    const { isRunAuto, recordOption } = useContext(AppContext);
+    const { isRunAuto, recordOption, isFullScreen, isRunSpeed } =
+        useContext(AppContext);
 
     const dispatch = useDispatch();
     const [isVisible, setIsVisible] = useState(false);
     const [statusLike, setStatusLike] = useState(message?.number_heart > 0);
     const [isOpen, setIsOpen] = useState(false);
-    const messageRef = useRef(null);
     const { socket, isConnected } = useSelector((state) => state.socket);
     const [initialLoad, setInitialLoad] = useState(true);
-    const videoRef = useRef(null);
+
+    const { videoRef, postItemRef: messageRef } = useMediaHandler({
+        item: message,
+        isRunAuto,
+        isFullScreen,
+        isVisible,
+        isRunSpeed,
+        dispatch,
+        contentsChattingRef: refContainer,
+        setPostActive: null,
+    });
 
     const handleLike = useCallback(() => {
         if (message?.id) {
@@ -160,50 +171,6 @@ const MessageChatRoom = ({
         };
     }, [position, isVisible]);
 
-    useEffect(() => {
-        if (
-            isVisible &&
-            (message?.video && message?.video != '0'
-                ? videoRef?.current
-                : message?.audio)
-        ) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100); // Rung 200ms
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
-            dispatch(
-                setObjectActive({
-                    post: message,
-                    audio: (() => {
-                        let audioSrc = null;
-
-                        if (message?.audio && message?.audio != 0) {
-                            if (message.audio.startsWith('blob:')) {
-                                audioSrc = message.audio;
-                            } else if (message.audio.startsWith('http')) {
-                                audioSrc = message.audio;
-                            } else {
-                                audioSrc = `https://talkie.transtechvietnam.com${message.audio}`;
-                            }
-
-                            return new Howl({
-                                src: [audioSrc],
-                                html5: true,
-                            });
-                        }
-
-                        return null; // Trả về null nếu không có audio
-                    })(),
-                    element: document.getElementById(`message-${message?.id}`),
-                    parent: refContainer?.current,
-                    bonus: -70,
-                    video: videoRef.current,
-                }),
-            );
-        }
-    }, [isVisible, refContainer?.current, videoRef, isRunAuto, message]);
-
     return (
         <>
             <div
@@ -224,7 +191,7 @@ const MessageChatRoom = ({
                         isRunAuto ? (
                             <video
                                 ref={videoRef}
-                                className="transition-all w-[60px] h-[60px] duration-300 z-10 rounded-full object-cover"
+                                className="transition-all w-[60px] relative h-[60px] duration-300 z-10 rounded-full object-cover"
                                 src={
                                     message.video.startsWith('blob:')
                                         ? message.video
@@ -243,6 +210,8 @@ const MessageChatRoom = ({
                                             width: '60px',
                                             height: '60px',
                                             objectFit: 'cover',
+                                            zIndex: 1,
+                                            position: 'relative',
                                         }}
                                     />
                                 ) : (

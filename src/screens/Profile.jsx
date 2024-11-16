@@ -36,7 +36,10 @@ import {
     listPostProfile,
     setPostActive,
 } from '../redux/actions/PostActions';
-import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+import {
+    POST_DELETE_RESET,
+    POST_SUBMIT_RESET,
+} from '../redux/constants/PostConstants';
 import ListPostItems from '../components/ListPostItems';
 import { IoIosSettings } from 'react-icons/io';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
@@ -357,6 +360,7 @@ export default function Profile() {
                     ),
                 }));
             });
+            dispatch({ type: POST_DELETE_RESET });
         }
     }, [isSuccessDeletePost, postIdDelete]);
 

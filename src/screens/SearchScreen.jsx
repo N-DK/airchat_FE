@@ -141,7 +141,7 @@ export default function SearchScreen() {
             <div
                 className={`flex justify-center pt-12 px-5 bg-white dark:bg-darkPrimary pb-[18px] transition-all duration-500 ${
                     isSwiping
-                        ? 'translate-y-[-150px] opacity-0 hidden'
+                        ? 'translate-y  -[-150px] opacity-0 hidden'
                         : 'opacity-100'
                 }`}
             >

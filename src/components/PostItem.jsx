@@ -28,7 +28,10 @@ import { FaBookmark, FaRegBookmark } from 'react-icons/fa6';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
-import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
+import {
+    POST_DELETE_RESET,
+    POST_SUBMIT_RESET,
+} from '../redux/constants/PostConstants';
 import { AppContext } from '../AppContext';
 import Webcam from 'react-webcam';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
@@ -41,6 +44,7 @@ import PostHosting from './PostHosting';
 import { Howl, Howler } from 'howler';
 import SpeakingAnimation from './SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import useMediaHandler from '../hooks/useMediaHandler';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -62,14 +66,6 @@ function PostItem({
     const [isShare, setIsShare] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const { userInfo } = useSelector((state) => state.userProfile);
-    const { success: unReportPostSuccess } = useSelector(
-        (state) => state.unReportPost,
-    );
-    // const { success: deletePostSuccess } = useSelector(
-    //     (state) => state.userDeletePost,
-    // );
-    const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [targetElement, setTargetElement] = useState(null);
     const [data, setData] = useState(item);
@@ -83,19 +79,35 @@ function PostItem({
     );
 
     const {
-        isRecord,
-        toggleIsRecord,
+        isRunSpeed,
         isRunAuto,
         recordOption,
         newMessageFromFooter,
+        isFullScreen,
     } = useContext(AppContext);
 
+    const { userInfo } = useSelector((state) => state.userProfile);
+    const { success: unReportPostSuccess } = useSelector(
+        (state) => state.unReportPost,
+    );
+    const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const { success: newPost } = useSelector((state) => state.postSubmit);
     const { post } = useSelector((state) => state.setPostActive);
     const { language } = useSelector((state) => state.userLanguage);
 
+    const { videoRef, postItemRef } = useMediaHandler({
+        item,
+        isRunAuto,
+        isFullScreen,
+        isVisible,
+        isRunSpeed,
+        dispatch,
+        contentsChattingRef,
+        setPostActive,
+    });
+
     const divRef = useRef(null);
-    const videoRef = useRef(null);
+
     const pressTimer = useRef();
 
     const handleTouchStart = useCallback(
@@ -142,10 +154,13 @@ function PostItem({
         }));
     }, [data]);
 
+    const postDetailsUrl = useMemo(() => {
+        const baseUrl = `/posts/details/${data?.id}`;
+        return baseUrl;
+    }, [data?.id, data?.reply]);
+
     useEffect(() => {
-        if (item) {
-            setData(item);
-        }
+        if (item) setData(item);
     }, [item]);
 
     useEffect(() => {
@@ -169,6 +184,8 @@ function PostItem({
         if (newPost) {
             if (newPost?.reply_post && newPost?.reply_post === item?.id) {
                 setList((prev) => {
+                    console.log(prev);
+
                     const newPosts = prev?.map((post) => {
                         if (post?.id === newPost?.reply_post) {
                             const updatedReplies = post?.reply?.map((reply) => {
@@ -181,12 +198,12 @@ function PostItem({
                                 return reply;
                             });
 
-                            const hasExistingReply = updatedReplies.some(
+                            const hasExistingReply = updatedReplies?.some(
                                 (reply) => reply.user_id === newPost.user_id,
                             );
 
                             if (!hasExistingReply) {
-                                updatedReplies.push({
+                                updatedReplies?.push({
                                     ...newPost,
                                     img: convertObjectURL(newPost?.img),
                                 });
@@ -231,13 +248,9 @@ function PostItem({
                     ),
                 }));
             });
+            dispatch({ type: POST_DELETE_RESET });
         }
     }, [isSuccessDeletePost, postIdDelete]);
-
-    const postDetailsUrl = useMemo(() => {
-        const baseUrl = `/posts/details/${data?.id}`;
-        return baseUrl;
-    }, [data?.id, data?.reply]);
 
     useEffect(() => {
         if (setList) {
@@ -291,47 +304,6 @@ function PostItem({
     useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());
     }, [targetElement]);
-
-    useEffect(() => {
-        if (
-            isVisible &&
-            (data?.video && data?.video != '0'
-                ? videoRef?.current
-                : data?.audio) &&
-            document.getElementById(`post-item-${data?.id}`)
-        ) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100);
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
-            dispatch(setPostActive(data));
-            dispatch(
-                setObjectActive({
-                    post: data,
-                    audio: data?.audio
-                        ? new Howl({
-                              src: [
-                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
-                              ],
-                              html5: true,
-                          })
-                        : null,
-                    element: document.getElementById(`post-item-${data?.id}`),
-                    parent: contentsChattingRef?.current,
-                    video: videoRef?.current,
-                    bonus: bonusHeight,
-                }),
-            );
-        }
-    }, [
-        contentsChattingRef,
-        videoRef,
-        isVisible,
-        data,
-        isRunAuto,
-        bonusHeight,
-    ]);
 
     const handleLike = useCallback(() => {
         dispatch(heart(data?.id));
@@ -522,6 +494,7 @@ function PostItem({
                                         </div>
                                     )}
                                     <div
+                                        ref={postItemRef}
                                         id={`post-item-${data?.id}`}
                                         onTouchStart={() =>
                                             handleTouchStart(

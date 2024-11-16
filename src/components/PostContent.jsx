@@ -45,6 +45,7 @@ import { Howl, Howler } from 'howler';
 import SpeakingAnimation from './SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import MessageItem from './MessageItem';
+import useMediaHandler from '../hooks/useMediaHandler';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -177,10 +178,9 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
     const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const pressTimer = useRef();
     const [isVisible, setIsVisible] = useState(false);
-    const videoRef = useRef(null);
     const divRef = useRef(null);
 
-    const { isRunAuto } = useContext(AppContext);
+    const { isRunAuto, isFullScreen, isRunSpeed } = useContext(AppContext);
 
     const { loading: loadingUpload, success } = useSelector(
         (state) => state.postUploadImage,
@@ -192,6 +192,18 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
 
     const { users, loading } = useSelector((state) => state.searchUser);
     const { language } = useSelector((state) => state.userLanguage);
+
+    const { videoRef, postItemRef } = useMediaHandler({
+        item,
+        isRunAuto,
+        isFullScreen,
+        isVisible,
+        isRunSpeed,
+        dispatch,
+        contentsChattingRef,
+        setPostActive: null,
+        bonusHeight: -70,
+    });
 
     const handleAction = (action, id, callback) => {
         dispatch(action(id));
@@ -363,44 +375,6 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
     }, []);
 
     useEffect(() => {
-        if (
-            isVisible &&
-            document.getElementById(`post-item-content-${data?.id}`) &&
-            (data?.video && data?.video != '0'
-                ? videoRef?.current
-                : data?.audio)
-        ) {
-            if (navigator.vibrate) {
-                navigator.vibrate(100);
-            } else {
-                console.log('Thiết bị không hỗ trợ rung.');
-            }
-            if (window.location.pathname.includes('/posts/details')) {
-                dispatch(setPostActive(data));
-            }
-            dispatch(
-                setObjectActive({
-                    post: data,
-                    audio: data?.audio
-                        ? new Howl({
-                              src: [
-                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
-                              ],
-                              html5: true,
-                          })
-                        : null,
-                    element: document.getElementById(
-                        `post-item-content-${data?.id}`,
-                    ),
-                    parent: contentsChattingRef?.current,
-                    video: videoRef.current,
-                    bonus: -70,
-                }),
-            );
-        }
-    }, [isVisible, contentsChattingRef, videoRef, data, isRunAuto]);
-
-    useEffect(() => {
         if (item) {
             setDetailsPostReply(item?.reply || []);
         }
@@ -456,7 +430,10 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
                             isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
                         }`}
                     >
-                        <div id={`post-item-content-${data?.id}`}>
+                        <div
+                            ref={postItemRef}
+                            id={`post-item-content-${data?.id}`}
+                        >
                             <div className="absolute top-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
                                 <FaRegStar className="text-white" />
                                 <label
