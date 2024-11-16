@@ -666,15 +666,15 @@ body {
 }
 
 .hot#weather {
-    background-image: url(hot.png);
+    background-image: url('./assets/hot.png');
 }
 
 .cold#weather {
-    background-image: url(cold.png);
+    background-image: url('./assets/cold.png');
 }
 
 .warm#weather {
-    background-image: url(warm.png);
+    background-image: url('./assets/warm.png');
 }
 
 #weather {
