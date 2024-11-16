@@ -673,16 +673,27 @@ export const userSaveFCMTokenReducer = (state = {}, action) => {
 export const userGetWeatherReducer = (state = {}, action) => {
     switch (action.type) {
         case USER_GET_WEATHER_REQUEST:
-            return { loading: true };
+            return {
+                ...state,
+                loading: true,
+            };
         case USER_GET_WEATHER_SUCCESS:
             return {
+                ...state,
                 loading: false,
                 weather: action.payload,
             };
         case USER_SET_COORDS:
-            return { coords: action.payload };
+            return {
+                ...state,
+                coords: action.payload,
+            };
         case USER_GET_WEATHER_FAIL:
-            return { loading: false, error: action.payload };
+            return {
+                ...state,
+                loading: false,
+                error: action.payload,
+            };
         default:
             return state;
     }

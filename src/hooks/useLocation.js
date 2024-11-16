@@ -8,7 +8,7 @@ import {
 
 const useLocation = () => {
     const dispatch = useDispatch();
-    const { coords } = useSelector((state) => state.userGetWeather);
+    const { weather, coords } = useSelector((state) => state.userGetWeather);
 
     useEffect(() => {
         const getCoordinates = () => {
@@ -38,11 +38,10 @@ const useLocation = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        if (coords) {
-            // console.log('coords', coords);
-            // dispatch(sendWeather(coords));
+        if (coords?.lat && coords?.lng) {
+            if (!weather) dispatch(getWeather(coords?.lat, coords?.lng));
         }
-    }, [coords, dispatch]);
+    }, [coords?.lat, coords?.lng, dispatch, weather]);
 
     // useEffect(() => {
     //     if (coords?.lat && coords?.lng) {

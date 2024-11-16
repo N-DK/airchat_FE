@@ -468,8 +468,8 @@ const ChatRoom = () => {
                 </div>
                 <div className="">
                     <div className="dark:border-dark2Primary dark:bg-dark2Primary pt-[100px] px-4">
-                        {renderMessages}
                         <WeatherWidget />
+                        {renderMessages}
                     </div>
                 </div>
             </div>
