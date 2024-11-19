@@ -125,27 +125,21 @@ function MessageItem({
     }, [data, setListProfile, setDetailsPostReply]);
 
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            debounce(([entry]) => {
-                setIsVisible(entry.isIntersecting);
-            }, 200),
-            {
-                threshold: [0.1],
-                rootMargin: `-${Math.max(
-                    window.innerHeight * 0.15,
-                    100,
-                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
-            },
-        );
+        const handleScroll = debounce(() => {
+            if (messageRef?.current) {
+                const rect = messageRef.current.getBoundingClientRect();
+                setIsVisible(rect.top <= 200 && rect.top > 0);
+            }
+        }, 100);
 
-        if (messageRef?.current) {
-            observer.observe(messageRef?.current);
-        }
+        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
+        handleScroll();
 
         return () => {
-            if (messageRef?.current) {
-                observer.unobserve(messageRef?.current);
-            }
+            contentsChattingRef?.current?.removeEventListener(
+                'scroll',
+                handleScroll,
+            );
         };
     }, [data?.report]);
 

@@ -187,28 +187,21 @@ export default function Details() {
     }, [dispatch, id]);
 
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            debounce(([entry]) => {
-                setIsVisible(entry.isIntersecting);
-            }, 200),
-            {
-                threshold: 0.1,
-                rootMargin: `-${Math.max(
-                    window.innerHeight * 0.15,
-                    100,
-                )}px 0px -${Math.max(window.innerHeight * 0.75, 400)}px 0px`,
-            },
-        );
+        const handleScroll = debounce(() => {
+            if (divRef?.current) {
+                const rect = divRef.current.getBoundingClientRect();
+                setIsVisible(rect.top <= 200 && rect.top > 0);
+            }
+        }, 100);
 
-        if (divRef?.current) {
-            observer.observe(divRef.current);
-        }
+        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
+        handleScroll();
 
         return () => {
-            if (divRef?.current) {
-                observer.unobserve(divRef.current);
-            }
-            observer.disconnect();
+            contentsChattingRef?.current?.removeEventListener(
+                'scroll',
+                handleScroll,
+            );
         };
     }, [data?.report]);
 

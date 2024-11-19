@@ -79,7 +79,11 @@ const useMediaHandler = ({
     }, [data]);
 
     const initAudio = useCallback(() => {
-        if (item?.audio && item?.audio != 0 && !audioRef?.current) {
+        if (
+            item?.audio &&
+            item?.audio != 0 &&
+            !audioRef?.current?._src.includes(item.audio)
+        ) {
             let audioSrc = '';
             if (item.audio.startsWith('blob:')) {
                 audioSrc = item.audio;

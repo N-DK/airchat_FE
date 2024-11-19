@@ -173,12 +173,9 @@ export default function Chatting() {
         setIsEndPost(false);
         setHasMore(false);
         contentsChattingRef?.current.scrollTo({ top: 0 });
+        setIsSwiping(false);
         dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
     }, [handleResetLimit, contentsChattingRef, dispatch, redirect]);
-
-    // useEffect(() => {
-    //     if (coords) dispatch(getWeather(coords.lat, coords.lng));
-    // }, [coords?.lat, coords?.lng, dispatch]);
 
     useEffect(() => {
         const contents = contentsChattingRef?.current;
