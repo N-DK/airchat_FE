@@ -6,7 +6,7 @@ import {
     setCoords,
 } from '../redux/actions/UserActions';
 
-const useLocation = () => {
+const useLocationGPS = () => {
     const dispatch = useDispatch();
     const { weather, coords } = useSelector((state) => state.userGetWeather);
 
@@ -87,4 +87,4 @@ const useLocation = () => {
     // }, [coords, dispatch]);
 };
 
-export default useLocation;
+export default useLocationGPS;

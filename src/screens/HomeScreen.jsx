@@ -6,7 +6,6 @@ import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
 import { checkUserAccount, profile } from '../redux/actions/UserActions';
 import { Avatar } from 'antd';
-import useLocation from '../hooks/useLocation';
 
 export default function HomeScreen() {
     const navigate = useNavigate();
