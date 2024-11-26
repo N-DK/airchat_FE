@@ -15,6 +15,9 @@ import {
     CHANNEL_DELETE_REQUEST,
     CHANNEL_DELETE_SUCCESS,
     CHANNEL_DELETE_FAIL,
+    CHANNEL_DETAIL_REQUEST,
+    CHANNEL_DETAIL_SUCCESS,
+    CHANNEL_DETAIL_FAIL,
 } from '../constants/ChannelConstants';
 
 export const listChannel = () => async (dispatch, getState) => {
@@ -191,6 +194,40 @@ export const deleteChannel = (channel_id) => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: CHANNEL_DELETE_FAIL,
+            payload:
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+        });
+    }
+};
+
+export const detailChannel = (channel_id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: CHANNEL_DETAIL_REQUEST,
+        });
+        const {
+            userLogin: { userInfo },
+            userCode: { userInfo: userInfoCode },
+        } = getState();
+        const config = {
+            headers: {
+                'x-cypher-token': userInfo?.token ?? userInfoCode?.token,
+            },
+        };
+        const { data } = await axios.post(
+            'https://talkie.transtechvietnam.com/detail-channel',
+            { channel_id },
+            config,
+        );
+        dispatch({
+            type: CHANNEL_DETAIL_SUCCESS,
+            payload: data?.data[0],
+        });
+    } catch (error) {
+        dispatch({
+            type: CHANNEL_DETAIL_FAIL,
             payload:
                 error.response && error.response.data.message
                     ? error.response.data.message

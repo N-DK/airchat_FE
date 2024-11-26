@@ -77,6 +77,7 @@ export const AppProvider = ({ children }) => {
                 newMessageFromFooter,
                 setNewMessageFromFooter,
                 language,
+                setIsRunAuto,
             }}
         >
             {children}

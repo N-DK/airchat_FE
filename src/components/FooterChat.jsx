@@ -281,6 +281,59 @@ export default function FooterChat({
         }
     };
 
+    const handleAudioPlayback = async (object) => {
+        // dispatch(setObjectVideoCurrent(null));
+        if (audioCurrent && audioCurrent.playing()) {
+            await new Promise((resolve) => {
+                audioCurrent.once('pause', () => {
+                    resolve();
+                });
+                audioCurrent?.pause();
+            });
+        }
+
+        const audio = object?.audio;
+        if (audio) {
+            audio.volume(1);
+            audio.rate(isRunSpeed);
+            audio.off('end');
+            audio.on('end', () => {
+                handleScroll(object);
+            });
+            isProcess.current = false;
+            dispatch(setObjectAudioCurrent(audio));
+        } else {
+            console.error('Audio object is undefined');
+        }
+    };
+
+    const handleVideoPlayback = async (object) => {
+        // dispatch(setObjectAudioCurrent(null));
+        if (videoCurrent && !videoCurrent.paused) {
+            await new Promise((resolve) => {
+                videoCurrent.onpause = () => {
+                    resolve();
+                };
+                videoCurrent.pause();
+            });
+        }
+
+        const video = object?.video;
+        if (video) {
+            video.controls = false;
+            video.playbackRate = isRunSpeed;
+            video.playsInline = true;
+
+            video.onended = () => {
+                handleScroll(object);
+            };
+            isProcess.current = false;
+            dispatch(setObjectVideoCurrent(video));
+        } else {
+            console.error('Video object is undefined');
+        }
+    };
+
     useEffect(() => {
         if (newPost && newPost?.id) {
             dispatch({ type: POST_SUBMIT_RESET });
@@ -409,14 +462,78 @@ export default function FooterChat({
 
     useEffect(() => {
         const run = async () => {
-            if (isRunAuto && !isFullScreen) {
-                if (!object?.video && !object?.audio && object) {
+            if (!isRunAuto || isFullScreen) {
+                if (
+                    (audioCurrent && audioCurrent.playing()) ||
+                    (videoCurrent && !videoCurrent.paused)
+                ) {
+                    audioCurrent?.pause();
+                    videoCurrent?.pause();
+                }
+            } else if (isRunAuto && !isFullScreen && object) {
+                if (object?.audio) {
+                    if (object?.audio?._src === audioCurrent?._src) {
+                        if (!audioCurrent.playing()) {
+                            if (videoCurrent && !videoCurrent?.paused) {
+                                await new Promise((resolve) => {
+                                    videoCurrent.onpause = () => {
+                                        resolve();
+                                    };
+                                    videoCurrent?.pause();
+                                });
+                            }
+                            audioCurrent?.play();
+                        }
+                    } else if (!isProcess?.current) {
+                        isProcess.current = true;
+                        audioCurrent?.pause();
+                        setTimeout(async () => {
+                            await handleAudioPlayback(object);
+                        }, 700);
+                    }
+                } else if (object?.video) {
+                    if (object?.video === videoCurrent) {
+                        if (videoCurrent?.paused) {
+                            if (audioCurrent && audioCurrent?.playing()) {
+                                await new Promise((resolve) => {
+                                    audioCurrent?.once('pause', () => {
+                                        resolve();
+                                    });
+                                    audioCurrent?.pause();
+                                });
+                            }
+                            videoCurrent?.play();
+                        }
+                    } else if (!isProcess?.current) {
+                        isProcess.current = true;
+                        videoCurrent?.pause();
+                        setTimeout(async () => {
+                            await handleVideoPlayback(object);
+                        }, 700);
+                    }
+                } else {
                     handleScroll(object);
                 }
             }
         };
+
         run();
-    }, [object, isRunAuto, isFullScreen]);
+    }, [
+        object,
+        isRunAuto,
+        isFullScreen,
+        audioCurrent,
+        isRunSpeed,
+        videoCurrent,
+    ]);
+
+    useEffect(() => {
+        if (audioCurrent) {
+            audioCurrent.rate(isRunSpeed);
+        } else if (videoCurrent) {
+            videoCurrent.playbackRate = isRunSpeed;
+        }
+    }, [audioCurrent, isRunSpeed, videoCurrent]);
 
     return (
         <>

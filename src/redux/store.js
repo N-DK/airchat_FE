@@ -40,6 +40,7 @@ import {
     userBlockedYouReducer,
     userSaveFCMTokenReducer,
     userGetWeatherReducer,
+    userLinkReducer,
 } from './reducers/UserReducers';
 import {
     bookMarkReducer,
@@ -64,6 +65,7 @@ import {
     channelAddReducer,
     channelPinReducer,
     channelDeleteReducer,
+    channelDetailReducer,
 } from './reducers/ChannelReducers';
 import {
     detailMessageReducers,
@@ -144,6 +146,8 @@ const reducer = combineReducers({
     userBlockedYou: userBlockedYouReducer,
     userSaveFCMToken: userSaveFCMTokenReducer,
     userGetWeather: userGetWeatherReducer,
+    channelDetail: channelDetailReducer,
+    userLink: userLinkReducer,
 });
 
 const userInfoFromLocalStorage = localStorage.getItem('userInfo')

@@ -120,6 +120,7 @@ import {
     USER_SEND_WEATHER_SUCCESS,
     USER_SEND_WEATHER_FAIL,
     USER_SET_COORDS,
+    SET_LINK,
 } from '../constants/UserConstants';
 import axios from 'axios';
 
@@ -1508,4 +1509,11 @@ export const sendWeather = (coords) => async (dispatch, getState) => {
                     : error.message,
         });
     }
+};
+
+export const setLink = (link) => async (dispatch, getState) => {
+    dispatch({
+        type: SET_LINK,
+        payload: link,
+    });
 };

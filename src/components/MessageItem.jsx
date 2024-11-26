@@ -42,7 +42,6 @@ import { Howl } from 'howler';
 import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 import SpeakingAnimation from './SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import useMediaHandler from '../hooks/useMediaHandler';
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
 function MessageItem({
@@ -67,6 +66,7 @@ function MessageItem({
     const [rect, setRect] = useState(null);
     const pressTimer = useRef();
     const messageRef = useRef(null);
+    const videoRef = useRef(null);
 
     const [targetElement, setTargetElement] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
@@ -79,18 +79,7 @@ function MessageItem({
         (state) => state.userFollow,
     );
 
-    const { isRunAuto, isFullScreen, isRunSpeed } = useContext(AppContext);
-
-    const { videoRef, postItemRef } = useMediaHandler({
-        item: message,
-        isRunAuto,
-        isFullScreen,
-        isVisible,
-        isRunSpeed,
-        dispatch,
-        contentsChattingRef,
-        setPostActive: null,
-    });
+    const { isRunAuto } = useContext(AppContext);
 
     useEffect(() => {
         if (message) setData(message);
@@ -125,21 +114,27 @@ function MessageItem({
     }, [data, setListProfile, setDetailsPostReply]);
 
     useEffect(() => {
-        const handleScroll = debounce(() => {
-            if (messageRef?.current) {
-                const rect = messageRef.current.getBoundingClientRect();
-                setIsVisible(rect.top <= 200 && rect.top > 0);
-            }
-        }, 100);
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                threshold: [0.1],
+                rootMargin: `-${window.innerHeight * 0.1}px 0px -${Math.max(
+                    window.innerHeight * 0.75,
+                    400,
+                )}px 0px`,
+            },
+        );
 
-        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
-        handleScroll();
+        if (messageRef?.current) {
+            observer.observe(messageRef?.current);
+        }
 
         return () => {
-            contentsChattingRef?.current?.removeEventListener(
-                'scroll',
-                handleScroll,
-            );
+            if (messageRef?.current) {
+                observer.unobserve(messageRef?.current);
+            }
         };
     }, [data?.report]);
 
@@ -177,10 +172,6 @@ function MessageItem({
         }
     }, [reportSuccess]);
 
-    useEffect(() => {
-        setRect(targetElement?.getBoundingClientRect());
-    }, [targetElement]);
-
     const handleTouchStart = useCallback(
         (id) => {
             pressTimer.current = setTimeout(() => {
@@ -200,6 +191,23 @@ function MessageItem({
         },
         [targetElement],
     );
+
+    const handleSharePostDetail = useCallback((id) => {
+        if (navigator.share) {
+            navigator
+                .share({
+                    title: 'Chia sẻ bài viết',
+                    text: 'Hãy xem bài viết này!',
+                    url: `/share?link=/posts/details/${id}`,
+                })
+                .then(() => console.log('Chia sẻ thành công!'))
+                .catch((error) =>
+                    console.error('Chia sẻ không thành công:', error),
+                );
+        } else {
+            window.open(urlToShare, '_blank');
+        }
+    }, []);
 
     const handleTouchEnd = useCallback(() => {
         clearTimeout(pressTimer.current);
@@ -247,6 +255,13 @@ function MessageItem({
         }
     };
 
+    // const handleBookMark = () => {
+    //     if (data?.id) {
+    //         dispatch(bookMark(data.id));
+    //         setIsBookMark((prev) => !prev);
+    //     }
+    // };
+
     const handleBookMark = useCallback(() => {
         dispatch(bookMark(data?.id));
         setIsBookMark((prev) => {
@@ -283,6 +298,47 @@ function MessageItem({
         return baseUrl;
     }, [data?.id, data?.reply]);
 
+    useEffect(() => {
+        if (
+            isVisible &&
+            document.getElementById(`post-item-reply-${data?.id}`) &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio)
+        ) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            if (window.location.pathname.includes('/posts/details')) {
+                dispatch(setPostActive(data));
+            }
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
+                        : null,
+                    element: document.getElementById(
+                        `post-item-reply-${data?.id}`,
+                    ),
+                    parent: contentsChattingRef?.current,
+                    video: videoRef.current,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef, videoRef, data]);
+
+    useEffect(() => {
+        setRect(targetElement?.getBoundingClientRect());
+    }, [targetElement]);
+
     if (!message) {
         return (
             <div>
@@ -292,7 +348,7 @@ function MessageItem({
     }
 
     return (
-        <div ref={messageRef} className="w-full py-6">
+        <div className="w-full py-6">
             <>
                 {data?.report ? (
                     <HiddenPostComponent
@@ -310,6 +366,7 @@ function MessageItem({
                         >
                             {userInfo?.id !== data?.user_id && (
                                 <div
+                                    ref={messageRef}
                                     className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
                                         isVisible && isRunAuto && data?.video
                                             ? 'h-16 w-16'
@@ -327,10 +384,14 @@ function MessageItem({
                                                 : `/profile/${data?.user_id}/posts`
                                         }
                                     >
-                                        {data?.video &&
-                                        isVisible &&
-                                        isRunAuto ? (
-                                            <div className="w-full h-full">
+                                        {data?.video && isVisible ? (
+                                            <div
+                                                className={`${
+                                                    isRunAuto
+                                                        ? 'w-full h-full'
+                                                        : 'w-0 h-0'
+                                                } duration-300 transition-all`}
+                                            >
                                                 <video
                                                     ref={videoRef}
                                                     className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
@@ -400,7 +461,6 @@ function MessageItem({
                                     }`}
                                 >
                                     <div
-                                        ref={postItemRef}
                                         id={`post-item-reply-${data.id}`}
                                         onTouchStart={() =>
                                             handleTouchStart(
@@ -566,7 +626,15 @@ function MessageItem({
                                                 {data.number_view}
                                             </span>
                                         </div>
-                                        <HiMiniArrowUpTray />
+
+                                        <div
+                                            onClick={() =>
+                                                handleSharePostDetail(data?.id)
+                                            }
+                                            className={`flex items-center text-gray-400`}
+                                        >
+                                            <HiMiniArrowUpTray />
+                                        </div>
                                     </div>
                                 </div>
                             )}

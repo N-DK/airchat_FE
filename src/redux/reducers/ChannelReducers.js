@@ -17,6 +17,9 @@ import {
     CHANNEL_DELETE_RESET,
     CHANNEL_ADD_RESET,
     CHANNEL_POSTS_RESET,
+    CHANNEL_DETAIL_REQUEST,
+    CHANNEL_DETAIL_SUCCESS,
+    CHANNEL_DETAIL_FAIL,
 } from '../constants/ChannelConstants';
 
 export const channelListReducer = (state = { channels: [] }, action) => {
@@ -93,6 +96,19 @@ export const channelDeleteReducer = (state = {}, action) => {
             return { loading: false, error: action.payload };
         case CHANNEL_DELETE_RESET:
             return {};
+        default:
+            return state;
+    }
+};
+
+export const channelDetailReducer = (state = { channel: null }, action) => {
+    switch (action.type) {
+        case CHANNEL_DETAIL_REQUEST:
+            return { loading: true };
+        case CHANNEL_DETAIL_SUCCESS:
+            return { loading: false, channel: action.payload };
+        case CHANNEL_DETAIL_FAIL:
+            return { loading: false, error: action.payload };
         default:
             return state;
     }

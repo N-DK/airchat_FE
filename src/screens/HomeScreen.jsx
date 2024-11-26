@@ -19,7 +19,6 @@ export default function HomeScreen() {
         (state) => state.userProfile,
     );
     const userAccount = useSelector((state) => state.userAccount);
-
     const {
         account,
         loading: loadingAccount,
@@ -40,7 +39,7 @@ export default function HomeScreen() {
         if (account?.results === 1) {
             setTimeout(() => {
                 setIsLoading(false);
-            }, 1500);
+            }, 1000);
             if (account.login == 1 && userInfo?.token) {
                 navigate('/chatting');
             } else if (account.login == 2 && userInfo?.token) {

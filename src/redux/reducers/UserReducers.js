@@ -128,6 +128,7 @@ import {
     USER_SEND_WEATHER_SUCCESS,
     USER_SEND_WEATHER_FAIL,
     USER_SET_COORDS,
+    SET_LINK,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -708,6 +709,15 @@ export const userSendWeatherReducer = (state = {}, action) => {
         case USER_SEND_WEATHER_FAIL:
             return { loading: false, error: action.payload };
 
+        default:
+            return state;
+    }
+};
+
+export const userLinkReducer = (state = {}, action) => {
+    switch (action.type) {
+        case SET_LINK:
+            return { link: action.payload };
         default:
             return state;
     }

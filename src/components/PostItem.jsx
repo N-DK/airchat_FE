@@ -28,10 +28,7 @@ import { FaBookmark, FaRegBookmark } from 'react-icons/fa6';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import LinkPreviewComponent from './LinkPreviewComponent';
-import {
-    POST_DELETE_RESET,
-    POST_SUBMIT_RESET,
-} from '../redux/constants/PostConstants';
+import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import { AppContext } from '../AppContext';
 import Webcam from 'react-webcam';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
@@ -44,7 +41,6 @@ import PostHosting from './PostHosting';
 import { Howl, Howler } from 'howler';
 import SpeakingAnimation from './SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import useMediaHandler from '../hooks/useMediaHandler';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
 
@@ -66,6 +62,14 @@ function PostItem({
     const [isShare, setIsShare] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const { userInfo } = useSelector((state) => state.userProfile);
+    const { success: unReportPostSuccess } = useSelector(
+        (state) => state.unReportPost,
+    );
+    // const { success: deletePostSuccess } = useSelector(
+    //     (state) => state.userDeletePost,
+    // );
+    const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [targetElement, setTargetElement] = useState(null);
     const [data, setData] = useState(item);
@@ -79,36 +83,37 @@ function PostItem({
     );
 
     const {
-        isRunSpeed,
+        isRecord,
+        toggleIsRecord,
         isRunAuto,
         recordOption,
         newMessageFromFooter,
-        isFullScreen,
     } = useContext(AppContext);
 
-    const { userInfo } = useSelector((state) => state.userProfile);
-    const { success: unReportPostSuccess } = useSelector(
-        (state) => state.unReportPost,
-    );
-    const { success: reportSuccess } = useSelector((state) => state.reportPost);
     const { success: newPost } = useSelector((state) => state.postSubmit);
     const { post } = useSelector((state) => state.setPostActive);
     const { language } = useSelector((state) => state.userLanguage);
 
-    const { videoRef, postItemRef } = useMediaHandler({
-        item,
-        isRunAuto,
-        isFullScreen,
-        isVisible,
-        isRunSpeed,
-        dispatch,
-        contentsChattingRef,
-        setPostActive,
-    });
-
     const divRef = useRef(null);
-
+    const videoRef = useRef(null);
     const pressTimer = useRef();
+
+    const handleSharePostDetail = useCallback((id) => {
+        if (navigator.share) {
+            navigator
+                .share({
+                    title: 'Chia sẻ bài viết',
+                    text: 'Hãy xem bài viết này!',
+                    url: `/share?link=/posts/details/${id}`,
+                })
+                .then(() => console.log('Chia sẻ thành công!'))
+                .catch((error) =>
+                    console.error('Chia sẻ không thành công:', error),
+                );
+        } else {
+            window.open(urlToShare, '_blank');
+        }
+    }, []);
 
     const handleTouchStart = useCallback(
         (id) => {
@@ -154,13 +159,10 @@ function PostItem({
         }));
     }, [data]);
 
-    const postDetailsUrl = useMemo(() => {
-        const baseUrl = `/posts/details/${data?.id}`;
-        return baseUrl;
-    }, [data?.id, data?.reply]);
-
     useEffect(() => {
-        if (item) setData(item);
+        if (item) {
+            setData(item);
+        }
     }, [item]);
 
     useEffect(() => {
@@ -184,8 +186,6 @@ function PostItem({
         if (newPost) {
             if (newPost?.reply_post && newPost?.reply_post === item?.id) {
                 setList((prev) => {
-                    console.log(prev);
-
                     const newPosts = prev?.map((post) => {
                         if (post?.id === newPost?.reply_post) {
                             const updatedReplies = post?.reply?.map((reply) => {
@@ -198,12 +198,12 @@ function PostItem({
                                 return reply;
                             });
 
-                            const hasExistingReply = updatedReplies?.some(
+                            const hasExistingReply = updatedReplies.some(
                                 (reply) => reply.user_id === newPost.user_id,
                             );
 
                             if (!hasExistingReply) {
-                                updatedReplies?.push({
+                                updatedReplies.push({
                                     ...newPost,
                                     img: convertObjectURL(newPost?.img),
                                 });
@@ -248,9 +248,13 @@ function PostItem({
                     ),
                 }));
             });
-            dispatch({ type: POST_DELETE_RESET });
         }
     }, [isSuccessDeletePost, postIdDelete]);
+
+    const postDetailsUrl = useMemo(() => {
+        const baseUrl = `/posts/details/${data?.id}`;
+        return baseUrl;
+    }, [data?.id, data?.reply]);
 
     useEffect(() => {
         if (setList) {
@@ -269,21 +273,27 @@ function PostItem({
     }, [data, setList]);
 
     useEffect(() => {
-        const handleScroll = debounce(() => {
-            if (divRef?.current) {
-                const rect = divRef.current.getBoundingClientRect();
-                setIsVisible(rect.top <= 200 && rect.top > 0);
-            }
-        }, 100);
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                threshold: [0.1],
+                rootMargin: `-${window.innerHeight * 0.1}px 0px -${Math.max(
+                    window.innerHeight * 0.75,
+                    400,
+                )}px 0px`,
+            },
+        );
 
-        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
-        handleScroll();
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
 
         return () => {
-            contentsChattingRef?.current?.removeEventListener(
-                'scroll',
-                handleScroll,
-            );
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
         };
     }, [data?.report]);
 
@@ -298,6 +308,49 @@ function PostItem({
     useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());
     }, [targetElement]);
+
+    useEffect(() => {
+        if (
+            isVisible &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio) &&
+            document.getElementById(`post-item${bonusKey}-${data?.id}`)
+        ) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            dispatch(setPostActive(data));
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
+                        : null,
+                    element: document.getElementById(
+                        `post-item${bonusKey}-${data?.id}`,
+                    ),
+                    parent: contentsChattingRef?.current,
+                    video: videoRef?.current,
+                    bonus: bonusHeight,
+                }),
+            );
+        }
+    }, [
+        contentsChattingRef,
+        videoRef,
+        isVisible,
+        data?.id,
+        // isRunAuto,
+        bonusHeight,
+    ]);
 
     const handleLike = useCallback(() => {
         dispatch(heart(data?.id));
@@ -375,6 +428,7 @@ function PostItem({
                     <>
                         {userInfo?.id !== data?.user_id && (
                             <div
+                                ref={divRef}
                                 className={`appear-animation duration-300 relative h-10 md:h-12 min-w-10 md:min-w-12 ${
                                     isVisible && isRunAuto && data?.video
                                         ? 'h-16 w-16'
@@ -388,8 +442,14 @@ function PostItem({
                                             : `/profile/${data?.user_id}/posts`
                                     }
                                 >
-                                    {data?.video && isVisible && isRunAuto ? (
-                                        <div className="w-full h-full">
+                                    {data?.video && isVisible ? (
+                                        <div
+                                            className={`${
+                                                isRunAuto
+                                                    ? 'w-full h-full'
+                                                    : 'w-0 h-0'
+                                            } duration-300 transition-all`}
+                                        >
                                             <video
                                                 ref={videoRef}
                                                 className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
@@ -452,7 +512,6 @@ function PostItem({
                                 />
                             ) : (
                                 <div
-                                    ref={divRef}
                                     className={`relative transition-all bg-white dark:bg-dark2Primary duration-300 rounded-2xl w-full px-4 pb-5 pt-3 ${
                                         userInfo?.id === data?.user_id
                                             ? 'bg-blue-100 dark:bg-blue-900'
@@ -488,11 +547,10 @@ function PostItem({
                                         </div>
                                     )}
                                     <div
-                                        ref={postItemRef}
-                                        id={`post-item-${data?.id}`}
+                                        id={`post-item${bonusKey}-${data?.id}`}
                                         onTouchStart={() =>
                                             handleTouchStart(
-                                                `post-item-${data?.id}`,
+                                                `post-item${bonusKey}-${data?.id}`,
                                             )
                                         }
                                         onTouchEnd={handleTouchEnd}
@@ -632,7 +690,12 @@ function PostItem({
                                             icon={<FaChartLine />}
                                             count={data?.number_view}
                                         />
-                                        <HiMiniArrowUpTray />
+                                        <ActionButton
+                                            onClick={() =>
+                                                handleSharePostDetail(data?.id)
+                                            }
+                                            icon={<HiMiniArrowUpTray />}
+                                        />
                                     </div>
                                 </div>
                             )}

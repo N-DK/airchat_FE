@@ -11,7 +11,11 @@ import { Avatar } from 'antd';
 import { FaChevronLeft } from 'react-icons/fa6';
 import { TbUpload, TbPinnedFilled } from 'react-icons/tb';
 import { AppContext } from '../AppContext';
-import { pinChannel, postsChannel } from '../redux/actions/ChannelActions';
+import {
+    detailChannel,
+    pinChannel,
+    postsChannel,
+} from '../redux/actions/ChannelActions';
 import { barMenu, setPostActive } from '../redux/actions/PostActions';
 import FooterChat from '../components/FooterChat';
 import RecordModal from '../components/RecordModal';
@@ -27,7 +31,10 @@ import { LANGUAGE } from '../constants/language.constant';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import { debounce } from 'lodash';
 import ScreenFull from '../components/ScreenFull';
-import { CHANNEL_POSTS_RESET } from '../redux/constants/ChannelConstants';
+import {
+    CHANNEL_DETAIL_SUCCESS,
+    CHANNEL_POSTS_RESET,
+} from '../redux/constants/ChannelConstants';
 import SpeakingAnimation from '../components/SpeakingAnimation';
 
 const DOMAIN = 'https://talkie.transtechvietnam.com/';
@@ -73,11 +80,11 @@ export default function PostsChannel() {
     const [hasMore, setHasMore] = useState(false);
     const [isEndPost, setIsEndPost] = useState(false);
     const [speaking, setSpeaking] = useState(false);
+    const [channelData, setChannelData] = useState(state?.channelData);
 
     const divRef = useRef(null);
     const contentsChattingRef = useRef(null);
     const refTranscript = useRef(null);
-    const timeoutRef = useRef(null);
 
     const { userInfo } = useSelector((state) => state.userProfile);
     const { post } = useSelector((state) => state.setPostActive);
@@ -90,7 +97,12 @@ export default function PostsChannel() {
     } = useSelector((state) => state.channelPosts);
     const { menus } = useSelector((state) => state.menuBar);
     const { channel } = useSelector((state) => state.channelPin);
+    // const { isSuccess: isSuccessFollow } = useSelector(
+    //     (state) => state.userFollow,
+    // );
     const { language } = useSelector((state) => state.userLanguage);
+    const { channel: channelDetail, loading: loadingDetailChannel } =
+        useSelector((state) => state.channelDetail);
 
     const handleScroll = useCallback(() => {
         const scrollTop =
@@ -108,6 +120,28 @@ export default function PostsChannel() {
         }
     }, [contentsChattingRef]);
 
+    const handleSharePost = useCallback(
+        (e) => {
+            e.stopPropagation();
+
+            if (navigator.share) {
+                navigator
+                    .share({
+                        title: 'Chia sẻ bài viết',
+                        text: 'Hãy xem bài viết này!',
+                        url: `/share?link=/channel/${id}`,
+                    })
+                    .then(() => console.log('Chia sẻ thành công!'))
+                    .catch((error) =>
+                        console.error('Chia sẻ không thành công:', error),
+                    );
+            } else {
+                window.open(urlToShare, '_blank');
+            }
+        },
+        [id],
+    );
+
     const handlePinChannel = useCallback(() => {
         dispatch(pinChannel(id));
         setShowNotify(true);
@@ -120,6 +154,21 @@ export default function PostsChannel() {
     }, [dispatch, id, isPinChannel, language]);
 
     useEffect(() => {
+        if (channelDetail) {
+            setChannelData(channelDetail);
+            dispatch({ type: CHANNEL_DETAIL_SUCCESS, payload: null });
+        }
+    }, [channelDetail]);
+
+    useEffect(() => {
+        if (id && !state?.channelData) dispatch(detailChannel(id));
+    }, [id, state, dispatch]);
+
+    useEffect(() => {
+        if (menus?.length === 0) dispatch(barMenu());
+    }, [dispatch, menus]);
+
+    useEffect(() => {
         if (channel) dispatch(barMenu());
     }, [dispatch, channel]);
 
@@ -128,15 +177,15 @@ export default function PostsChannel() {
     }, [dispatch]);
 
     useEffect(() => {
-        if (menus && state?.channelData) {
+        if (menus && channelData) {
             const isPinned = menus.some(
                 (item) =>
-                    item.name === state.channelData.name ||
-                    item.name === state.channelData?.name_channel,
+                    item.name === channelData.name ||
+                    item.name === channelData?.name_channel,
             );
             setIsPinChannel(isPinned);
         }
-    }, [menus, state?.channelData]);
+    }, [menus, channelData]);
 
     useEffect(() => {
         dispatch(postsChannel(id, limit, offset));
@@ -185,11 +234,7 @@ export default function PostsChannel() {
 
         const handleScroll = () => {
             const currentScrollTop = contents.scrollTop;
-            setIsSwiping(
-                currentScrollTop > 50
-                    ? currentScrollTop >= lastScrollTop
-                    : false,
-            );
+            setIsSwiping(currentScrollTop > lastScrollTop);
             lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
         };
 
@@ -199,44 +244,18 @@ export default function PostsChannel() {
 
     useEffect(() => {
         const contents = contentsChattingRef?.current;
-        if (!contents) return;
-
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-            timeoutRef.current = null;
-        }
-
-        const handleScroll = debounce(() => {
+        if (contents) {
             const { scrollTop } = contents;
 
-            if (scrollTop > 20 && !isSwiping) {
-                timeoutRef.current = setTimeout(() => {
-                    if (contents.scrollTop > 20) {
-                        setIsSwiping(true);
-                    }
-                    timeoutRef.current = null;
-                }, 1000);
-            }
-
-            if (scrollTop <= 50 && isSwiping) {
+            if (scrollTop > 0 && !isSwiping) {
+                setTimeout(() => {
+                    setIsSwiping(true);
+                }, 1500);
+            } else if (scrollTop <= 50 && isSwiping) {
                 setIsSwiping(false);
-                clearTimeout(timeoutRef.current);
-                timeoutRef.current = null;
             }
-        }, 500);
-
-        contents.addEventListener('scroll', handleScroll);
-
-        return () => {
-            contents.removeEventListener('scroll', handleScroll);
-            handleScroll.cancel();
-
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-                timeoutRef.current = null;
-            }
-        };
-    }, [contentsChattingRef, isSwiping, timeoutRef]);
+        }
+    }, [contentsChattingRef, isSwiping]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -267,6 +286,11 @@ export default function PostsChannel() {
 
     useEffect(() => {
         if (isVisible) {
+            // if (navigator.vibrate) {
+            //     navigator.vibrate(100); // Rung 200ms
+            // } else {
+            //     console.log('Thiết bị không hỗ trợ rung.');
+            // }
             dispatch(setPostActive(null));
             dispatch(
                 setObjectActive({
@@ -340,13 +364,13 @@ export default function PostsChannel() {
                 <div className="flex items-center gap-3">
                     <Avatar
                         src={`${DOMAIN}${
-                            state?.channelData?.photo ?? state?.channelData?.img
+                            channelData?.photo ?? channelData?.img
                         }`}
                         className="w-8 h-8 rounded-md object-cover"
                         alt=""
                     />
                     <h5 className="text-black dark:text-white">
-                        {state?.channelData?.name}
+                        {channelData?.name}
                     </h5>
                     <div
                         onClick={handlePinChannel}
@@ -360,7 +384,7 @@ export default function PostsChannel() {
                     </div>
                 </div>
                 <div className="absolute right-0">
-                    <button>
+                    <button onClick={handleSharePost}>
                         <TbUpload className="text-xl md:text-[30px] text-black dark:text-white" />
                     </button>
                     {owner && userInfo && owner === userInfo?.id && (
@@ -469,7 +493,7 @@ export default function PostsChannel() {
         <div className="relative flex flex-col justify-between h-screen overflow-hidden">
             {renderHeader()}
             {renderContent()}
-            <EditChannel data={{ ...state?.channelData, id }} />
+            <EditChannel data={{ ...channelData, id }} />
             <RecordModal />
             {isFullScreen && <ScreenFull postsList={postsList} />}
             <div

@@ -22,11 +22,7 @@ import { usePingStates } from '../hooks/usePingStates';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { DEFAULT_PROFILE } from '../constants/image.constant';
 import { barMenu, listPost, setPostActive } from '../redux/actions/PostActions';
-import {
-    getWeather,
-    profile,
-    saveFCMToken,
-} from '../redux/actions/UserActions';
+import { profile, saveFCMToken } from '../redux/actions/UserActions';
 
 import { CHANNEL_ADD_RESET } from '../redux/constants/ChannelConstants';
 import Webcam from 'react-webcam';
@@ -79,7 +75,7 @@ export default function Chatting() {
     const { data: dataFCMToken } = useSelector(
         (state) => state.userSaveFCMToken,
     );
-    const { weather } = useSelector((state) => state.userGetWeather);
+    const { link } = useSelector((state) => state.userLink);
 
     const getFirebaseRef = useRef(null);
     const saveFirebaseTokenRef = useRef(null);
@@ -176,6 +172,10 @@ export default function Chatting() {
         setIsSwiping(false);
         dispatch(listPost(redirect, INITIAL_LIMIT, INITIAL_OFFSET));
     }, [handleResetLimit, contentsChattingRef, dispatch, redirect]);
+
+    useEffect(() => {
+        if (link) navigate(link);
+    }, [link]);
 
     useEffect(() => {
         const contents = contentsChattingRef?.current;

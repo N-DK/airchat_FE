@@ -36,10 +36,7 @@ import {
     listPostProfile,
     setPostActive,
 } from '../redux/actions/PostActions';
-import {
-    POST_DELETE_RESET,
-    POST_SUBMIT_RESET,
-} from '../redux/constants/PostConstants';
+import { POST_SUBMIT_RESET } from '../redux/constants/PostConstants';
 import ListPostItems from '../components/ListPostItems';
 import { IoIosSettings } from 'react-icons/io';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
@@ -360,7 +357,6 @@ export default function Profile() {
                     ),
                 }));
             });
-            dispatch({ type: POST_DELETE_RESET });
         }
     }, [isSuccessDeletePost, postIdDelete]);
 
@@ -557,7 +553,6 @@ export default function Profile() {
                 <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
                     <button
                         onClick={() => {
-                            if (isRunAuto) toggleIsRunAuto();
                             navigate(-1);
                         }}
                     >
@@ -590,7 +585,6 @@ export default function Profile() {
                     <div className="sticky top-0 left-0 z-40 bg-white dark:bg-darkPrimary px-6 md:px-10 text-black dark:text-white flex justify-between items-center pt-12 pb-8 md:pb-10">
                         <button
                             onClick={() => {
-                                if (isRunAuto) toggleIsRunAuto();
                                 navigate(-1);
                                 dispatch({
                                     type: USER_PROFILE_STRANGER_RESET,

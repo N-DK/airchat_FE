@@ -6,7 +6,7 @@ import {
     CHECK_ACCOUNT_RESET,
     USER_LOGIN_ERROR_RESET,
 } from '../redux/constants/UserConstants';
-import { login } from '../redux/actions/UserActions';
+import { login, setLink } from '../redux/actions/UserActions';
 import React from 'react';
 import { LANGUAGE } from '../constants/language.constant';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -61,6 +61,9 @@ export default function Login() {
     useEffect(() => {
         if (userInfo?.token) {
             navigate('/chatting');
+            // if (link) {
+            //     navigate(link);
+            // }
         }
     }, [userInfo]);
 

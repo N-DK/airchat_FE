@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import HomeScreen from './screens/HomeScreen';
 import AboutYou from './screens/AboutYou';
 import SelectAvatar from './screens/SelectAvatar';
@@ -19,7 +19,7 @@ import LogInEmail from './screens/LogInEmail';
 import EnterCodePhoneNumber from './screens/EnterCodePhoneNumber';
 import EnterCodeEmail from './screens/EnterCodeEmail';
 import Login from './screens/Login';
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import ChatRoom from './screens/ChatRoom';
 import SearchScreen from './screens/SearchScreen';
 import PrivacyModal from './components/ModalPolicy';
@@ -29,6 +29,19 @@ import 'react-lazy-load-image-component/src/effects/blur.css';
 import './App.css';
 
 import 'moment/locale/vi';
+import ShareLink from './screens/ShareLink';
+import { AppContext } from './AppContext';
+
+function RouteChangeListener() {
+    const location = useLocation();
+    const { setIsRunAuto } = useContext(AppContext);
+
+    useEffect(() => {
+        setIsRunAuto(false);
+    }, [location]);
+
+    return null;
+}
 
 function App() {
     const userTheme = useSelector((state) => state.userTheme);
@@ -38,7 +51,12 @@ function App() {
         <>
             <div className={`${theme == 'dark' ? 'dark' : ''}`}>
                 <BrowserRouter>
+                    <RouteChangeListener />
                     <Routes>
+                        <Route
+                            path="/share"
+                            element={<PrivateRouter comp={ShareLink} />}
+                        />
                         <Route path="/" element={<HomeScreen />} />
                         <Route path="/login" element={<Login />} />
                         <Route

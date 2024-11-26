@@ -14,7 +14,7 @@ import { TbUpload } from 'react-icons/tb';
 import { RiAddLine, RiDeleteBin6Line } from 'react-icons/ri';
 import { PiArrowsClockwiseBold } from 'react-icons/pi';
 import { HiMiniArrowUpTray } from 'react-icons/hi2';
-import { debounce, isArray } from 'lodash';
+import { debounce, isArray, set } from 'lodash';
 
 import { AppContext } from '../AppContext';
 import {
@@ -30,13 +30,17 @@ import RecordModal from '../components/RecordModal';
 import LoaderSkeletonPosts from '../components/LoaderSkeletonPosts';
 import MessageItem from '../components/MessageItem';
 import icon1 from '../assets/Untitled-2.png';
-import { follow, profile, sharePost } from '../redux/actions/UserActions';
+import {
+    follow,
+    profile,
+    setLink,
+    sharePost,
+} from '../redux/actions/UserActions';
 import CustomContextMenu from '../components/CustomContextMenu';
 import { FaBookmark, FaRegBookmark, FaRegStar } from 'react-icons/fa6';
 import LinkPreviewComponent from '../components/LinkPreviewComponent';
 import { setObjectActive } from '../redux/actions/SurfActions';
 import {
-    POST_DELETE_RESET,
     POST_REPLY_ALL_RESET,
     POST_SUBMIT_RESET,
 } from '../redux/constants/PostConstants';
@@ -50,9 +54,36 @@ import { Howl } from 'howler';
 import { USER_FOLLOW_RESET } from '../redux/constants/UserConstants';
 import SpeakingAnimation from '../components/SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import useMediaHandler from '../hooks/useMediaHandler';
+import { detailChannel } from '../redux/actions/ChannelActions';
+import { CHANNEL_DETAIL_SUCCESS } from '../redux/constants/ChannelConstants';
 
 const BASE_URL = 'https://talkie.transtechvietnam.com/';
+
+const LoaderSkeletonAvatar = ({ className = '' }) => {
+    return (
+        <div
+            className={`bg-gray-300 animate-pulse ${className}`}
+            style={{
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+            }}
+        ></div>
+    );
+};
+
+const TextSkeleton = ({
+    width = '30%',
+    height = '0.75rem',
+    className = '',
+}) => {
+    return (
+        <div
+            className={`bg-gray-300 animate-pulse ${className} mx-auto mt-1`}
+            style={{ width, height, borderRadius: '4px' }}
+        ></div>
+    );
+};
 
 const MessageRecursive = ({
     detailsPostReply,
@@ -97,7 +128,6 @@ export default function Details() {
         isRecord,
         toggleIsRecord,
         isRunAuto,
-        isRunSpeed,
         isFullScreen,
         toggleIsRunAuto,
     } = useContext(AppContext);
@@ -113,17 +143,19 @@ export default function Details() {
     const [contextMenuVisible, setContextMenuVisible] = useState(false);
     const [data, setData] = useState();
     const [targetElement, setTargetElement] = useState(null);
-    const pressTimer = useRef();
     const [initialLoad, setInitialLoad] = useState(true);
     const [initialLoadBookMark, setInitialLoadBookMark] = useState(true);
-
     const [rect, setRect] = useState(null);
     const [isEmptyData, setIsEmptyData] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const contentsChattingRef = useRef(null);
-    const divRef = useRef(null);
-
     const [isVisible, setIsVisible] = useState(false);
+    const [channel, setChannel] = useState(null);
+
+    const contentsChattingRef = useRef(null);
+    const pressTimer = useRef();
+    const divRef = useRef(null);
+    const videoRef = useRef(null);
+
     const postRefs = useRef([]);
 
     const { replyAlls: post, loading } = useSelector(
@@ -139,17 +171,20 @@ export default function Details() {
     const { isSuccess: isSuccessFollow, stranger_id } = useSelector(
         (state) => state.userFollow,
     );
+    const { channel: channelDetail, loading: loadingDetailChannel } =
+        useSelector((state) => state.channelDetail);
+    const { link } = useSelector((state) => state.userLink);
 
-    const { videoRef, postItemRef } = useMediaHandler({
-        item: data,
-        isRunAuto,
-        isFullScreen,
-        isVisible,
-        isRunSpeed,
-        dispatch,
-        contentsChattingRef,
-        setPostActive,
-    });
+    useEffect(() => {
+        if (link) dispatch(setLink(null));
+    }, []);
+
+    useEffect(() => {
+        if (channelDetail) {
+            setChannel(channelDetail);
+            dispatch({ type: CHANNEL_DETAIL_SUCCESS, payload: null });
+        }
+    }, [channelDetail]);
 
     useEffect(() => {
         if (isArray(post)) {
@@ -164,6 +199,16 @@ export default function Details() {
     useEffect(() => {
         setDetailsPostReply(data?.reply || []);
     }, [data?.reply]);
+
+    useEffect(() => {
+        if (data?.channel_id === 0) {
+            setChannel({
+                name: 'Just Chatting',
+                photo: '',
+            });
+        }
+        if (data?.channel_id) dispatch(detailChannel(data?.channel_id));
+    }, [data?.channel_id]);
 
     useEffect(() => {
         if (isSuccessFollow) {
@@ -187,21 +232,28 @@ export default function Details() {
     }, [dispatch, id]);
 
     useEffect(() => {
-        const handleScroll = debounce(() => {
-            if (divRef?.current) {
-                const rect = divRef.current.getBoundingClientRect();
-                setIsVisible(rect.top <= 200 && rect.top > 0);
-            }
-        }, 100);
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                threshold: [0.1],
+                rootMargin: `-${window.innerHeight * 0.1}px 0px -${Math.max(
+                    window.innerHeight * 0.75,
+                    400,
+                )}px 0px`,
+            },
+        );
 
-        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
-        handleScroll();
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
 
         return () => {
-            contentsChattingRef?.current?.removeEventListener(
-                'scroll',
-                handleScroll,
-            );
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
+            observer.disconnect();
         };
     }, [data?.report]);
 
@@ -220,6 +272,42 @@ export default function Details() {
             closeContextMenu();
         }
     }, [reportSuccess]);
+
+    useEffect(() => {
+        if (
+            isVisible &&
+            document.getElementById(`post-item-details-${data?.id}`) &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio)
+        ) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100); // Rung 200ms
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            dispatch(setPostActive(data));
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
+                        : null,
+                    element: document.getElementById(
+                        `post-item-details-${data?.id}`,
+                    ),
+                    parent: contentsChattingRef?.current,
+                    video: videoRef.current,
+                    bonus: 70,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef, videoRef, data]);
 
     useEffect(() => {
         if (data && !isHeart) setInitialLoad(false);
@@ -245,8 +333,6 @@ export default function Details() {
                     reply: newReply,
                 };
             });
-
-            dispatch({ type: POST_DELETE_RESET });
         }
     }, [isSuccessDeletePost, postIdDelete]);
 
@@ -273,6 +359,23 @@ export default function Details() {
     useEffect(() => {
         setRect(targetElement?.getBoundingClientRect());
     }, [targetElement]);
+
+    const handleSharePostDetail = useCallback((id) => {
+        if (navigator.share) {
+            navigator
+                .share({
+                    title: 'Chia sẻ bài viết',
+                    text: 'Hãy xem bài viết này!',
+                    url: `/share?link=/posts/details/${id}`,
+                })
+                .then(() => console.log('Chia sẻ thành công!'))
+                .catch((error) =>
+                    console.error('Chia sẻ không thành công:', error),
+                );
+        } else {
+            window.open(urlToShare, '_blank');
+        }
+    }, []);
 
     const convertObjectURL = (selectedFile) => {
         return selectedFile ? URL.createObjectURL(selectedFile) : null;
@@ -388,33 +491,51 @@ export default function Details() {
             <div className="flex justify-between items-center relative pt-12">
                 <button
                     onClick={() => {
-                        if (isRunAuto) toggleIsRunAuto();
                         navigate(-1);
                     }}
                 >
                     <FaChevronLeft className="text-lg md:text-[22px] text-black dark:text-white" />
                 </button>
-                <img src={icon1} className="w-9" alt="" />
-                <button>
+                {loadingDetailChannel || !channel ? (
+                    <LoaderSkeletonAvatar />
+                ) : (
+                    <Link
+                        to={`/channel/${data?.channel_id}`}
+                        state={{ channelData: channel }}
+                    >
+                        <Avatar
+                            src={
+                                channel?.photo
+                                    ? `${BASE_URL}${channel?.photo}`
+                                    : icon1
+                            }
+                            className="w-9 h-9 appear-animation duration-300"
+                            alt=""
+                        />
+                    </Link>
+                )}
+                <button onClick={() => handleSharePostDetail(id)}>
                     <TbUpload className="text-xl md:text-[30px] text-black dark:text-white" />
                 </button>
             </div>
-            <div className="flex justify-center mt-1">
-                <p className="text-gray-500 text-sm">
-                    {LANGUAGE[language].IN}{' '}
-                    {data?.name_channel ?? 'Just Chatting'}
-                </p>
-            </div>
+            {loadingDetailChannel || !channel ? (
+                <TextSkeleton />
+            ) : (
+                <div className="flex justify-center mt-1 appear-animation duration-300">
+                    <p className="text-gray-500 text-ssm">
+                        {LANGUAGE[language].IN}{' '}
+                        {channel?.name ?? 'Just Chatting'}
+                    </p>
+                </div>
+            )}
         </div>
     );
 
     const renderPostContent = () => (
-        <div
-            ref={divRef}
-            className="flex  mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary"
-        >
+        <div className="flex  mt-[120px] py-6 pb-10 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary border-b border-b-gray-300 dark:border-b-dark2Primary">
             {userInfo?.id !== data?.user_id && (
                 <div
+                    ref={divRef}
                     className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12  ${
                         isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
                     } `}
@@ -426,8 +547,12 @@ export default function Details() {
                                 : `/profile/${data?.user_id}/posts`
                         }
                     >
-                        {data?.video && isVisible && isRunAuto ? (
-                            <div className="w-full h-full">
+                        {data?.video && isVisible ? (
+                            <div
+                                className={`${
+                                    isRunAuto ? 'w-full h-full' : 'w-0 h-0'
+                                } duration-300 transition-all`}
+                            >
                                 <video
                                     ref={videoRef}
                                     className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
@@ -478,7 +603,6 @@ export default function Details() {
                         }`}
                     >
                         <div
-                            ref={postItemRef}
                             id={`post-item-details-${data?.id}`}
                             onTouchStart={() =>
                                 handleTouchStart(
@@ -588,7 +712,10 @@ export default function Details() {
                                 icon={<FaChartLine />}
                                 count={data?.number_view}
                             />
-                            <HiMiniArrowUpTray />
+                            <ActionButton
+                                onClick={() => handleSharePostDetail(data?.id)}
+                                icon={<HiMiniArrowUpTray />}
+                            />
                         </div>
                     </div>
                 ) : (

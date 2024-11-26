@@ -155,6 +155,7 @@ const Latest = React.memo(({ data, setActiveKey }) => {
                                 isTurnOnCamera={data?.top?.isTurnOnCamera}
                                 contentsChattingRef={data?.contentContainerRef}
                                 bonusKey={'-latest'}
+                                bonusHeight={50}
                             />
                         </div>
                     </div>
@@ -174,6 +175,7 @@ const Top = React.memo(({ data }) => {
             isTurnOnCamera={topPosts?.isTurnOnCamera}
             contentsChattingRef={contentContainerRef}
             bonusKey={'-top'}
+            bonusHeight={50}
         />
     ) : (
         <EmptySearch />

@@ -664,21 +664,3 @@ body {
         opacity: 1;
     }
 }
-
-.hot#weather {
-    background-image: url('./assets/hot.png');
-}
-
-.cold#weather {
-    background-image: url('./assets/cold.png');
-}
-
-.warm#weather {
-    background-image: url('./assets/warm.png');
-}
-
-#weather {
-    background: no-repeat center/cover;
-    transition: 0.4s;
-    color: white;
-}

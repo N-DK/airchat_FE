@@ -45,7 +45,6 @@ import { Howl, Howler } from 'howler';
 import SpeakingAnimation from './SpeakingAnimation';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import MessageItem from './MessageItem';
-import useMediaHandler from '../hooks/useMediaHandler';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -108,6 +107,23 @@ const renderPostActions = (item) => {
         callback();
     };
 
+    const handleSharePostDetail = useCallback((id) => {
+        if (navigator.share) {
+            navigator
+                .share({
+                    title: 'Chia sẻ bài viết',
+                    text: 'Hãy xem bài viết này!',
+                    url: `/share?link=/posts/details/${id}`,
+                })
+                .then(() => console.log('Chia sẻ thành công!'))
+                .catch((error) =>
+                    console.error('Chia sẻ không thành công:', error),
+                );
+        } else {
+            window.open(urlToShare, '_blank');
+        }
+    }, []);
+
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);
     }, [isHeart]);
@@ -140,13 +156,18 @@ const renderPostActions = (item) => {
                     {item.number_share}
                 </span>
             </div> */}
-            <div className="flex items-center text-white">
+            <div className="flex items-center text-gray-400">
                 <FaChartLine />
                 <span className="ml-2 text-sm font-medium">
                     {item.number_view}
                 </span>
             </div>
-            <HiMiniArrowUpTray className="text-white" />
+            <div
+                onClick={() => handleSharePostDetail(item.id)}
+                className="flex items-center text-gray-400"
+            >
+                <HiMiniArrowUpTray />
+            </div>
         </div>
     );
 };
@@ -178,9 +199,10 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
     const [replyIndexCurrent, setReplyIndexCurrent] = useState(0);
     const pressTimer = useRef();
     const [isVisible, setIsVisible] = useState(false);
+    const videoRef = useRef(null);
     const divRef = useRef(null);
 
-    const { isRunAuto, isFullScreen, isRunSpeed } = useContext(AppContext);
+    const { isRunAuto } = useContext(AppContext);
 
     const { loading: loadingUpload, success } = useSelector(
         (state) => state.postUploadImage,
@@ -192,18 +214,6 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
 
     const { users, loading } = useSelector((state) => state.searchUser);
     const { language } = useSelector((state) => state.userLanguage);
-
-    const { videoRef, postItemRef } = useMediaHandler({
-        item,
-        isRunAuto,
-        isFullScreen,
-        isVisible,
-        isRunSpeed,
-        dispatch,
-        contentsChattingRef,
-        setPostActive: null,
-        bonusHeight: -70,
-    });
 
     const handleAction = (action, id, callback) => {
         dispatch(action(id));
@@ -350,23 +360,67 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
     }, [targetElement]);
 
     useEffect(() => {
-        const handleScroll = debounce(() => {
-            if (divRef?.current) {
-                const rect = divRef.current.getBoundingClientRect();
-                setIsVisible(rect.top <= 200 && rect.top > 0);
-            }
-        }, 100);
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                threshold: [0.1],
+                rootMargin: `-${window.innerHeight * 0.1}px 0px -${Math.max(
+                    window.innerHeight * 0.75,
+                    400,
+                )}px 0px`,
+            },
+        );
 
-        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
-        handleScroll();
+        if (divRef?.current) {
+            observer.observe(divRef.current);
+        }
 
         return () => {
-            contentsChattingRef?.current?.removeEventListener(
-                'scroll',
-                handleScroll,
-            );
+            if (divRef?.current) {
+                observer.unobserve(divRef.current);
+            }
         };
     }, []);
+
+    useEffect(() => {
+        if (
+            isVisible &&
+            document.getElementById(`post-item-content-${data?.id}`) &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio)
+        ) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+            if (window.location.pathname.includes('/posts/details')) {
+                dispatch(setPostActive(data));
+            }
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
+                        : null,
+                    element: document.getElementById(
+                        `post-item-content-${data?.id}`,
+                    ),
+                    parent: contentsChattingRef?.current,
+                    video: videoRef.current,
+                    bonus: -70,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef, videoRef, data]);
 
     useEffect(() => {
         if (item) {
@@ -378,12 +432,17 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
         <>
             <div className="flex border-b-[6px] border-gray-200 dark:border-dark2Primary py-6 md:py-10 px-3 md:px-6 gap-3 md:gap-6 bg-slatePrimary dark:bg-darkPrimary">
                 <div
+                    ref={divRef}
                     className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
                         isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
                     }`}
                 >
-                    {data?.video && isVisible && isRunAuto ? (
-                        <div className="w-full h-full">
+                    {data?.video && isVisible ? (
+                        <div
+                            className={`${
+                                isRunAuto ? 'w-full h-full' : 'w-0 h-0'
+                            } duration-300 transition-all`}
+                        >
                             <video
                                 ref={videoRef}
                                 className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
@@ -419,15 +478,11 @@ function PostContent({ item, contentsChattingRef, setListProfile }) {
                 </div>
                 <div className="flex-1">
                     <div
-                        ref={divRef}
                         className={`relative bg-bluePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
                             isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'
                         }`}
                     >
-                        <div
-                            ref={postItemRef}
-                            id={`post-item-content-${data?.id}`}
-                        >
+                        <div id={`post-item-content-${data?.id}`}>
                             <div className="absolute top-[-22px] right-0 border-[5px] border-slatePrimary dark:border-darkPrimary flex items-center gap-4 bg-bluePrimary dark:bg-dark2Primary rounded-3xl px-3 py-[3px]">
                                 <FaRegStar className="text-white" />
                                 <label

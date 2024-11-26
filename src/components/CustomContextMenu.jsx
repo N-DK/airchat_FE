@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { sharePost } from '../redux/actions/UserActions';
 import { useNavigate } from 'react-router-dom';
 import { LANGUAGE } from '../constants/language.constant';
+import { BASE_URL } from '../constants/api.constant';
 
 const NotifyText = ({ message, show }) => {
     return (
@@ -110,19 +111,20 @@ const CustomContextMenu = ({
     const handleSharePost = useCallback(
         (e) => {
             e.stopPropagation();
+
             if (navigator.share) {
                 navigator
                     .share({
                         title: 'Chia sẻ bài viết',
                         text: 'Hãy xem bài viết này!',
-                        url: postDetailsUrl,
+                        url: `/share?link=${postDetailsUrl}`,
                     })
                     .then(() => console.log('Chia sẻ thành công!'))
                     .catch((error) =>
                         console.error('Chia sẻ không thành công:', error),
                     );
             } else {
-                window.open(postDetailsUrl, '_blank');
+                window.open(urlToShare, '_blank');
             }
         },
         [postDetailsUrl],

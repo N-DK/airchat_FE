@@ -1,18 +1,18 @@
-import { useEffect, useCallback, useRef, useState } from 'react';
+import { useEffect, useCallback, useRef, useState, useContext } from 'react';
 import { Howl } from 'howler';
 import { setObjectActive } from '../redux/actions/SurfActions';
+import { useDispatch } from 'react-redux';
+import { AppContext } from '../AppContext';
+import { setPostActive } from '../redux/actions/PostActions';
 
 const useMediaHandler = ({
     item,
-    isRunAuto,
-    isFullScreen,
     isVisible,
-    isRunSpeed,
-    dispatch,
     contentsChattingRef,
-    setPostActive,
     bonusHeight = 0,
 }) => {
+    const { isRunAuto, isFullScreen, isRunSpeed } = useContext(AppContext);
+    const dispatch = useDispatch();
     const [data, setData] = useState(item);
     const audioRef = useRef(null);
     const videoRef = useRef(null);
@@ -58,7 +58,7 @@ const useMediaHandler = ({
     const handleAudio = useCallback(() => {
         if (!isRunAuto || isFullScreen) {
             if (audioRef?.current?.playing()) {
-                audioRef?.current?.pause();
+                audioRef?.current?.stop();
             }
         } else {
             if (!audioRef?.current?.playing()) {
@@ -70,7 +70,7 @@ const useMediaHandler = ({
 
     const handlePause = useCallback(() => {
         if (data?.video && data?.video !== '0') {
-            videoRef?.current?.pause();
+            videoRef?.current?.stop();
         } else {
             if (audioRef?.current?.playing()) {
                 audioRef.current.pause();
@@ -180,10 +180,12 @@ const useMediaHandler = ({
             }
         } else {
             handlePause();
+            dispatch(setPostActive(null));
         }
 
         return () => {
             handlePause();
+            dispatch(setPostActive(null));
         };
     }, [isVisible, data?.id, isRunAuto, isFullScreen, dispatch, setPostActive]);
 

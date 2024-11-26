@@ -6,7 +6,7 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Avatar } from 'antd';
 import moment from 'moment/moment';
@@ -47,7 +47,6 @@ import { AppContext } from '../AppContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { BASE_URL } from '../constants/api.constant';
 import SpeakingAnimation from './SpeakingAnimation';
-import useMediaHandler from '../hooks/useMediaHandler';
 
 const MentionsItem = ({ user, handle, isMentions }) => {
     return (
@@ -99,6 +98,23 @@ const PostActions = ({ item, position, handleLike }) => {
         callback();
     };
 
+    const handleSharePostDetail = useCallback((id) => {
+        if (navigator.share) {
+            navigator
+                .share({
+                    title: 'Chia sẻ bài viết',
+                    text: 'Hãy xem bài viết này!',
+                    url: `/share?link=/posts/details/${id}`,
+                })
+                .then(() => console.log('Chia sẻ thành công!'))
+                .catch((error) =>
+                    console.error('Chia sẻ không thành công:', error),
+                );
+        } else {
+            window.open(urlToShare, '_blank');
+        }
+    }, []);
+
     useEffect(() => {
         if (!isHeart) setInitialLoad(false);
     }, [isHeart]);
@@ -127,13 +143,18 @@ const PostActions = ({ item, position, handleLike }) => {
                     {item.number_share}
                 </span>
             </div> */}
-            <div className="flex items-center dark:text-white">
+            <div className="flex items-center text-gray-400">
                 <FaChartLine />
                 <span className="ml-2 text-sm font-medium">
                     {item.number_view}
                 </span>
             </div>
-            <HiMiniArrowUpTray className="dark:text-white" />
+            <div
+                onClick={() => handleSharePostDetail(item?.id)}
+                className="flex items-center text-gray-400"
+            >
+                <HiMiniArrowUpTray />
+            </div>
         </div>
     );
 };
@@ -210,21 +231,11 @@ function PostHosting({
 
     const { users, loading } = useSelector((state) => state.searchUser);
 
-    const { isRunAuto, isFullScreen, isRunSpeed } = useContext(AppContext);
+    const { isRunAuto } = useContext(AppContext);
 
     const [isVisible, setIsVisible] = useState(false);
 
-    const { videoRef, postItemRef } = useMediaHandler({
-        item,
-        isRunAuto,
-        isFullScreen,
-        isVisible,
-        isRunSpeed,
-        dispatch,
-        contentsChattingRef,
-        setPostActive: null,
-    });
-
+    const videoRef = useRef(null);
     const divRef = useRef(null);
 
     const handleToggleSearch = (itemId) => {
@@ -245,8 +256,10 @@ function PostHosting({
     }, [data?.id]);
 
     const handleNavigate = useCallback(() => {
-        dispatch(addViewPost(data?.id));
-        navigate(postDetailsUrl);
+        if (!window.location.pathname.includes('details')) {
+            dispatch(addViewPost(data?.id));
+            navigate(postDetailsUrl);
+        }
     }, [dispatch, data?.id, navigate, postDetailsUrl]);
 
     const handleAction = (action, id, callback) => {
@@ -337,23 +350,65 @@ function PostHosting({
     }, [item]);
 
     useEffect(() => {
-        const handleScroll = debounce(() => {
-            if (divRef?.current) {
-                const rect = divRef.current.getBoundingClientRect();
-                setIsVisible(rect.top <= 200 && rect.top > 0);
-            }
-        }, 100);
+        const observer = new IntersectionObserver(
+            debounce(([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            }, 200),
+            {
+                threshold: [0.1],
+                rootMargin: `-${window.innerHeight * 0.1}px 0px -${Math.max(
+                    window.innerHeight * 0.75,
+                    400,
+                )}px 0px`,
+            },
+        );
 
-        contentsChattingRef?.current?.addEventListener('scroll', handleScroll);
-        handleScroll();
+        if (divRef?.current) {
+            observer.observe(divRef?.current);
+        }
 
         return () => {
-            contentsChattingRef?.current?.removeEventListener(
-                'scroll',
-                handleScroll,
-            );
+            if (divRef?.current) {
+                observer.unobserve(divRef?.current);
+            }
         };
     }, []);
+
+    useEffect(() => {
+        if (
+            isVisible &&
+            (data?.video && data?.video != '0'
+                ? videoRef?.current
+                : data?.audio) &&
+            document.getElementById(`post-item-profile${bonusKey}-${data?.id}`)
+        ) {
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            } else {
+                console.log('Thiết bị không hỗ trợ rung.');
+            }
+
+            dispatch(
+                setObjectActive({
+                    post: data,
+                    audio: data?.audio
+                        ? new Howl({
+                              src: [
+                                  `https://talkie.transtechvietnam.com/${data?.audio}`,
+                              ],
+                              html5: true,
+                          })
+                        : null,
+                    element: document.getElementById(
+                        `post-item-profile${bonusKey}-${data?.id}`,
+                    ),
+                    parent: contentsChattingRef?.current,
+                    video: videoRef?.current,
+                    bonus: bonusHeight,
+                }),
+            );
+        }
+    }, [isVisible, contentsChattingRef, videoRef, data, bonusHeight]);
 
     useEffect(() => {
         if (debouncedSearch) {
@@ -397,12 +452,17 @@ function PostHosting({
                 }`}
             >
                 <div
+                    ref={divRef}
                     className={`relative appear-animation duration-300 h-10 md:h-12 min-w-10 md:min-w-12 ${
                         isVisible && isRunAuto && data?.video ? 'h-16 w-16' : ''
                     }`}
                 >
-                    {data?.video && isVisible && isRunAuto ? (
-                        <div className="w-full h-full">
+                    {data?.video && isVisible ? (
+                        <div
+                            className={`${
+                                isRunAuto ? 'w-full h-full' : 'w-0 h-0'
+                            } duration-300 transition-all`}
+                        >
                             <video
                                 ref={videoRef}
                                 className="absolute h-full w-full top-0 left-0 z-10 md:h-12 md:w-12 rounded-full object-cover"
@@ -410,11 +470,13 @@ function PostHosting({
                             />
                         </div>
                     ) : (
-                        <Avatar
-                            src={`${BASE_URL}${data?.avatar}`}
-                            className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
-                            alt="icon"
-                        />
+                        <Link to={`/profile/posts`}>
+                            <Avatar
+                                src={`${BASE_URL}${data?.avatar}`}
+                                className="absolute top-0 left-0 z-10 h-10 md:h-12 w-10 md:w-12 rounded-full object-cover"
+                                alt="icon"
+                            />
+                        </Link>
                     )}
 
                     <div
@@ -427,12 +489,8 @@ function PostHosting({
                         {isVisible && isRunAuto && <SpeakingAnimation />}
                     </div>
                 </div>
-                <div
-                    ref={divRef}
-                    className="relative flex-1 appear-animation duration-300"
-                >
+                <div className="relative flex-1 appear-animation duration-300">
                     <div
-                        ref={postItemRef}
                         id={`post-item-profile${bonusKey}-${data?.id}`}
                         className={`relative bg-slatePrimary transition-all duration-300 dark:bg-dark2Primary rounded-2xl w-full px-4 pb-5 pt-3 ${
                             isVisible ? 'shadow-2xl scale-[1.02]' : 'shadow-md'

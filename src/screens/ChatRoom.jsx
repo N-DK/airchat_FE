@@ -33,7 +33,6 @@ import BlockedChat from '../components/BlockedChat';
 import { CgSpinner } from 'react-icons/cg';
 import { DETAIL_MESSAGE_RESET } from '../redux/constants/MessageConstants';
 import { USER_PROFILE_STRANGER_RESET } from '../redux/constants/UserConstants';
-import WeatherWidget from '../components/WeatherWidget';
 
 const INITIAL_LIMIT = 10;
 const INITIAL_OFFSET = 0;
@@ -468,7 +467,6 @@ const ChatRoom = () => {
                 </div>
                 <div className="">
                     <div className="dark:border-dark2Primary dark:bg-dark2Primary pt-[100px] px-4">
-                        <WeatherWidget />
                         {renderMessages}
                     </div>
                 </div>
