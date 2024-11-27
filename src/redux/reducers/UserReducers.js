@@ -129,6 +129,7 @@ import {
     USER_SEND_WEATHER_FAIL,
     USER_SET_COORDS,
     SET_LINK,
+    USER_LIST_NOTIFICATION_RESET,
 } from '../constants/UserConstants';
 
 export const userLoginReducer = (state = {}, action) => {
@@ -636,6 +637,8 @@ export const listNotificationReducer = (state = {}, action) => {
                 notification: action.payload,
                 key: action.key,
             };
+        case USER_LIST_NOTIFICATION_RESET:
+            return {};
         case USER_LIST_NOTIFICATION_FAIL:
             return { loading: false, error: action.payload };
         default:

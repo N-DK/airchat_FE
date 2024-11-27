@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import FooterChat from '../components/FooterChat';
 import { useDispatch, useSelector } from 'react-redux';
 import { POST_LIST_RESET } from '../redux/constants/PostConstants';
@@ -10,6 +10,7 @@ import { Avatar } from 'antd';
 import moment from 'moment/moment';
 import { getListNotification } from '../redux/actions/UserActions';
 import LoaderSkeletonNotificationItem from '../components/LoaderSkeletonNotificationItem';
+import { USER_LIST_NOTIFICATION_RESET } from '../redux/constants/UserConstants';
 
 const NotificationItem = ({ item }) => {
     const navigate = useNavigate();
@@ -60,71 +61,186 @@ const NotificationItem = ({ item }) => {
     );
 };
 
+const actions = [
+    {
+        id: 1,
+        'name-en-US': 'All',
+        'name-vi-VN': 'Tất cả',
+        'contents-en-US': 'No Activity',
+        'contents-vi-VN': 'Không hoạt động',
+        'descriptions-en-US':
+            'Join some conversations to start receiving activity.',
+        'descriptions-vi-VN':
+            'Tham gia vào một số cuộc trò chuyện để bắt đầu nhận được hoạt động.',
+    },
+    {
+        id: 2,
+        'name-en-US': 'Mentions',
+        'name-vi-VN': 'Nhắc đến',
+        'contents-en-US': 'No Mentions',
+        'contents-vi-VN': 'Không nhắc đến',
+        'descriptions-en-US': 'Mentions and replies will show up here.',
+        'descriptions-vi-VN': 'Nhắc đến và trả lời sẽ hiển thị ở đây.',
+        key: 'mentions',
+    },
+    {
+        id: 3,
+        'name-en-US': 'Following',
+        'name-vi-VN': 'Theo dõi',
+        'contents-en-US': 'No Activity',
+        'contents-vi-VN': 'Không hoạt động',
+        'descriptions-en-US':
+            'Activity from users that you follow will show up here.',
+        'descriptions-vi-VN':
+            'Hoạt động từ người dùng mà bạn theo dõi sẽ hiển thị ở đây.',
+        key: 'follow',
+    },
+];
+
+const LIMIT = 10;
+const OFFSET = 0;
+
 export default function Notifications() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const [wait, setWait] = useState(true);
+    const [showActions, setShowActions] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [tabsOffset, setTabsOffset] = useState({
+        1: OFFSET,
+        2: OFFSET,
+        3: OFFSET,
+    });
+    const [tabsData, setTabsData] = useState({
+        1: null,
+        2: null,
+        3: null,
+    });
+    const [tabsIsEnd, setTabsIsEnd] = useState({
+        1: false,
+        2: false,
+        3: false,
+    });
+    const [tabsIsBottom, setTabsIsBottom] = useState({
+        1: false,
+        2: false,
+        3: false,
+    });
+    const { language } = useSelector((state) => state.userLanguage);
     const { notification, key, loading } = useSelector(
         (state) => state.listNotification,
     );
-    const [listMentions, setListMentions] = useState([]);
-    const [listFollowing, setListFollowing] = useState([]);
-    const [listAll, setListAll] = useState([]);
-    const [wait, setWait] = useState(true);
-    const { language } = useSelector((state) => state.userLanguage);
-    const actions = [
-        {
-            id: 1,
-            'name-en-US': 'All',
-            'name-vi-VN': 'Tất cả',
-            'contents-en-US': 'No Activity',
-            'contents-vi-VN': 'Không hoạt động',
-            'descriptions-en-US':
-                'Join some conversations to start receiving activity.',
-            'descriptions-vi-VN':
-                'Tham gia vào một số cuộc trò chuyện để bắt đầu nhận được hoạt động.',
-        },
-        {
-            id: 2,
-            'name-en-US': 'Mentions',
-            'name-vi-VN': 'Nhắc đến',
-            'contents-en-US': 'No Mentions',
-            'contents-vi-VN': 'Không nhắc đến',
-            'descriptions-en-US': 'Mentions and replies will show up here.',
-            'descriptions-vi-VN': 'Nhắc đến và trả lời sẽ hiển thị ở đây.',
-            key: 'mentions',
-        },
-        {
-            id: 3,
-            'name-en-US': 'Following',
-            'name-vi-VN': 'Theo dõi',
-            'contents-en-US': 'No Activity',
-            'contents-vi-VN': 'Không hoạt động',
-            'descriptions-en-US':
-                'Activity from users that you follow will show up here.',
-            'descriptions-vi-VN':
-                'Hoạt động từ người dùng mà bạn theo dõi sẽ hiển thị ở đây.',
-            key: 'follow',
-        },
-    ];
-    const [showActions, setShowActions] = useState(1);
+    const containerRef = useRef(null);
+
+    const handleScroll = useCallback(() => {
+        const contents = containerRef?.current;
+        if (!contents) return;
+
+        const scrollTop =
+            contents.scrollTop || contents.documentElement?.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight =
+            contents.scrollHeight || contents.documentElement?.scrollHeight;
+
+        if (scrollTop + windowHeight >= documentHeight - 300) {
+            setTabsIsBottom((prev) => ({
+                ...prev,
+                [showActions]: true,
+            }));
+        } else {
+            setTabsIsBottom((prev) => ({
+                ...prev,
+                [showActions]: false,
+            }));
+        }
+    }, [containerRef, showActions]);
 
     useEffect(() => {
         dispatch({ type: POST_LIST_RESET });
-        dispatch(getListNotification('mentions'));
-        dispatch(getListNotification('follow'));
-        dispatch(getListNotification());
     }, []);
 
     useEffect(() => {
-        if (notification && key === 'mentions') {
-            setListMentions(notification);
-        } else if (notification && key === 'follow') {
-            setListFollowing(notification);
-        } else if (notification) {
-            setListAll(notification);
-            setWait(false);
+        if (!tabsData[showActions]) {
+            const offset = tabsOffset[showActions];
+            dispatch(
+                getListNotification(
+                    actions[showActions - 1].key,
+                    LIMIT,
+                    offset,
+                ),
+            );
         }
-    }, [notification, key]);
+    }, [showActions]);
+
+    useEffect(() => {
+        const offset = tabsOffset[showActions];
+        if (offset !== 0 && hasMore && tabsData[showActions].length >= LIMIT) {
+            dispatch(
+                getListNotification(
+                    actions[showActions - 1].key,
+                    LIMIT,
+                    offset,
+                ),
+            );
+        }
+    }, [tabsOffset[showActions], hasMore]);
+
+    useEffect(() => {
+        const contents = containerRef?.current;
+        if (loading || !contents) return;
+
+        contents.addEventListener('scroll', handleScroll);
+
+        return () => {
+            contents.removeEventListener('scroll', handleScroll);
+        };
+    }, [handleScroll, containerRef, loading]);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+        containerRef.current?.scrollTo({ top: 0 });
+        setHasMore(false);
+    }, [showActions, containerRef]);
+
+    useEffect(() => {
+        if (tabsIsBottom[showActions] && !tabsIsEnd[showActions]) {
+            setTabsOffset((prev) => ({
+                ...prev,
+                [showActions]: prev[showActions] + LIMIT,
+            }));
+            setHasMore(true);
+        } else {
+            setHasMore(false);
+        }
+    }, [tabsIsBottom, showActions, tabsIsEnd]);
+
+    useEffect(() => {
+        if (notification) {
+            setWait(true);
+            const newTabsData = { ...tabsData };
+            if (hasMore) {
+                newTabsData[showActions] = [
+                    ...newTabsData[showActions],
+                    ...notification,
+                ];
+            } else {
+                newTabsData[showActions] = notification;
+            }
+            setTabsData(newTabsData);
+            setWait(false);
+            dispatch({ type: USER_LIST_NOTIFICATION_RESET });
+        }
+    }, [notification, tabsData, hasMore]);
+
+    useEffect(() => {
+        if (notification?.length === 0 && tabsData[showActions]) {
+            setTabsIsEnd((prev) => ({
+                ...prev,
+                [showActions]: true,
+            }));
+        }
+    }, [notification, tabsData, showActions]);
 
     return (
         <div className="overflow-hidden">
@@ -149,17 +265,18 @@ export default function Notifications() {
                 <div className="flex justify-start relative bg-white dark:bg-darkPrimary">
                     {actions.map((item, i) => (
                         <button
+                            disabled={wait || loading}
                             onClick={() => setShowActions(i + 1)}
                             key={i}
                             className={`min-w-14 border-b-[3px] mx-4 ${
-                                showActions == i + 1
+                                showActions === i + 1
                                     ? 'border-bluePrimary'
                                     : 'border-white dark:border-darkPrimary'
                             } pb-[7px]`}
                         >
                             <span
                                 className={`font-medium ${
-                                    i + 1 == showActions
+                                    i + 1 === showActions
                                         ? 'text-black dark:text-white'
                                         : 'text-gray-400'
                                 }`}
@@ -170,104 +287,44 @@ export default function Notifications() {
                     ))}
                 </div>
             </div>
-            <div className="relative flex flex-col justify-between h-screen overflow-auto scrollbar-none ">
+            <div
+                ref={containerRef}
+                className="relative flex flex-col justify-between h-screen overflow-auto scrollbar-none"
+            >
                 <div className="absolute w-full left-0 top-[150px] pb-[200px] min-h-full overflow-hidden flex justify-center dark:bg-dark2Primary bg-slatePrimary">
-                    {loading || wait ? (
-                        <LoaderSkeletonNotificationItem />
-                    ) : (
+                    <div className="w-full">
                         <div className="w-full">
-                            {showActions === 1 && (
-                                <div className="w-full">
-                                    {listAll?.length === 0 ? (
-                                        <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
-                                            <h5>
-                                                {
-                                                    actions[showActions - 1][
-                                                        'contents-' + language
-                                                    ]
-                                                }
-                                            </h5>
-                                            <span className="text-[15px] text-center">
-                                                {
-                                                    actions[showActions - 1][
-                                                        'descriptions-' +
-                                                            language
-                                                    ]
-                                                }
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        listAll.map((item, i) => (
-                                            <NotificationItem
-                                                key={i}
-                                                item={item}
-                                            />
-                                        ))
-                                    )}
+                            {tabsData[showActions]?.length === 0 &&
+                            !wait &&
+                            !loading ? (
+                                <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
+                                    <h5>
+                                        {
+                                            actions[showActions - 1][
+                                                'contents-' + language
+                                            ]
+                                        }
+                                    </h5>
+                                    <span className="text-[15px] text-center">
+                                        {
+                                            actions[showActions - 1][
+                                                'descriptions-' + language
+                                            ]
+                                        }
+                                    </span>
                                 </div>
-                            )}
-                            {showActions === 2 && (
-                                <div className="w-full">
-                                    {listMentions.length === 0 ? (
-                                        <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
-                                            <h5>
-                                                {
-                                                    actions[showActions - 1][
-                                                        'contents-' + language
-                                                    ]
-                                                }
-                                            </h5>
-                                            <span className="text-[15px] text-center">
-                                                {
-                                                    actions[showActions - 1][
-                                                        'descriptions-' +
-                                                            language
-                                                    ]
-                                                }
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        listMentions.map((item, i) => (
-                                            <NotificationItem
-                                                key={i}
-                                                item={item}
-                                            />
-                                        ))
+                            ) : (
+                                <>
+                                    {tabsData[showActions]?.map((item, i) => (
+                                        <NotificationItem key={i} item={item} />
+                                    ))}
+                                    {(loading || wait) && (
+                                        <LoaderSkeletonNotificationItem />
                                     )}
-                                </div>
-                            )}
-                            {showActions === 3 && (
-                                <div className="w-full">
-                                    {listFollowing.length === 0 ? (
-                                        <div className="text-black dark:text-gray-300 flex flex-col items-center px-2 pt-3">
-                                            <h5>
-                                                {
-                                                    actions[showActions - 1][
-                                                        'contents-' + language
-                                                    ]
-                                                }
-                                            </h5>
-                                            <span className="text-[15px] text-center">
-                                                {
-                                                    actions[showActions - 1][
-                                                        'descriptions-' +
-                                                            language
-                                                    ]
-                                                }
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        listFollowing.map((item, i) => (
-                                            <NotificationItem
-                                                key={i}
-                                                item={item}
-                                            />
-                                        ))
-                                    )}
-                                </div>
+                                </>
                             )}
                         </div>
-                    )}
+                    </div>
                 </div>
                 <FooterChat
                     title="notifications"
