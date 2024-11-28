@@ -175,7 +175,7 @@ export default function Notifications() {
 
     useEffect(() => {
         const offset = tabsOffset[showActions];
-        if (offset !== 0 && hasMore && tabsData[showActions].length >= LIMIT) {
+        if (offset !== 0 && hasMore && tabsData[showActions]?.length >= LIMIT) {
             dispatch(
                 getListNotification(
                     actions[showActions - 1].key,
@@ -216,7 +216,7 @@ export default function Notifications() {
     }, [tabsIsBottom, showActions, tabsIsEnd]);
 
     useEffect(() => {
-        if (notification) {
+        if (notification && !loading) {
             setWait(true);
             const newTabsData = { ...tabsData };
             if (hasMore) {
@@ -228,10 +228,10 @@ export default function Notifications() {
                 newTabsData[showActions] = notification;
             }
             setTabsData(newTabsData);
-            setWait(false);
             dispatch({ type: USER_LIST_NOTIFICATION_RESET });
+            setWait(false);
         }
-    }, [notification, tabsData, hasMore]);
+    }, [notification, tabsData, hasMore, loading]);
 
     useEffect(() => {
         if (notification?.length === 0 && tabsData[showActions]) {

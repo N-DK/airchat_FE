@@ -233,14 +233,9 @@ const MessageChatRoom = ({
                             <>
                                 {recordOption === 'video' ? (
                                     <Webcam
-                                        className="transition-all w-16 h-16 duration-300 z-10 rounded-full object-cover"
+                                        className="transition-all w-16 h-16 duration-300 z-10 rounded-full relative object-cover"
                                         videoConstraints={{
                                             facingMode: 'user',
-                                        }}
-                                        style={{
-                                            width: '60px',
-                                            height: '60px',
-                                            objectFit: 'cover',
                                         }}
                                     />
                                 ) : (
@@ -302,27 +297,11 @@ const MessageChatRoom = ({
                                     </span>
                                 </h5>
                                 <p className="text-sm whitespace-normal text-wrap dark:text-white">
-                                    {message?.message ?? 'Lorem ipsum dolor'}
+                                    {message?.message ?? ''}
                                 </p>
-                                {/* {message?.image != '0' &&
-                                    message?.image !== '' &&
-                                    message?.image && (
-                                        
-                                    )} */}
                                 {message?.image !== '' &&
                                     message?.image != '0' &&
                                     message?.image && (
-                                        // <figure className="max-w-full relative my-2">
-                                        //     <Avatar
-                                        //         src={message?.image}
-                                        //         className="min-h-40 h-full w-full object-cover rounded-xl"
-                                        //     />
-                                        // </figure>
-                                        // <iframe
-                                        //     src={`https://talkie.transtechvietnam.com${message?.image}`}
-                                        //     width="250"
-                                        //     height="250"
-                                        // />
                                         <ImageFetcher
                                             imageUrl={`https://talkie.transtechvietnam.com${message?.image}`}
                                         />

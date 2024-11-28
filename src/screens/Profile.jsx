@@ -97,12 +97,9 @@ export default function Profile() {
     const {
         isEditProfile,
         isRecord,
-        isRunAuto,
         showDrawerFollow,
         toggleIsRecord,
         toggleIsEditProfile,
-        toggleIsRunAuto,
-        toggleShowInviteFriend,
         toggleShowDrawerFollow,
         isFullScreen,
         newMessageFromFooter,
@@ -210,7 +207,6 @@ export default function Profile() {
 
             const post = groupedPosts.get(item.id);
 
-            // Đảm bảo item.reply là mảng, và duyệt qua từng phần tử trong item.reply
             item.reply?.forEach((replyItem) => {
                 if (
                     !post.reply.some((r) => r?.user_id === replyItem?.user_id)
@@ -237,9 +233,7 @@ export default function Profile() {
                 setIsVisible(entry.isIntersecting);
             }, 200),
             {
-                // threshold: 0.45,
-                // rootMargin: '-100px 0px -610px 0px',
-                threshold: [0.3], // đa dạng giá trị threshold cho nhiều tình huống
+                threshold: [0.3],
                 rootMargin: `-${Math.max(
                     window.innerHeight * 0.2,
                     100,
@@ -337,12 +331,6 @@ export default function Profile() {
         }
     }, [newPost, dispatch]);
 
-    // useEffect(() => {
-    //     if (isSuccessDeletePost) {
-    //         dispatch(listPostProfile(showActions, 100, 0));
-    //     }
-    // }, [isSuccessDeletePost, dispatch, showActions]);
-
     useEffect(() => {
         if (isSuccessDeletePost) {
             setListPostUserProfile((prev) => {
@@ -396,28 +384,13 @@ export default function Profile() {
         fetchPosts();
     }, [showActions, stranger_id, dispatch]);
 
-    // useEffect(() => {
-    //     if (isSuccessBookmark && showActions === 'bookmarks') {
-    //         dispatch(listPostProfile('bookmarks', 100, 0));
-    //     }
-    // }, [isSuccessBookmark, dispatch, showActions]);
-
-    // useEffect(() => {
-    //     if (isSuccessShare && showActions === 'posts') {
-    //         // dispatch(listPostProfile('posts', 100, 0));
-    //     }
-    // }, [isSuccessShare, dispatch, showActions]);
+    useEffect(() => {
+        if (!refProfile?.current) return;
+        refProfile.current?.scrollTo({ top: 0 });
+    }, [showActions, refProfile]);
 
     const renderActionButtons = () => (
         <div className="flex gap-3 text-black dark:text-white">
-            {/* {!stranger_id && (
-                <button
-                    onClick={toggleShowInviteFriend}
-                    className="h-[34px] md:h-[40px] w-[34px] md:w-[40px] border-[1px] border-gray-400 rounded-full flex justify-center items-center"
-                >
-                    <IoGiftOutline className="opacity-30 text-xl md:text-2xl" />
-                </button>
-            )} */}
             <button className="h-[34px] md:h-[40px] w-[34px] md:w-[40px] border-[1px] border-gray-400 rounded-full flex justify-center items-center">
                 <FiUpload className="opacity-30 text-xl md:text-2xl" />
             </button>
@@ -574,7 +547,6 @@ export default function Profile() {
         );
     }
 
-    // || (stranger_id && userInfoStranger)
     return userInfo ? (
         <>
             <div className="relative flex flex-col justify-between h-screen overflow-hidden bg-slatePrimary dark:bg-darkPrimary">
